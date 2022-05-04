@@ -12,176 +12,135 @@ import {
   PopulatedTransaction,
   Signer,
   utils,
-} from "ethers";
-import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
-import { Listener, Provider } from "@ethersproject/providers";
-import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
+} from 'ethers'
+import { FunctionFragment, Result, EventFragment } from '@ethersproject/abi'
+import { Listener, Provider } from '@ethersproject/providers'
+import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common'
 
 export declare namespace OptionToken {
   export type OptionPositionStruct = {
-    positionId: BigNumberish;
-    strikeId: BigNumberish;
-    optionType: BigNumberish;
-    amount: BigNumberish;
-    collateral: BigNumberish;
-    state: BigNumberish;
-  };
+    positionId: BigNumberish
+    strikeId: BigNumberish
+    optionType: BigNumberish
+    amount: BigNumberish
+    collateral: BigNumberish
+    state: BigNumberish
+  }
 
-  export type OptionPositionStructOutput = [
-    BigNumber,
-    BigNumber,
-    number,
-    BigNumber,
-    BigNumber,
-    number
-  ] & {
-    positionId: BigNumber;
-    strikeId: BigNumber;
-    optionType: number;
-    amount: BigNumber;
-    collateral: BigNumber;
-    state: number;
-  };
+  export type OptionPositionStructOutput = [BigNumber, BigNumber, number, BigNumber, BigNumber, number] & {
+    positionId: BigNumber
+    strikeId: BigNumber
+    optionType: number
+    amount: BigNumber
+    collateral: BigNumber
+    state: number
+  }
 
   export type LiquidationFeesStruct = {
-    returnCollateral: BigNumberish;
-    lpPremiums: BigNumberish;
-    lpFee: BigNumberish;
-    liquidatorFee: BigNumberish;
-    smFee: BigNumberish;
-    insolventAmount: BigNumberish;
-  };
+    returnCollateral: BigNumberish
+    lpPremiums: BigNumberish
+    lpFee: BigNumberish
+    liquidatorFee: BigNumberish
+    smFee: BigNumberish
+    insolventAmount: BigNumberish
+  }
 
-  export type LiquidationFeesStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    returnCollateral: BigNumber;
-    lpPremiums: BigNumber;
-    lpFee: BigNumber;
-    liquidatorFee: BigNumber;
-    smFee: BigNumber;
-    insolventAmount: BigNumber;
-  };
+  export type LiquidationFeesStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    returnCollateral: BigNumber
+    lpPremiums: BigNumber
+    lpFee: BigNumber
+    liquidatorFee: BigNumber
+    smFee: BigNumber
+    insolventAmount: BigNumber
+  }
 
   export type PartialCollateralParametersStruct = {
-    penaltyRatio: BigNumberish;
-    liquidatorFeeRatio: BigNumberish;
-    smFeeRatio: BigNumberish;
-    minLiquidationFee: BigNumberish;
-  };
+    penaltyRatio: BigNumberish
+    liquidatorFeeRatio: BigNumberish
+    smFeeRatio: BigNumberish
+    minLiquidationFee: BigNumberish
+  }
 
-  export type PartialCollateralParametersStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    penaltyRatio: BigNumber;
-    liquidatorFeeRatio: BigNumber;
-    smFeeRatio: BigNumber;
-    minLiquidationFee: BigNumber;
-  };
+  export type PartialCollateralParametersStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber] & {
+    penaltyRatio: BigNumber
+    liquidatorFeeRatio: BigNumber
+    smFeeRatio: BigNumber
+    minLiquidationFee: BigNumber
+  }
 
   export type PositionWithOwnerStruct = {
-    positionId: BigNumberish;
-    strikeId: BigNumberish;
-    optionType: BigNumberish;
-    amount: BigNumberish;
-    collateral: BigNumberish;
-    state: BigNumberish;
-    owner: string;
-  };
+    positionId: BigNumberish
+    strikeId: BigNumberish
+    optionType: BigNumberish
+    amount: BigNumberish
+    collateral: BigNumberish
+    state: BigNumberish
+    owner: string
+  }
 
-  export type PositionWithOwnerStructOutput = [
-    BigNumber,
-    BigNumber,
-    number,
-    BigNumber,
-    BigNumber,
-    number,
-    string
-  ] & {
-    positionId: BigNumber;
-    strikeId: BigNumber;
-    optionType: number;
-    amount: BigNumber;
-    collateral: BigNumber;
-    state: number;
-    owner: string;
-  };
+  export type PositionWithOwnerStructOutput = [BigNumber, BigNumber, number, BigNumber, BigNumber, number, string] & {
+    positionId: BigNumber
+    strikeId: BigNumber
+    optionType: number
+    amount: BigNumber
+    collateral: BigNumber
+    state: number
+    owner: string
+  }
 }
 
 export declare namespace LiquidityPool {
   export type LiquidityStruct = {
-    freeLiquidity: BigNumberish;
-    burnableLiquidity: BigNumberish;
-    usedCollatLiquidity: BigNumberish;
-    pendingDeltaLiquidity: BigNumberish;
-    usedDeltaLiquidity: BigNumberish;
-    NAV: BigNumberish;
-  };
+    freeLiquidity: BigNumberish
+    burnableLiquidity: BigNumberish
+    usedCollatLiquidity: BigNumberish
+    pendingDeltaLiquidity: BigNumberish
+    usedDeltaLiquidity: BigNumberish
+    NAV: BigNumberish
+  }
 
-  export type LiquidityStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    freeLiquidity: BigNumber;
-    burnableLiquidity: BigNumber;
-    usedCollatLiquidity: BigNumber;
-    pendingDeltaLiquidity: BigNumber;
-    usedDeltaLiquidity: BigNumber;
-    NAV: BigNumber;
-  };
+  export type LiquidityStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+    freeLiquidity: BigNumber
+    burnableLiquidity: BigNumber
+    usedCollatLiquidity: BigNumber
+    pendingDeltaLiquidity: BigNumber
+    usedDeltaLiquidity: BigNumber
+    NAV: BigNumber
+  }
 }
 
 export declare namespace SynthetixAdapter {
   export type ExchangeParamsStruct = {
-    spotPrice: BigNumberish;
-    quoteKey: BytesLike;
-    baseKey: BytesLike;
-    short: string;
-    quoteBaseFeeRate: BigNumberish;
-    baseQuoteFeeRate: BigNumberish;
-  };
+    spotPrice: BigNumberish
+    quoteKey: BytesLike
+    baseKey: BytesLike
+    short: string
+    quoteBaseFeeRate: BigNumberish
+    baseQuoteFeeRate: BigNumberish
+  }
 
-  export type ExchangeParamsStructOutput = [
-    BigNumber,
-    string,
-    string,
-    string,
-    BigNumber,
-    BigNumber
-  ] & {
-    spotPrice: BigNumber;
-    quoteKey: string;
-    baseKey: string;
-    short: string;
-    quoteBaseFeeRate: BigNumber;
-    baseQuoteFeeRate: BigNumber;
-  };
+  export type ExchangeParamsStructOutput = [BigNumber, string, string, string, BigNumber, BigNumber] & {
+    spotPrice: BigNumber
+    quoteKey: string
+    baseKey: string
+    short: string
+    quoteBaseFeeRate: BigNumber
+    baseQuoteFeeRate: BigNumber
+  }
 }
 
 export declare namespace OptionMarket {
   export type TradeParametersStruct = {
-    isBuy: boolean;
-    isForceClose: boolean;
-    tradeDirection: BigNumberish;
-    optionType: BigNumberish;
-    amount: BigNumberish;
-    expiry: BigNumberish;
-    strikePrice: BigNumberish;
-    liquidity: LiquidityPool.LiquidityStruct;
-    exchangeParams: SynthetixAdapter.ExchangeParamsStruct;
-  };
+    isBuy: boolean
+    isForceClose: boolean
+    tradeDirection: BigNumberish
+    optionType: BigNumberish
+    amount: BigNumberish
+    expiry: BigNumberish
+    strikePrice: BigNumberish
+    liquidity: LiquidityPool.LiquidityStruct
+    exchangeParams: SynthetixAdapter.ExchangeParamsStruct
+  }
 
   export type TradeParametersStructOutput = [
     boolean,
@@ -194,74 +153,68 @@ export declare namespace OptionMarket {
     LiquidityPool.LiquidityStructOutput,
     SynthetixAdapter.ExchangeParamsStructOutput
   ] & {
-    isBuy: boolean;
-    isForceClose: boolean;
-    tradeDirection: number;
-    optionType: number;
-    amount: BigNumber;
-    expiry: BigNumber;
-    strikePrice: BigNumber;
-    liquidity: LiquidityPool.LiquidityStructOutput;
-    exchangeParams: SynthetixAdapter.ExchangeParamsStructOutput;
-  };
+    isBuy: boolean
+    isForceClose: boolean
+    tradeDirection: number
+    optionType: number
+    amount: BigNumber
+    expiry: BigNumber
+    strikePrice: BigNumber
+    liquidity: LiquidityPool.LiquidityStructOutput
+    exchangeParams: SynthetixAdapter.ExchangeParamsStructOutput
+  }
 }
 
 export interface OptionTokenInterface extends utils.Interface {
-  contractName: "OptionToken";
+  contractName: 'OptionToken'
   functions: {
-    "acceptOwnership()": FunctionFragment;
-    "addCollateral(uint256,uint256)": FunctionFragment;
-    "adjustPosition((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,address,uint256,uint256,uint256,bool)": FunctionFragment;
-    "approve(address,uint256)": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "baseURI()": FunctionFragment;
-    "canLiquidate((uint256,uint256,uint8,uint256,uint256,uint8),uint256,uint256,uint256)": FunctionFragment;
-    "getApproved(uint256)": FunctionFragment;
-    "getLiquidationFees(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "getOptionPosition(uint256)": FunctionFragment;
-    "getOptionPositions(uint256[])": FunctionFragment;
-    "getOwnerPositions(address)": FunctionFragment;
-    "getPartialCollatParams()": FunctionFragment;
-    "getPositionState(uint256)": FunctionFragment;
-    "getPositionWithOwner(uint256)": FunctionFragment;
-    "getPositionsWithOwner(uint256[])": FunctionFragment;
-    "init(address,address,address,address)": FunctionFragment;
-    "isApprovedForAll(address,address)": FunctionFragment;
-    "liquidate(uint256,(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256)": FunctionFragment;
-    "merge(uint256[])": FunctionFragment;
-    "name()": FunctionFragment;
-    "nextId()": FunctionFragment;
-    "nominateNewOwner(address)": FunctionFragment;
-    "nominatedOwner()": FunctionFragment;
-    "owner()": FunctionFragment;
-    "ownerOf(uint256)": FunctionFragment;
-    "partialCollatParams()": FunctionFragment;
-    "positions(uint256)": FunctionFragment;
-    "safeTransferFrom(address,address,uint256)": FunctionFragment;
-    "setApprovalForAll(address,bool)": FunctionFragment;
-    "setPartialCollateralParams((uint256,uint256,uint256,uint256))": FunctionFragment;
-    "setURI(string)": FunctionFragment;
-    "settlePositions(uint256[])": FunctionFragment;
-    "split(uint256,uint256,uint256,address)": FunctionFragment;
-    "supportsInterface(bytes4)": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
-    "tokenURI(uint256)": FunctionFragment;
-    "totalSupply()": FunctionFragment;
-    "transferFrom(address,address,uint256)": FunctionFragment;
-  };
+    'acceptOwnership()': FunctionFragment
+    'addCollateral(uint256,uint256)': FunctionFragment
+    'adjustPosition((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,address,uint256,uint256,uint256,bool)': FunctionFragment
+    'approve(address,uint256)': FunctionFragment
+    'balanceOf(address)': FunctionFragment
+    'baseURI()': FunctionFragment
+    'canLiquidate((uint256,uint256,uint8,uint256,uint256,uint8),uint256,uint256,uint256)': FunctionFragment
+    'getApproved(uint256)': FunctionFragment
+    'getLiquidationFees(uint256,uint256,uint256,uint256)': FunctionFragment
+    'getOptionPosition(uint256)': FunctionFragment
+    'getOptionPositions(uint256[])': FunctionFragment
+    'getOwnerPositions(address)': FunctionFragment
+    'getPartialCollatParams()': FunctionFragment
+    'getPositionState(uint256)': FunctionFragment
+    'getPositionWithOwner(uint256)': FunctionFragment
+    'getPositionsWithOwner(uint256[])': FunctionFragment
+    'init(address,address,address,address)': FunctionFragment
+    'isApprovedForAll(address,address)': FunctionFragment
+    'liquidate(uint256,(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256)': FunctionFragment
+    'merge(uint256[])': FunctionFragment
+    'name()': FunctionFragment
+    'nextId()': FunctionFragment
+    'nominateNewOwner(address)': FunctionFragment
+    'nominatedOwner()': FunctionFragment
+    'owner()': FunctionFragment
+    'ownerOf(uint256)': FunctionFragment
+    'partialCollatParams()': FunctionFragment
+    'positions(uint256)': FunctionFragment
+    'safeTransferFrom(address,address,uint256)': FunctionFragment
+    'setApprovalForAll(address,bool)': FunctionFragment
+    'setPartialCollateralParams((uint256,uint256,uint256,uint256))': FunctionFragment
+    'setURI(string)': FunctionFragment
+    'settlePositions(uint256[])': FunctionFragment
+    'split(uint256,uint256,uint256,address)': FunctionFragment
+    'supportsInterface(bytes4)': FunctionFragment
+    'symbol()': FunctionFragment
+    'tokenByIndex(uint256)': FunctionFragment
+    'tokenOfOwnerByIndex(address,uint256)': FunctionFragment
+    'tokenURI(uint256)': FunctionFragment
+    'totalSupply()': FunctionFragment
+    'transferFrom(address,address,uint256)': FunctionFragment
+  }
 
+  encodeFunctionData(functionFragment: 'acceptOwnership', values?: undefined): string
+  encodeFunctionData(functionFragment: 'addCollateral', values: [BigNumberish, BigNumberish]): string
   encodeFunctionData(
-    functionFragment: "acceptOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addCollateral",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "adjustPosition",
+    functionFragment: 'adjustPosition',
     values: [
       OptionMarket.TradeParametersStruct,
       BigNumberish,
@@ -271,361 +224,185 @@ export interface OptionTokenInterface extends utils.Interface {
       BigNumberish,
       boolean
     ]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'approve', values: [string, BigNumberish]): string
+  encodeFunctionData(functionFragment: 'balanceOf', values: [string]): string
+  encodeFunctionData(functionFragment: 'baseURI', values?: undefined): string
   encodeFunctionData(
-    functionFragment: "approve",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
+    functionFragment: 'canLiquidate',
+    values: [OptionToken.OptionPositionStruct, BigNumberish, BigNumberish, BigNumberish]
+  ): string
+  encodeFunctionData(functionFragment: 'getApproved', values: [BigNumberish]): string
   encodeFunctionData(
-    functionFragment: "canLiquidate",
-    values: [
-      OptionToken.OptionPositionStruct,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getApproved",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getLiquidationFees",
+    functionFragment: 'getLiquidationFees',
     values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'getOptionPosition', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'getOptionPositions', values: [BigNumberish[]]): string
+  encodeFunctionData(functionFragment: 'getOwnerPositions', values: [string]): string
+  encodeFunctionData(functionFragment: 'getPartialCollatParams', values?: undefined): string
+  encodeFunctionData(functionFragment: 'getPositionState', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'getPositionWithOwner', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'getPositionsWithOwner', values: [BigNumberish[]]): string
+  encodeFunctionData(functionFragment: 'init', values: [string, string, string, string]): string
+  encodeFunctionData(functionFragment: 'isApprovedForAll', values: [string, string]): string
   encodeFunctionData(
-    functionFragment: "getOptionPosition",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getOptionPositions",
-    values: [BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getOwnerPositions",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPartialCollatParams",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPositionState",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPositionWithOwner",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPositionsWithOwner",
-    values: [BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "init",
-    values: [string, string, string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isApprovedForAll",
-    values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "liquidate",
+    functionFragment: 'liquidate',
     values: [BigNumberish, OptionMarket.TradeParametersStruct, BigNumberish]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'merge', values: [BigNumberish[]]): string
+  encodeFunctionData(functionFragment: 'name', values?: undefined): string
+  encodeFunctionData(functionFragment: 'nextId', values?: undefined): string
+  encodeFunctionData(functionFragment: 'nominateNewOwner', values: [string]): string
+  encodeFunctionData(functionFragment: 'nominatedOwner', values?: undefined): string
+  encodeFunctionData(functionFragment: 'owner', values?: undefined): string
+  encodeFunctionData(functionFragment: 'ownerOf', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'partialCollatParams', values?: undefined): string
+  encodeFunctionData(functionFragment: 'positions', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'safeTransferFrom', values: [string, string, BigNumberish]): string
+  encodeFunctionData(functionFragment: 'setApprovalForAll', values: [string, boolean]): string
   encodeFunctionData(
-    functionFragment: "merge",
-    values: [BigNumberish[]]
-  ): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "nextId", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "nominateNewOwner",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "nominatedOwner",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "ownerOf",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "partialCollatParams",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "positions",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "safeTransferFrom",
-    values: [string, string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setApprovalForAll",
-    values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setPartialCollateralParams",
+    functionFragment: 'setPartialCollateralParams',
     values: [OptionToken.PartialCollateralParametersStruct]
-  ): string;
-  encodeFunctionData(functionFragment: "setURI", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "settlePositions",
-    values: [BigNumberish[]]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "split",
-    values: [BigNumberish, BigNumberish, BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "tokenByIndex",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenURI",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalSupply",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferFrom",
-    values: [string, string, BigNumberish]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'setURI', values: [string]): string
+  encodeFunctionData(functionFragment: 'settlePositions', values: [BigNumberish[]]): string
+  encodeFunctionData(functionFragment: 'split', values: [BigNumberish, BigNumberish, BigNumberish, string]): string
+  encodeFunctionData(functionFragment: 'supportsInterface', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'symbol', values?: undefined): string
+  encodeFunctionData(functionFragment: 'tokenByIndex', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'tokenOfOwnerByIndex', values: [string, BigNumberish]): string
+  encodeFunctionData(functionFragment: 'tokenURI', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'totalSupply', values?: undefined): string
+  encodeFunctionData(functionFragment: 'transferFrom', values: [string, string, BigNumberish]): string
 
-  decodeFunctionResult(
-    functionFragment: "acceptOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "addCollateral",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "adjustPosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "canLiquidate",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getApproved",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getLiquidationFees",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getOptionPosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getOptionPositions",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getOwnerPositions",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPartialCollatParams",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPositionState",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPositionWithOwner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getPositionsWithOwner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isApprovedForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "liquidate", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "merge", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "nextId", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "nominateNewOwner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "nominatedOwner",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "partialCollatParams",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "positions", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "safeTransferFrom",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setApprovalForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setPartialCollateralParams",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "setURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "settlePositions",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "split", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "supportsInterface",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferFrom",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: 'acceptOwnership', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'addCollateral', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'adjustPosition', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'baseURI', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'canLiquidate', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getApproved', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getLiquidationFees', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getOptionPosition', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getOptionPositions', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getOwnerPositions', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getPartialCollatParams', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getPositionState', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getPositionWithOwner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getPositionsWithOwner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'init', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'isApprovedForAll', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'liquidate', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'merge', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'nextId', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'nominateNewOwner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'nominatedOwner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'ownerOf', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'partialCollatParams', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'positions', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'safeTransferFrom', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setApprovalForAll', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setPartialCollateralParams', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setURI', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'settlePositions', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'split', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'supportsInterface', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'symbol', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'tokenByIndex', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'tokenOfOwnerByIndex', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'tokenURI', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'totalSupply', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'transferFrom', data: BytesLike): Result
 
   events: {
-    "Approval(address,address,uint256)": EventFragment;
-    "ApprovalForAll(address,address,bool)": EventFragment;
-    "OwnerChanged(address,address)": EventFragment;
-    "OwnerNominated(address)": EventFragment;
-    "PositionUpdated(uint256,tuple,uint8)": EventFragment;
-    "Transfer(address,address,uint256)": EventFragment;
-  };
+    'Approval(address,address,uint256)': EventFragment
+    'ApprovalForAll(address,address,bool)': EventFragment
+    'OwnerChanged(address,address)': EventFragment
+    'OwnerNominated(address)': EventFragment
+    'PositionUpdated(uint256,tuple,uint8)': EventFragment
+    'Transfer(address,address,uint256)': EventFragment
+  }
 
-  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PositionUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Approval'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'ApprovalForAll'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'OwnerChanged'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'OwnerNominated'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'PositionUpdated'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'Transfer'): EventFragment
 }
 
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber],
   { owner: string; approved: string; tokenId: BigNumber }
->;
+>
 
-export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
+export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>
 
 export type ApprovalForAllEvent = TypedEvent<
   [string, string, boolean],
   { owner: string; operator: string; approved: boolean }
->;
+>
 
-export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>
 
-export type OwnerChangedEvent = TypedEvent<
-  [string, string],
-  { oldOwner: string; newOwner: string }
->;
+export type OwnerChangedEvent = TypedEvent<[string, string], { oldOwner: string; newOwner: string }>
 
-export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>;
+export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>
 
-export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
+export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>
 
-export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
+export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>
 
 export type PositionUpdatedEvent = TypedEvent<
   [BigNumber, OptionToken.OptionPositionStructOutput, number],
   {
-    positionId: BigNumber;
-    position: OptionToken.OptionPositionStructOutput;
-    updatedType: number;
+    positionId: BigNumber
+    position: OptionToken.OptionPositionStructOutput
+    updatedType: number
   }
->;
+>
 
-export type PositionUpdatedEventFilter = TypedEventFilter<PositionUpdatedEvent>;
+export type PositionUpdatedEventFilter = TypedEventFilter<PositionUpdatedEvent>
 
-export type TransferEvent = TypedEvent<
-  [string, string, BigNumber],
-  { from: string; to: string; tokenId: BigNumber }
->;
+export type TransferEvent = TypedEvent<[string, string, BigNumber], { from: string; to: string; tokenId: BigNumber }>
 
-export type TransferEventFilter = TypedEventFilter<TransferEvent>;
+export type TransferEventFilter = TypedEventFilter<TransferEvent>
 
 export interface OptionToken extends BaseContract {
-  contractName: "OptionToken";
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  contractName: 'OptionToken'
+  connect(signerOrProvider: Signer | Provider | string): this
+  attach(addressOrName: string): this
+  deployed(): Promise<this>
 
-  interface: OptionTokenInterface;
+  interface: OptionTokenInterface
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TEvent>>
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>
+  listeners(eventName?: string): Array<Listener>
+  removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this
+  removeAllListeners(eventName?: string): this
+  off: OnEvent<this>
+  on: OnEvent<this>
+  once: OnEvent<this>
+  removeListener: OnEvent<this>
 
   functions: {
-    acceptOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
     addCollateral(
       positionId: BigNumberish,
       amountCollateral: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     adjustPosition(
       trade: OptionMarket.TradeParametersStruct,
@@ -636,17 +413,17 @@ export interface OptionToken extends BaseContract {
       setCollateralTo: BigNumberish,
       isOpen: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>
 
-    baseURI(overrides?: CallOverrides): Promise<[string]>;
+    baseURI(overrides?: CallOverrides): Promise<[string]>
 
     canLiquidate(
       position: OptionToken.OptionPositionStruct,
@@ -654,12 +431,9 @@ export interface OptionToken extends BaseContract {
       strikePrice: BigNumberish,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    ): Promise<[boolean]>
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>
 
     getLiquidationFees(
       gwavPremium: BigNumberish,
@@ -669,43 +443,35 @@ export interface OptionToken extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [OptionToken.LiquidationFeesStructOutput] & {
-        liquidationFees: OptionToken.LiquidationFeesStructOutput;
+        liquidationFees: OptionToken.LiquidationFeesStructOutput
       }
-    >;
+    >
 
     getOptionPosition(
       positionId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[OptionToken.OptionPositionStructOutput]>;
+    ): Promise<[OptionToken.OptionPositionStructOutput]>
 
     getOptionPositions(
       positionIds: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<[OptionToken.OptionPositionStructOutput[]]>;
+    ): Promise<[OptionToken.OptionPositionStructOutput[]]>
 
-    getOwnerPositions(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<[OptionToken.OptionPositionStructOutput[]]>;
+    getOwnerPositions(owner: string, overrides?: CallOverrides): Promise<[OptionToken.OptionPositionStructOutput[]]>
 
-    getPartialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<[OptionToken.PartialCollateralParametersStructOutput]>;
+    getPartialCollatParams(overrides?: CallOverrides): Promise<[OptionToken.PartialCollateralParametersStructOutput]>
 
-    getPositionState(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
+    getPositionState(positionId: BigNumberish, overrides?: CallOverrides): Promise<[number]>
 
     getPositionWithOwner(
       positionId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[OptionToken.PositionWithOwnerStructOutput]>;
+    ): Promise<[OptionToken.PositionWithOwnerStructOutput]>
 
     getPositionsWithOwner(
       positionIds: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<[OptionToken.PositionWithOwnerStructOutput[]]>;
+    ): Promise<[OptionToken.PositionWithOwnerStructOutput[]]>
 
     init(
       _optionMarket: string,
@@ -713,104 +479,92 @@ export interface OptionToken extends BaseContract {
       _shortCollateral: string,
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    isApprovedForAll(
-      owner: string,
-      operator: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<[boolean]>
 
     liquidate(
       positionId: BigNumberish,
       trade: OptionMarket.TradeParametersStruct,
       totalCost: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     merge(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    name(overrides?: CallOverrides): Promise<[string]>;
+    name(overrides?: CallOverrides): Promise<[string]>
 
-    nextId(overrides?: CallOverrides): Promise<[BigNumber]>;
+    nextId(overrides?: CallOverrides): Promise<[BigNumber]>
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    nominatedOwner(overrides?: CallOverrides): Promise<[string]>;
+    nominatedOwner(overrides?: CallOverrides): Promise<[string]>
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
+    owner(overrides?: CallOverrides): Promise<[string]>
 
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>
 
-    partialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<
+    partialCollatParams(overrides?: CallOverrides): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
-        penaltyRatio: BigNumber;
-        liquidatorFeeRatio: BigNumber;
-        smFeeRatio: BigNumber;
-        minLiquidationFee: BigNumber;
+        penaltyRatio: BigNumber
+        liquidatorFeeRatio: BigNumber
+        smFeeRatio: BigNumber
+        minLiquidationFee: BigNumber
       }
-    >;
+    >
 
     positions(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, number, BigNumber, BigNumber, number] & {
-        positionId: BigNumber;
-        strikeId: BigNumber;
-        optionType: number;
-        amount: BigNumber;
-        collateral: BigNumber;
-        state: number;
+        positionId: BigNumber
+        strikeId: BigNumber
+        optionType: number
+        amount: BigNumber
+        collateral: BigNumber
+        state: number
       }
-    >;
+    >
 
-    "safeTransferFrom(address,address,uint256)"(
+    'safeTransferFrom(address,address,uint256)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    'safeTransferFrom(address,address,uint256,bytes)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     setPartialCollateralParams(
       _partialCollatParams: OptionToken.PartialCollateralParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    setURI(
-      newURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    setURI(newURI: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
     settlePositions(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     split(
       positionId: BigNumberish,
@@ -818,50 +572,35 @@ export interface OptionToken extends BaseContract {
       newCollateral: BigNumberish,
       recipient: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<[boolean]>
 
-    symbol(overrides?: CallOverrides): Promise<[string]>;
+    symbol(overrides?: CallOverrides): Promise<[string]>
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    tokenByIndex(index: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>
 
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    tokenOfOwnerByIndex(owner: string, index: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>
 
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>
 
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>
 
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-  };
+    ): Promise<ContractTransaction>
+  }
 
-  acceptOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
   addCollateral(
     positionId: BigNumberish,
     amountCollateral: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   adjustPosition(
     trade: OptionMarket.TradeParametersStruct,
@@ -872,17 +611,17 @@ export interface OptionToken extends BaseContract {
     setCollateralTo: BigNumberish,
     isOpen: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   approve(
     to: string,
     tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>
 
-  baseURI(overrides?: CallOverrides): Promise<string>;
+  baseURI(overrides?: CallOverrides): Promise<string>
 
   canLiquidate(
     position: OptionToken.OptionPositionStruct,
@@ -890,12 +629,9 @@ export interface OptionToken extends BaseContract {
     strikePrice: BigNumberish,
     spotPrice: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<boolean>;
+  ): Promise<boolean>
 
-  getApproved(
-    tokenId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
+  getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
   getLiquidationFees(
     gwavPremium: BigNumberish,
@@ -903,41 +639,33 @@ export interface OptionToken extends BaseContract {
     convertedMinLiquidationFee: BigNumberish,
     insolvencyMultiplier: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<OptionToken.LiquidationFeesStructOutput>;
+  ): Promise<OptionToken.LiquidationFeesStructOutput>
 
   getOptionPosition(
     positionId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<OptionToken.OptionPositionStructOutput>;
+  ): Promise<OptionToken.OptionPositionStructOutput>
 
   getOptionPositions(
     positionIds: BigNumberish[],
     overrides?: CallOverrides
-  ): Promise<OptionToken.OptionPositionStructOutput[]>;
+  ): Promise<OptionToken.OptionPositionStructOutput[]>
 
-  getOwnerPositions(
-    owner: string,
-    overrides?: CallOverrides
-  ): Promise<OptionToken.OptionPositionStructOutput[]>;
+  getOwnerPositions(owner: string, overrides?: CallOverrides): Promise<OptionToken.OptionPositionStructOutput[]>
 
-  getPartialCollatParams(
-    overrides?: CallOverrides
-  ): Promise<OptionToken.PartialCollateralParametersStructOutput>;
+  getPartialCollatParams(overrides?: CallOverrides): Promise<OptionToken.PartialCollateralParametersStructOutput>
 
-  getPositionState(
-    positionId: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<number>;
+  getPositionState(positionId: BigNumberish, overrides?: CallOverrides): Promise<number>
 
   getPositionWithOwner(
     positionId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<OptionToken.PositionWithOwnerStructOutput>;
+  ): Promise<OptionToken.PositionWithOwnerStructOutput>
 
   getPositionsWithOwner(
     positionIds: BigNumberish[],
     overrides?: CallOverrides
-  ): Promise<OptionToken.PositionWithOwnerStructOutput[]>;
+  ): Promise<OptionToken.PositionWithOwnerStructOutput[]>
 
   init(
     _optionMarket: string,
@@ -945,101 +673,92 @@ export interface OptionToken extends BaseContract {
     _shortCollateral: string,
     _synthetixAdapter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  isApprovedForAll(
-    owner: string,
-    operator: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<boolean>
 
   liquidate(
     positionId: BigNumberish,
     trade: OptionMarket.TradeParametersStruct,
     totalCost: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   merge(
     positionIds: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  name(overrides?: CallOverrides): Promise<string>;
+  name(overrides?: CallOverrides): Promise<string>
 
-  nextId(overrides?: CallOverrides): Promise<BigNumber>;
+  nextId(overrides?: CallOverrides): Promise<BigNumber>
 
   nominateNewOwner(
     _owner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  nominatedOwner(overrides?: CallOverrides): Promise<string>;
+  nominatedOwner(overrides?: CallOverrides): Promise<string>
 
-  owner(overrides?: CallOverrides): Promise<string>;
+  owner(overrides?: CallOverrides): Promise<string>
 
-  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-  partialCollatParams(
-    overrides?: CallOverrides
-  ): Promise<
+  partialCollatParams(overrides?: CallOverrides): Promise<
     [BigNumber, BigNumber, BigNumber, BigNumber] & {
-      penaltyRatio: BigNumber;
-      liquidatorFeeRatio: BigNumber;
-      smFeeRatio: BigNumber;
-      minLiquidationFee: BigNumber;
+      penaltyRatio: BigNumber
+      liquidatorFeeRatio: BigNumber
+      smFeeRatio: BigNumber
+      minLiquidationFee: BigNumber
     }
-  >;
+  >
 
   positions(
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, number, BigNumber, BigNumber, number] & {
-      positionId: BigNumber;
-      strikeId: BigNumber;
-      optionType: number;
-      amount: BigNumber;
-      collateral: BigNumber;
-      state: number;
+      positionId: BigNumber
+      strikeId: BigNumber
+      optionType: number
+      amount: BigNumber
+      collateral: BigNumber
+      state: number
     }
-  >;
+  >
 
-  "safeTransferFrom(address,address,uint256)"(
+  'safeTransferFrom(address,address,uint256)'(
     from: string,
     to: string,
     tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  "safeTransferFrom(address,address,uint256,bytes)"(
+  'safeTransferFrom(address,address,uint256,bytes)'(
     from: string,
     to: string,
     tokenId: BigNumberish,
     _data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   setApprovalForAll(
     operator: string,
     approved: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   setPartialCollateralParams(
     _partialCollatParams: OptionToken.PartialCollateralParametersStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  setURI(
-    newURI: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  setURI(newURI: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
   settlePositions(
     positionIds: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   split(
     positionId: BigNumberish,
@@ -1047,45 +766,31 @@ export interface OptionToken extends BaseContract {
     newCollateral: BigNumberish,
     recipient: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  supportsInterface(
-    interfaceId: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
+  supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<boolean>
 
-  symbol(overrides?: CallOverrides): Promise<string>;
+  symbol(overrides?: CallOverrides): Promise<string>
 
-  tokenByIndex(
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  tokenByIndex(index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-  tokenOfOwnerByIndex(
-    owner: string,
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  tokenOfOwnerByIndex(owner: string, index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>
 
   transferFrom(
     from: string,
     to: string,
     tokenId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   callStatic: {
-    acceptOwnership(overrides?: CallOverrides): Promise<void>;
+    acceptOwnership(overrides?: CallOverrides): Promise<void>
 
-    addCollateral(
-      positionId: BigNumberish,
-      amountCollateral: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
+    addCollateral(positionId: BigNumberish, amountCollateral: BigNumberish, overrides?: CallOverrides): Promise<number>
 
     adjustPosition(
       trade: OptionMarket.TradeParametersStruct,
@@ -1096,17 +801,13 @@ export interface OptionToken extends BaseContract {
       setCollateralTo: BigNumberish,
       isOpen: boolean,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber] & { pendingCollateral: BigNumber }>;
+    ): Promise<[BigNumber, BigNumber] & { pendingCollateral: BigNumber }>
 
-    approve(
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    approve(to: string, tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>
 
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    baseURI(overrides?: CallOverrides): Promise<string>;
+    baseURI(overrides?: CallOverrides): Promise<string>
 
     canLiquidate(
       position: OptionToken.OptionPositionStruct,
@@ -1114,12 +815,9 @@ export interface OptionToken extends BaseContract {
       strikePrice: BigNumberish,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<boolean>;
+    ): Promise<boolean>
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
     getLiquidationFees(
       gwavPremium: BigNumberish,
@@ -1127,41 +825,33 @@ export interface OptionToken extends BaseContract {
       convertedMinLiquidationFee: BigNumberish,
       insolvencyMultiplier: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<OptionToken.LiquidationFeesStructOutput>;
+    ): Promise<OptionToken.LiquidationFeesStructOutput>
 
     getOptionPosition(
       positionId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<OptionToken.OptionPositionStructOutput>;
+    ): Promise<OptionToken.OptionPositionStructOutput>
 
     getOptionPositions(
       positionIds: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<OptionToken.OptionPositionStructOutput[]>;
+    ): Promise<OptionToken.OptionPositionStructOutput[]>
 
-    getOwnerPositions(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<OptionToken.OptionPositionStructOutput[]>;
+    getOwnerPositions(owner: string, overrides?: CallOverrides): Promise<OptionToken.OptionPositionStructOutput[]>
 
-    getPartialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<OptionToken.PartialCollateralParametersStructOutput>;
+    getPartialCollatParams(overrides?: CallOverrides): Promise<OptionToken.PartialCollateralParametersStructOutput>
 
-    getPositionState(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
+    getPositionState(positionId: BigNumberish, overrides?: CallOverrides): Promise<number>
 
     getPositionWithOwner(
       positionId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<OptionToken.PositionWithOwnerStructOutput>;
+    ): Promise<OptionToken.PositionWithOwnerStructOutput>
 
     getPositionsWithOwner(
       positionIds: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<OptionToken.PositionWithOwnerStructOutput[]>;
+    ): Promise<OptionToken.PositionWithOwnerStructOutput[]>
 
     init(
       _optionMarket: string,
@@ -1169,95 +859,79 @@ export interface OptionToken extends BaseContract {
       _shortCollateral: string,
       _synthetixAdapter: string,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<void>
 
-    isApprovedForAll(
-      owner: string,
-      operator: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<boolean>
 
     liquidate(
       positionId: BigNumberish,
       trade: OptionMarket.TradeParametersStruct,
       totalCost: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<OptionToken.LiquidationFeesStructOutput>;
+    ): Promise<OptionToken.LiquidationFeesStructOutput>
 
-    merge(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+    merge(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<void>
 
-    name(overrides?: CallOverrides): Promise<string>;
+    name(overrides?: CallOverrides): Promise<string>
 
-    nextId(overrides?: CallOverrides): Promise<BigNumber>;
+    nextId(overrides?: CallOverrides): Promise<BigNumber>
 
-    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
+    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>
 
-    nominatedOwner(overrides?: CallOverrides): Promise<string>;
+    nominatedOwner(overrides?: CallOverrides): Promise<string>
 
-    owner(overrides?: CallOverrides): Promise<string>;
+    owner(overrides?: CallOverrides): Promise<string>
 
-    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-    partialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<
+    partialCollatParams(overrides?: CallOverrides): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
-        penaltyRatio: BigNumber;
-        liquidatorFeeRatio: BigNumber;
-        smFeeRatio: BigNumber;
-        minLiquidationFee: BigNumber;
+        penaltyRatio: BigNumber
+        liquidatorFeeRatio: BigNumber
+        smFeeRatio: BigNumber
+        minLiquidationFee: BigNumber
       }
-    >;
+    >
 
     positions(
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, number, BigNumber, BigNumber, number] & {
-        positionId: BigNumber;
-        strikeId: BigNumber;
-        optionType: number;
-        amount: BigNumber;
-        collateral: BigNumber;
-        state: number;
+        positionId: BigNumber
+        strikeId: BigNumber
+        optionType: number
+        amount: BigNumber
+        collateral: BigNumber
+        state: number
       }
-    >;
+    >
 
-    "safeTransferFrom(address,address,uint256)"(
+    'safeTransferFrom(address,address,uint256)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<void>
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    'safeTransferFrom(address,address,uint256,bytes)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       _data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<void>
 
-    setApprovalForAll(
-      operator: string,
-      approved: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setApprovalForAll(operator: string, approved: boolean, overrides?: CallOverrides): Promise<void>
 
     setPartialCollateralParams(
       _partialCollatParams: OptionToken.PartialCollateralParametersStruct,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<void>
 
-    setURI(newURI: string, overrides?: CallOverrides): Promise<void>;
+    setURI(newURI: string, overrides?: CallOverrides): Promise<void>
 
-    settlePositions(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+    settlePositions(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<void>
 
     split(
       positionId: BigNumberish,
@@ -1265,103 +939,71 @@ export interface OptionToken extends BaseContract {
       newCollateral: BigNumberish,
       recipient: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<boolean>
 
-    symbol(overrides?: CallOverrides): Promise<string>;
+    symbol(overrides?: CallOverrides): Promise<string>
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    tokenByIndex(index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    tokenOfOwnerByIndex(owner: string, index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>
 
-    transferFrom(
-      from: string,
-      to: string,
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+    transferFrom(from: string, to: string, tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>
+  }
 
   filters: {
-    "Approval(address,address,uint256)"(
+    'Approval(address,address,uint256)'(
       owner?: string | null,
       approved?: string | null,
       tokenId?: BigNumberish | null
-    ): ApprovalEventFilter;
-    Approval(
-      owner?: string | null,
-      approved?: string | null,
-      tokenId?: BigNumberish | null
-    ): ApprovalEventFilter;
+    ): ApprovalEventFilter
+    Approval(owner?: string | null, approved?: string | null, tokenId?: BigNumberish | null): ApprovalEventFilter
 
-    "ApprovalForAll(address,address,bool)"(
+    'ApprovalForAll(address,address,bool)'(
       owner?: string | null,
       operator?: string | null,
       approved?: null
-    ): ApprovalForAllEventFilter;
-    ApprovalForAll(
-      owner?: string | null,
-      operator?: string | null,
-      approved?: null
-    ): ApprovalForAllEventFilter;
+    ): ApprovalForAllEventFilter
+    ApprovalForAll(owner?: string | null, operator?: string | null, approved?: null): ApprovalForAllEventFilter
 
-    "OwnerChanged(address,address)"(
-      oldOwner?: null,
-      newOwner?: null
-    ): OwnerChangedEventFilter;
-    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter;
+    'OwnerChanged(address,address)'(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
+    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
 
-    "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
-    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
+    'OwnerNominated(address)'(newOwner?: null): OwnerNominatedEventFilter
+    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter
 
-    "PositionUpdated(uint256,tuple,uint8)"(
+    'PositionUpdated(uint256,tuple,uint8)'(
       positionId?: BigNumberish | null,
       position?: null,
       updatedType?: BigNumberish | null
-    ): PositionUpdatedEventFilter;
+    ): PositionUpdatedEventFilter
     PositionUpdated(
       positionId?: BigNumberish | null,
       position?: null,
       updatedType?: BigNumberish | null
-    ): PositionUpdatedEventFilter;
+    ): PositionUpdatedEventFilter
 
-    "Transfer(address,address,uint256)"(
+    'Transfer(address,address,uint256)'(
       from?: string | null,
       to?: string | null,
       tokenId?: BigNumberish | null
-    ): TransferEventFilter;
-    Transfer(
-      from?: string | null,
-      to?: string | null,
-      tokenId?: BigNumberish | null
-    ): TransferEventFilter;
-  };
+    ): TransferEventFilter
+    Transfer(from?: string | null, to?: string | null, tokenId?: BigNumberish | null): TransferEventFilter
+  }
 
   estimateGas: {
-    acceptOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     addCollateral(
       positionId: BigNumberish,
       amountCollateral: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     adjustPosition(
       trade: OptionMarket.TradeParametersStruct,
@@ -1372,17 +1014,17 @@ export interface OptionToken extends BaseContract {
       setCollateralTo: BigNumberish,
       isOpen: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    baseURI(overrides?: CallOverrides): Promise<BigNumber>;
+    baseURI(overrides?: CallOverrides): Promise<BigNumber>
 
     canLiquidate(
       position: OptionToken.OptionPositionStruct,
@@ -1390,12 +1032,9 @@ export interface OptionToken extends BaseContract {
       strikePrice: BigNumberish,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
     getLiquidationFees(
       gwavPremium: BigNumberish,
@@ -1403,39 +1042,21 @@ export interface OptionToken extends BaseContract {
       convertedMinLiquidationFee: BigNumberish,
       insolvencyMultiplier: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    getOptionPosition(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getOptionPosition(positionId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    getOptionPositions(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getOptionPositions(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<BigNumber>
 
-    getOwnerPositions(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getOwnerPositions(owner: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    getPartialCollatParams(overrides?: CallOverrides): Promise<BigNumber>;
+    getPartialCollatParams(overrides?: CallOverrides): Promise<BigNumber>
 
-    getPositionState(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPositionState(positionId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    getPositionWithOwner(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPositionWithOwner(positionId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    getPositionsWithOwner(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPositionsWithOwner(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<BigNumber>
 
     init(
       _optionMarket: string,
@@ -1443,86 +1064,67 @@ export interface OptionToken extends BaseContract {
       _shortCollateral: string,
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    isApprovedForAll(
-      owner: string,
-      operator: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<BigNumber>
 
     liquidate(
       positionId: BigNumberish,
       trade: OptionMarket.TradeParametersStruct,
       totalCost: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    merge(
-      positionIds: BigNumberish[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    merge(positionIds: BigNumberish[], overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    name(overrides?: CallOverrides): Promise<BigNumber>;
+    name(overrides?: CallOverrides): Promise<BigNumber>
 
-    nextId(overrides?: CallOverrides): Promise<BigNumber>;
+    nextId(overrides?: CallOverrides): Promise<BigNumber>
 
-    nominateNewOwner(
-      _owner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    nominateNewOwner(_owner: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>;
+    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+    owner(overrides?: CallOverrides): Promise<BigNumber>
 
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    partialCollatParams(overrides?: CallOverrides): Promise<BigNumber>;
+    partialCollatParams(overrides?: CallOverrides): Promise<BigNumber>
 
-    positions(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    positions(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    "safeTransferFrom(address,address,uint256)"(
+    'safeTransferFrom(address,address,uint256)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    'safeTransferFrom(address,address,uint256,bytes)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     setPartialCollateralParams(
       _partialCollatParams: OptionToken.PartialCollateralParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    setURI(
-      newURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    setURI(newURI: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     settlePositions(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     split(
       positionId: BigNumberish,
@@ -1530,51 +1132,36 @@ export interface OptionToken extends BaseContract {
       newCollateral: BigNumberish,
       recipient: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<BigNumber>
 
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
+    symbol(overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    tokenByIndex(index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    tokenOfOwnerByIndex(owner: string, index: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>
 
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-  };
+    ): Promise<BigNumber>
+  }
 
   populateTransaction: {
-    acceptOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
 
     addCollateral(
       positionId: BigNumberish,
       amountCollateral: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     adjustPosition(
       trade: OptionMarket.TradeParametersStruct,
@@ -1585,20 +1172,17 @@ export interface OptionToken extends BaseContract {
       setCollateralTo: BigNumberish,
       isOpen: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     approve(
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    balanceOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     canLiquidate(
       position: OptionToken.OptionPositionStruct,
@@ -1606,12 +1190,9 @@ export interface OptionToken extends BaseContract {
       strikePrice: BigNumberish,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    getApproved(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getApproved(tokenId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     getLiquidationFees(
       gwavPremium: BigNumberish,
@@ -1619,41 +1200,21 @@ export interface OptionToken extends BaseContract {
       convertedMinLiquidationFee: BigNumberish,
       insolvencyMultiplier: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    getOptionPosition(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getOptionPosition(positionId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getOptionPositions(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getOptionPositions(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getOwnerPositions(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getOwnerPositions(owner: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getPartialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getPartialCollatParams(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getPositionState(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getPositionState(positionId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getPositionWithOwner(
-      positionId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getPositionWithOwner(positionId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getPositionsWithOwner(
-      positionIds: BigNumberish[],
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getPositionsWithOwner(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     init(
       _optionMarket: string,
@@ -1661,88 +1222,73 @@ export interface OptionToken extends BaseContract {
       _shortCollateral: string,
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    isApprovedForAll(
-      owner: string,
-      operator: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    isApprovedForAll(owner: string, operator: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     liquidate(
       positionId: BigNumberish,
       trade: OptionMarket.TradeParametersStruct,
       totalCost: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     merge(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    nextId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    nextId(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    ownerOf(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    partialCollatParams(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    partialCollatParams(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    positions(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    positions(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    "safeTransferFrom(address,address,uint256)"(
+    'safeTransferFrom(address,address,uint256)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    "safeTransferFrom(address,address,uint256,bytes)"(
+    'safeTransferFrom(address,address,uint256,bytes)'(
       from: string,
       to: string,
       tokenId: BigNumberish,
       _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     setPartialCollateralParams(
       _partialCollatParams: OptionToken.PartialCollateralParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    setURI(
-      newURI: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    setURI(newURI: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
 
     settlePositions(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     split(
       positionId: BigNumberish,
@@ -1750,38 +1296,25 @@ export interface OptionToken extends BaseContract {
       newCollateral: BigNumberish,
       recipient: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    supportsInterface(
-      interfaceId: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    supportsInterface(interfaceId: BytesLike, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    tokenByIndex(index: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    tokenOfOwnerByIndex(owner: string, index: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    tokenURI(
-      tokenId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     transferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+    ): Promise<PopulatedTransaction>
+  }
 }

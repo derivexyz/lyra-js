@@ -1,6 +1,6 @@
-import { gql } from "graphql-request";
+import { gql } from 'graphql-request'
 
-import Lyra from "..";
+import Lyra from '..'
 
 // TODO: @earthtojake Support queries larger than 1k
 const blocksQuery = gql`
@@ -10,7 +10,7 @@ const blocksQuery = gql`
       timestamp
     }
   }
-`;
+`
 
 export default async function fetchBlockTimestamps(
   lyra: Lyra,
@@ -23,14 +23,11 @@ export default async function fetchBlockTimestamps(
       { blockNumbers: number[] }
     >(blocksQuery, {
       blockNumbers,
-    });
-    return res.blocks.reduce(
-      (dict, { number, timestamp }) => ({ ...dict, [number]: timestamp }),
-      {}
-    );
+    })
+    return res.blocks.reduce((dict, { number, timestamp }) => ({ ...dict, [number]: timestamp }), {})
   } catch (error) {
-    console.error(error);
-    console.warn("Failed to query blocks");
-    return {};
+    console.error(error)
+    console.warn('Failed to query blocks')
+    return {}
   }
 }

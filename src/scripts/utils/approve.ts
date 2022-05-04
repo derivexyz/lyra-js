@@ -3,7 +3,7 @@ import Market from '../../market'
 import { ScriptLyra } from './getScriptLyra'
 
 export default async function approve(
-  { lyra, wait, signer }: ScriptLyra,
+  { lyra, signer }: ScriptLyra,
   market: Market,
   stableToken: string
 ): Promise<void> {
@@ -16,8 +16,8 @@ export default async function approve(
     if (!tx) {
       throw new Error('Cannot approve base')
     }
-    const res = await signer.sendTransaction(tx)
-    await wait(res.hash)
+    const response = await signer.sendTransaction(tx)
+    await response.wait()
     console.log('approved quote')
   }
 
@@ -28,7 +28,7 @@ export default async function approve(
       throw new Error('Cannot approve base')
     }
     const response = await signer.sendTransaction(tx)
-    await wait(response.hash)
+    await response.wait()
     console.log('approved base')
   }
 
@@ -39,7 +39,7 @@ export default async function approve(
       throw new Error('Cannot approve option token')
     }
     const response = await signer.sendTransaction(tx)
-    await wait(response.hash)
+    await response.wait()
     console.log('approved option token')
   }
 }

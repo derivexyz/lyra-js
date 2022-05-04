@@ -12,45 +12,40 @@ import {
   PopulatedTransaction,
   Signer,
   utils,
-} from "ethers";
-import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
-import { Listener, Provider } from "@ethersproject/providers";
-import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
+} from 'ethers'
+import { FunctionFragment, Result, EventFragment } from '@ethersproject/abi'
+import { Listener, Provider } from '@ethersproject/providers'
+import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common'
 
 export declare namespace OptionMarketWrapper {
   export type OptionMarketContractsStruct = {
-    quoteAsset: string;
-    baseAsset: string;
-    optionToken: string;
-    shortCollateral: string;
-  };
+    quoteAsset: string
+    baseAsset: string
+    optionToken: string
+    shortCollateral: string
+  }
 
-  export type OptionMarketContractsStructOutput = [
-    string,
-    string,
-    string,
-    string
-  ] & {
-    quoteAsset: string;
-    baseAsset: string;
-    optionToken: string;
-    shortCollateral: string;
-  };
+  export type OptionMarketContractsStructOutput = [string, string, string, string] & {
+    quoteAsset: string
+    baseAsset: string
+    optionToken: string
+    shortCollateral: string
+  }
 
   export type OptionPositionParamsStruct = {
-    optionMarket: string;
-    strikeId: BigNumberish;
-    positionId: BigNumberish;
-    iterations: BigNumberish;
-    setCollateralTo: BigNumberish;
-    currentCollateral: BigNumberish;
-    optionType: BigNumberish;
-    amount: BigNumberish;
-    minCost: BigNumberish;
-    maxCost: BigNumberish;
-    stableAmount: BigNumberish;
-    stableAsset: string;
-  };
+    optionMarket: string
+    strikeId: BigNumberish
+    positionId: BigNumberish
+    iterations: BigNumberish
+    setCollateralTo: BigNumberish
+    currentCollateral: BigNumberish
+    optionType: BigNumberish
+    amount: BigNumberish
+    minCost: BigNumberish
+    maxCost: BigNumberish
+    stableAmount: BigNumberish
+    stableAsset: string
+  }
 
   export type OptionPositionParamsStructOutput = [
     string,
@@ -66,30 +61,30 @@ export declare namespace OptionMarketWrapper {
     BigNumber,
     string
   ] & {
-    optionMarket: string;
-    strikeId: BigNumber;
-    positionId: BigNumber;
-    iterations: BigNumber;
-    setCollateralTo: BigNumber;
-    currentCollateral: BigNumber;
-    optionType: number;
-    amount: BigNumber;
-    minCost: BigNumber;
-    maxCost: BigNumber;
-    stableAmount: BigNumber;
-    stableAsset: string;
-  };
+    optionMarket: string
+    strikeId: BigNumber
+    positionId: BigNumber
+    iterations: BigNumber
+    setCollateralTo: BigNumber
+    currentCollateral: BigNumber
+    optionType: number
+    amount: BigNumber
+    minCost: BigNumber
+    maxCost: BigNumber
+    stableAmount: BigNumber
+    stableAsset: string
+  }
 
   export type ReturnDetailsStruct = {
-    market: string;
-    positionId: BigNumberish;
-    owner: string;
-    amount: BigNumberish;
-    totalCost: BigNumberish;
-    totalFee: BigNumberish;
-    swapFee: BigNumberish;
-    token: string;
-  };
+    market: string
+    positionId: BigNumberish
+    owner: string
+    amount: BigNumberish
+    totalCost: BigNumberish
+    totalFee: BigNumberish
+    swapFee: BigNumberish
+    token: string
+  }
 
   export type ReturnDetailsStructOutput = [
     string,
@@ -101,480 +96,302 @@ export declare namespace OptionMarketWrapper {
     BigNumber,
     string
   ] & {
-    market: string;
-    positionId: BigNumber;
-    owner: string;
-    amount: BigNumber;
-    totalCost: BigNumber;
-    totalFee: BigNumber;
-    swapFee: BigNumber;
-    token: string;
-  };
+    market: string
+    positionId: BigNumber
+    owner: string
+    amount: BigNumber
+    totalCost: BigNumber
+    totalFee: BigNumber
+    swapFee: BigNumber
+    token: string
+  }
 
   export type StableBalanceAndAllowanceStruct = {
-    id: BigNumberish;
-    token: string;
-    balance: BigNumberish;
-    allowance: BigNumberish;
-  };
+    id: BigNumberish
+    token: string
+    balance: BigNumberish
+    allowance: BigNumberish
+  }
 
-  export type StableBalanceAndAllowanceStructOutput = [
-    number,
-    string,
-    BigNumber,
-    BigNumber
-  ] & { id: number; token: string; balance: BigNumber; allowance: BigNumber };
+  export type StableBalanceAndAllowanceStructOutput = [number, string, BigNumber, BigNumber] & {
+    id: number
+    token: string
+    balance: BigNumber
+    allowance: BigNumber
+  }
 
   export type MarketBalanceAndAllowanceStruct = {
-    market: string;
-    token: string;
-    balance: BigNumberish;
-    allowance: BigNumberish;
-    isApprovedForAll: boolean;
-  };
+    market: string
+    token: string
+    balance: BigNumberish
+    allowance: BigNumberish
+    isApprovedForAll: boolean
+  }
 
-  export type MarketBalanceAndAllowanceStructOutput = [
-    string,
-    string,
-    BigNumber,
-    BigNumber,
-    boolean
-  ] & {
-    market: string;
-    token: string;
-    balance: BigNumber;
-    allowance: BigNumber;
-    isApprovedForAll: boolean;
-  };
+  export type MarketBalanceAndAllowanceStructOutput = [string, string, BigNumber, BigNumber, boolean] & {
+    market: string
+    token: string
+    balance: BigNumber
+    allowance: BigNumber
+    isApprovedForAll: boolean
+  }
 
-  export type MarketViewStruct = { id: BigNumberish; marketAddress: string };
+  export type MarketViewStruct = { id: BigNumberish; marketAddress: string }
 
   export type MarketViewStructOutput = [number, string] & {
-    id: number;
-    marketAddress: string;
-  };
+    id: number
+    marketAddress: string
+  }
 
-  export type StableViewStruct = { id: BigNumberish; stableAddress: string };
+  export type StableViewStruct = { id: BigNumberish; stableAddress: string }
 
   export type StableViewStructOutput = [number, string] & {
-    id: number;
-    stableAddress: string;
-  };
+    id: number
+    stableAddress: string
+  }
 }
 
 export interface OptionMarketWrapperInterface extends utils.Interface {
-  contractName: "OptionMarketWrapper";
+  contractName: 'OptionMarketWrapper'
   functions: {
-    "addCurveStable(address,uint8)": FunctionFragment;
-    "addLong(uint256)": FunctionFragment;
-    "addMarket(address,uint8,(address,address,address,address))": FunctionFragment;
-    "addShort(uint256)": FunctionFragment;
-    "closeLong(uint256)": FunctionFragment;
-    "closePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
-    "closeShort(uint256)": FunctionFragment;
-    "ercIds(uint256)": FunctionFragment;
-    "forceClosePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
-    "getBalancesAndAllowances(address[],address)": FunctionFragment;
-    "getMarketAndStableIDs()": FunctionFragment;
-    "idToERC(uint8)": FunctionFragment;
-    "idToMarket(uint8)": FunctionFragment;
-    "marketContracts(address)": FunctionFragment;
-    "marketIds(uint256)": FunctionFragment;
-    "minReturnPercent()": FunctionFragment;
-    "openLong(uint256)": FunctionFragment;
-    "openPosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
-    "openShort(uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
-    "reduceLong(uint256)": FunctionFragment;
-    "reduceShort(uint256)": FunctionFragment;
-    "removeCurveStable(uint8)": FunctionFragment;
-    "removeMarket(uint8)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "setCollateralWrapper(uint8,uint32,uint256)": FunctionFragment;
-    "setCurve(address)": FunctionFragment;
-    "setMinReturnPercent(uint256)": FunctionFragment;
-    "setSynthetixAdapter(address)": FunctionFragment;
-    "synthetixAdapter()": FunctionFragment;
-    "tradingRewards()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
-    "updateContractAddresses(address,address,address)": FunctionFragment;
-  };
+    'addCurveStable(address,uint8)': FunctionFragment
+    'addLong(uint256)': FunctionFragment
+    'addMarket(address,uint8,(address,address,address,address))': FunctionFragment
+    'addShort(uint256)': FunctionFragment
+    'closeLong(uint256)': FunctionFragment
+    'closePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))': FunctionFragment
+    'closeShort(uint256)': FunctionFragment
+    'ercIds(uint256)': FunctionFragment
+    'forceClosePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))': FunctionFragment
+    'getBalancesAndAllowances(address[],address)': FunctionFragment
+    'getMarketAndStableIDs()': FunctionFragment
+    'idToERC(uint8)': FunctionFragment
+    'idToMarket(uint8)': FunctionFragment
+    'marketContracts(address)': FunctionFragment
+    'marketIds(uint256)': FunctionFragment
+    'minReturnPercent()': FunctionFragment
+    'openLong(uint256)': FunctionFragment
+    'openPosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))': FunctionFragment
+    'openShort(uint256)': FunctionFragment
+    'owner()': FunctionFragment
+    'reduceLong(uint256)': FunctionFragment
+    'reduceShort(uint256)': FunctionFragment
+    'removeCurveStable(uint8)': FunctionFragment
+    'removeMarket(uint8)': FunctionFragment
+    'renounceOwnership()': FunctionFragment
+    'setCollateralWrapper(uint8,uint32,uint256)': FunctionFragment
+    'setCurve(address)': FunctionFragment
+    'setMinReturnPercent(uint256)': FunctionFragment
+    'setSynthetixAdapter(address)': FunctionFragment
+    'synthetixAdapter()': FunctionFragment
+    'tradingRewards()': FunctionFragment
+    'transferOwnership(address)': FunctionFragment
+    'updateContractAddresses(address,address,address)': FunctionFragment
+  }
 
+  encodeFunctionData(functionFragment: 'addCurveStable', values: [string, BigNumberish]): string
+  encodeFunctionData(functionFragment: 'addLong', values: [BigNumberish]): string
   encodeFunctionData(
-    functionFragment: "addCurveStable",
-    values: [string, BigNumberish]
-  ): string;
+    functionFragment: 'addMarket',
+    values: [string, BigNumberish, OptionMarketWrapper.OptionMarketContractsStruct]
+  ): string
+  encodeFunctionData(functionFragment: 'addShort', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'closeLong', values: [BigNumberish]): string
   encodeFunctionData(
-    functionFragment: "addLong",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addMarket",
-    values: [
-      string,
-      BigNumberish,
-      OptionMarketWrapper.OptionMarketContractsStruct
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "addShort",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "closeLong",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "closePosition",
+    functionFragment: 'closePosition',
     values: [OptionMarketWrapper.OptionPositionParamsStruct]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'closeShort', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'ercIds', values: [BigNumberish]): string
   encodeFunctionData(
-    functionFragment: "closeShort",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "ercIds",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "forceClosePosition",
+    functionFragment: 'forceClosePosition',
     values: [OptionMarketWrapper.OptionPositionParamsStruct]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'getBalancesAndAllowances', values: [string[], string]): string
+  encodeFunctionData(functionFragment: 'getMarketAndStableIDs', values?: undefined): string
+  encodeFunctionData(functionFragment: 'idToERC', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'idToMarket', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'marketContracts', values: [string]): string
+  encodeFunctionData(functionFragment: 'marketIds', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'minReturnPercent', values?: undefined): string
+  encodeFunctionData(functionFragment: 'openLong', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'openPosition', values: [OptionMarketWrapper.OptionPositionParamsStruct]): string
+  encodeFunctionData(functionFragment: 'openShort', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'owner', values?: undefined): string
+  encodeFunctionData(functionFragment: 'reduceLong', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'reduceShort', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'removeCurveStable', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'removeMarket', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string
   encodeFunctionData(
-    functionFragment: "getBalancesAndAllowances",
-    values: [string[], string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getMarketAndStableIDs",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "idToERC",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "idToMarket",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "marketContracts",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "marketIds",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "minReturnPercent",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "openLong",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "openPosition",
-    values: [OptionMarketWrapper.OptionPositionParamsStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "openShort",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "reduceLong",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "reduceShort",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeCurveStable",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "removeMarket",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setCollateralWrapper",
+    functionFragment: 'setCollateralWrapper',
     values: [BigNumberish, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "setCurve", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "setMinReturnPercent",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setSynthetixAdapter",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "synthetixAdapter",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tradingRewards",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updateContractAddresses",
-    values: [string, string, string]
-  ): string;
+  ): string
+  encodeFunctionData(functionFragment: 'setCurve', values: [string]): string
+  encodeFunctionData(functionFragment: 'setMinReturnPercent', values: [BigNumberish]): string
+  encodeFunctionData(functionFragment: 'setSynthetixAdapter', values: [string]): string
+  encodeFunctionData(functionFragment: 'synthetixAdapter', values?: undefined): string
+  encodeFunctionData(functionFragment: 'tradingRewards', values?: undefined): string
+  encodeFunctionData(functionFragment: 'transferOwnership', values: [string]): string
+  encodeFunctionData(functionFragment: 'updateContractAddresses', values: [string, string, string]): string
 
-  decodeFunctionResult(
-    functionFragment: "addCurveStable",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "addLong", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addMarket", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addShort", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "closeLong", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "closePosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "closeShort", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "ercIds", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "forceClosePosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getBalancesAndAllowances",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getMarketAndStableIDs",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "idToERC", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "idToMarket", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "marketContracts",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "marketIds", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "minReturnPercent",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "openLong", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "openPosition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "openShort", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "reduceLong", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "reduceShort",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeCurveStable",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "removeMarket",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCollateralWrapper",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "setCurve", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setMinReturnPercent",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setSynthetixAdapter",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "synthetixAdapter",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tradingRewards",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateContractAddresses",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: 'addCurveStable', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'addLong', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'addMarket', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'addShort', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'closeLong', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'closePosition', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'closeShort', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'ercIds', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'forceClosePosition', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getBalancesAndAllowances', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getMarketAndStableIDs', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'idToERC', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'idToMarket', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'marketContracts', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'marketIds', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'minReturnPercent', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'openLong', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'openPosition', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'openShort', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'reduceLong', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'reduceShort', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'removeCurveStable', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'removeMarket', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setCollateralWrapper', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setCurve', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setMinReturnPercent', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'setSynthetixAdapter', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'synthetixAdapter', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'tradingRewards', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'updateContractAddresses', data: BytesLike): Result
 
   events: {
-    "CurveSet(address)": EventFragment;
-    "MinReturnPercentSet(uint256)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
-    "PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)": EventFragment;
-    "SetCollateralTo(uint256)": EventFragment;
-    "SynthetixAdapterSet(address)": EventFragment;
-  };
+    'CurveSet(address)': EventFragment
+    'MinReturnPercentSet(uint256)': EventFragment
+    'OwnershipTransferred(address,address)': EventFragment
+    'PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)': EventFragment
+    'SetCollateralTo(uint256)': EventFragment
+    'SynthetixAdapterSet(address)': EventFragment
+  }
 
-  getEvent(nameOrSignatureOrTopic: "CurveSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MinReturnPercentSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PositionTraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SetCollateralTo"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SynthetixAdapterSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'CurveSet'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'MinReturnPercentSet'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'OwnershipTransferred'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'PositionTraded'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'SetCollateralTo'): EventFragment
+  getEvent(nameOrSignatureOrTopic: 'SynthetixAdapterSet'): EventFragment
 }
 
-export type CurveSetEvent = TypedEvent<[string], { curveSwap: string }>;
+export type CurveSetEvent = TypedEvent<[string], { curveSwap: string }>
 
-export type CurveSetEventFilter = TypedEventFilter<CurveSetEvent>;
+export type CurveSetEventFilter = TypedEventFilter<CurveSetEvent>
 
-export type MinReturnPercentSetEvent = TypedEvent<
-  [BigNumber],
-  { minReturnPercent: BigNumber }
->;
+export type MinReturnPercentSetEvent = TypedEvent<[BigNumber], { minReturnPercent: BigNumber }>
 
-export type MinReturnPercentSetEventFilter =
-  TypedEventFilter<MinReturnPercentSetEvent>;
+export type MinReturnPercentSetEventFilter = TypedEventFilter<MinReturnPercentSetEvent>
 
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  { previousOwner: string; newOwner: string }
->;
+export type OwnershipTransferredEvent = TypedEvent<[string, string], { previousOwner: string; newOwner: string }>
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnershipTransferredEventFilter = TypedEventFilter<OwnershipTransferredEvent>
 
 export type PositionTradedEvent = TypedEvent<
-  [
-    boolean,
-    boolean,
-    string,
-    BigNumber,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string
-  ],
+  [boolean, boolean, string, BigNumber, string, BigNumber, BigNumber, BigNumber, BigNumber, string],
   {
-    isOpen: boolean;
-    isLong: boolean;
-    market: string;
-    positionId: BigNumber;
-    owner: string;
-    amount: BigNumber;
-    totalCost: BigNumber;
-    totalFee: BigNumber;
-    swapFee: BigNumber;
-    token: string;
+    isOpen: boolean
+    isLong: boolean
+    market: string
+    positionId: BigNumber
+    owner: string
+    amount: BigNumber
+    totalCost: BigNumber
+    totalFee: BigNumber
+    swapFee: BigNumber
+    token: string
   }
->;
+>
 
-export type PositionTradedEventFilter = TypedEventFilter<PositionTradedEvent>;
+export type PositionTradedEventFilter = TypedEventFilter<PositionTradedEvent>
 
-export type SetCollateralToEvent = TypedEvent<
-  [BigNumber],
-  { newCollateral: BigNumber }
->;
+export type SetCollateralToEvent = TypedEvent<[BigNumber], { newCollateral: BigNumber }>
 
-export type SetCollateralToEventFilter = TypedEventFilter<SetCollateralToEvent>;
+export type SetCollateralToEventFilter = TypedEventFilter<SetCollateralToEvent>
 
-export type SynthetixAdapterSetEvent = TypedEvent<
-  [string],
-  { synthetixAdapter: string }
->;
+export type SynthetixAdapterSetEvent = TypedEvent<[string], { synthetixAdapter: string }>
 
-export type SynthetixAdapterSetEventFilter =
-  TypedEventFilter<SynthetixAdapterSetEvent>;
+export type SynthetixAdapterSetEventFilter = TypedEventFilter<SynthetixAdapterSetEvent>
 
 export interface OptionMarketWrapper extends BaseContract {
-  contractName: "OptionMarketWrapper";
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+  contractName: 'OptionMarketWrapper'
+  connect(signerOrProvider: Signer | Provider | string): this
+  attach(addressOrName: string): this
+  deployed(): Promise<this>
 
-  interface: OptionMarketWrapperInterface;
+  interface: OptionMarketWrapperInterface
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+  ): Promise<Array<TEvent>>
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+  listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>
+  listeners(eventName?: string): Array<Listener>
+  removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this
+  removeAllListeners(eventName?: string): this
+  off: OnEvent<this>
+  on: OnEvent<this>
+  once: OnEvent<this>
+  removeListener: OnEvent<this>
 
   functions: {
     addCurveStable(
       stablecoin: string,
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     addLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     addMarket(
       optionMarket: string,
       id: BigNumberish,
       _marketContracts: OptionMarketWrapper.OptionMarketContractsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     addShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     closeLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     closePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     closeShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
+    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<[number]>
 
     forceClosePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     getBalancesAndAllowances(
       markets: string[],
@@ -585,164 +402,154 @@ export interface OptionMarketWrapper extends BaseContract {
         OptionMarketWrapper.StableBalanceAndAllowanceStructOutput[],
         OptionMarketWrapper.MarketBalanceAndAllowanceStructOutput[]
       ]
-    >;
+    >
 
     getMarketAndStableIDs(
       overrides?: CallOverrides
-    ): Promise<
-      [
-        OptionMarketWrapper.MarketViewStructOutput[],
-        OptionMarketWrapper.StableViewStructOutput[]
-      ]
-    >;
+    ): Promise<[OptionMarketWrapper.MarketViewStructOutput[], OptionMarketWrapper.StableViewStructOutput[]]>
 
-    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>
 
-    idToMarket(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>
 
     marketContracts(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
       [string, string, string, string] & {
-        quoteAsset: string;
-        baseAsset: string;
-        optionToken: string;
-        shortCollateral: string;
+        quoteAsset: string
+        baseAsset: string
+        optionToken: string
+        shortCollateral: string
       }
-    >;
+    >
 
-    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
+    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<[number]>
 
-    minReturnPercent(overrides?: CallOverrides): Promise<[BigNumber]>;
+    minReturnPercent(overrides?: CallOverrides): Promise<[BigNumber]>
 
     openLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     openPosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     openShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
+    owner(overrides?: CallOverrides): Promise<[string]>
 
     reduceLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     reduceShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     removeCurveStable(
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     removeMarket(
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    renounceOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
     setCollateralWrapper(
       market: BigNumberish,
       positionId: BigNumberish,
       setCollateralTo: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     setCurve(
       _curveSwap: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     setMinReturnPercent(
       _minReturnPercent: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     setSynthetixAdapter(
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
-    synthetixAdapter(overrides?: CallOverrides): Promise<[string]>;
+    synthetixAdapter(overrides?: CallOverrides): Promise<[string]>
 
-    tradingRewards(overrides?: CallOverrides): Promise<[string]>;
+    tradingRewards(overrides?: CallOverrides): Promise<[string]>
 
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    ): Promise<ContractTransaction>
 
     updateContractAddresses(
       _curveSwap: string,
       _synthetixAdapter: string,
       _tradingRewards: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-  };
+    ): Promise<ContractTransaction>
+  }
 
   addCurveStable(
     stablecoin: string,
     id: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   addLong(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   addMarket(
     optionMarket: string,
     id: BigNumberish,
     _marketContracts: OptionMarketWrapper.OptionMarketContractsStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   addShort(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   closeLong(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   closePosition(
     params: OptionMarketWrapper.OptionPositionParamsStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   closeShort(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
+  ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>
 
   forceClosePosition(
     params: OptionMarketWrapper.OptionPositionParamsStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   getBalancesAndAllowances(
     markets: string[],
@@ -753,161 +560,138 @@ export interface OptionMarketWrapper extends BaseContract {
       OptionMarketWrapper.StableBalanceAndAllowanceStructOutput[],
       OptionMarketWrapper.MarketBalanceAndAllowanceStructOutput[]
     ]
-  >;
+  >
 
   getMarketAndStableIDs(
     overrides?: CallOverrides
-  ): Promise<
-    [
-      OptionMarketWrapper.MarketViewStructOutput[],
-      OptionMarketWrapper.StableViewStructOutput[]
-    ]
-  >;
+  ): Promise<[OptionMarketWrapper.MarketViewStructOutput[], OptionMarketWrapper.StableViewStructOutput[]]>
 
-  idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-  idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
 
   marketContracts(
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
     [string, string, string, string] & {
-      quoteAsset: string;
-      baseAsset: string;
-      optionToken: string;
-      shortCollateral: string;
+      quoteAsset: string
+      baseAsset: string
+      optionToken: string
+      shortCollateral: string
     }
-  >;
+  >
 
-  marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
+  marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>
 
-  minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
+  minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>
 
   openLong(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   openPosition(
     params: OptionMarketWrapper.OptionPositionParamsStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   openShort(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  owner(overrides?: CallOverrides): Promise<string>;
+  owner(overrides?: CallOverrides): Promise<string>
 
   reduceLong(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   reduceShort(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   removeCurveStable(
     id: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   removeMarket(
     id: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  renounceOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  renounceOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
 
   setCollateralWrapper(
     market: BigNumberish,
     positionId: BigNumberish,
     setCollateralTo: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   setCurve(
     _curveSwap: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   setMinReturnPercent(
     _minReturnPercent: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   setSynthetixAdapter(
     _synthetixAdapter: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
-  synthetixAdapter(overrides?: CallOverrides): Promise<string>;
+  synthetixAdapter(overrides?: CallOverrides): Promise<string>
 
-  tradingRewards(overrides?: CallOverrides): Promise<string>;
+  tradingRewards(overrides?: CallOverrides): Promise<string>
 
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   updateContractAddresses(
     _curveSwap: string,
     _synthetixAdapter: string,
     _tradingRewards: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  ): Promise<ContractTransaction>
 
   callStatic: {
-    addCurveStable(
-      stablecoin: string,
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    addCurveStable(stablecoin: string, id: BigNumberish, overrides?: CallOverrides): Promise<void>
 
-    addLong(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    addLong(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
     addMarket(
       optionMarket: string,
       id: BigNumberish,
       _marketContracts: OptionMarketWrapper.OptionMarketContractsStruct,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<void>
 
-    addShort(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    addShort(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    closeLong(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    closeLong(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
     closePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: CallOverrides
-    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>;
+    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>
 
-    closeShort(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    closeShort(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
+    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>
 
     forceClosePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: CallOverrides
-    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>;
+    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>
 
     getBalancesAndAllowances(
       markets: string[],
@@ -918,130 +702,94 @@ export interface OptionMarketWrapper extends BaseContract {
         OptionMarketWrapper.StableBalanceAndAllowanceStructOutput[],
         OptionMarketWrapper.MarketBalanceAndAllowanceStructOutput[]
       ]
-    >;
+    >
 
     getMarketAndStableIDs(
       overrides?: CallOverrides
-    ): Promise<
-      [
-        OptionMarketWrapper.MarketViewStructOutput[],
-        OptionMarketWrapper.StableViewStructOutput[]
-      ]
-    >;
+    ): Promise<[OptionMarketWrapper.MarketViewStructOutput[], OptionMarketWrapper.StableViewStructOutput[]]>
 
-    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
 
-    idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>
 
     marketContracts(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
       [string, string, string, string] & {
-        quoteAsset: string;
-        baseAsset: string;
-        optionToken: string;
-        shortCollateral: string;
+        quoteAsset: string
+        baseAsset: string
+        optionToken: string
+        shortCollateral: string
       }
-    >;
+    >
 
-    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>;
+    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<number>
 
-    minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
+    minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>
 
-    openLong(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    openLong(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
     openPosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: CallOverrides
-    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>;
+    ): Promise<OptionMarketWrapper.ReturnDetailsStructOutput>
 
-    openShort(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    openShort(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    owner(overrides?: CallOverrides): Promise<string>;
+    owner(overrides?: CallOverrides): Promise<string>
 
-    reduceLong(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    reduceLong(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    reduceShort(
-      params: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    reduceShort(params: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    removeCurveStable(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    removeCurveStable(id: BigNumberish, overrides?: CallOverrides): Promise<void>
 
-    removeMarket(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    removeMarket(id: BigNumberish, overrides?: CallOverrides): Promise<void>
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+    renounceOwnership(overrides?: CallOverrides): Promise<void>
 
     setCollateralWrapper(
       market: BigNumberish,
       positionId: BigNumberish,
       setCollateralTo: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    setCurve(_curveSwap: string, overrides?: CallOverrides): Promise<void>;
+    setCurve(_curveSwap: string, overrides?: CallOverrides): Promise<void>
 
-    setMinReturnPercent(
-      _minReturnPercent: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setMinReturnPercent(_minReturnPercent: BigNumberish, overrides?: CallOverrides): Promise<void>
 
-    setSynthetixAdapter(
-      _synthetixAdapter: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setSynthetixAdapter(_synthetixAdapter: string, overrides?: CallOverrides): Promise<void>
 
-    synthetixAdapter(overrides?: CallOverrides): Promise<string>;
+    synthetixAdapter(overrides?: CallOverrides): Promise<string>
 
-    tradingRewards(overrides?: CallOverrides): Promise<string>;
+    tradingRewards(overrides?: CallOverrides): Promise<string>
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    transferOwnership(newOwner: string, overrides?: CallOverrides): Promise<void>
 
     updateContractAddresses(
       _curveSwap: string,
       _synthetixAdapter: string,
       _tradingRewards: string,
       overrides?: CallOverrides
-    ): Promise<void>;
-  };
+    ): Promise<void>
+  }
 
   filters: {
-    "CurveSet(address)"(curveSwap?: null): CurveSetEventFilter;
-    CurveSet(curveSwap?: null): CurveSetEventFilter;
+    'CurveSet(address)'(curveSwap?: null): CurveSetEventFilter
+    CurveSet(curveSwap?: null): CurveSetEventFilter
 
-    "MinReturnPercentSet(uint256)"(
-      minReturnPercent?: null
-    ): MinReturnPercentSetEventFilter;
-    MinReturnPercentSet(
-      minReturnPercent?: null
-    ): MinReturnPercentSetEventFilter;
+    'MinReturnPercentSet(uint256)'(minReturnPercent?: null): MinReturnPercentSetEventFilter
+    MinReturnPercentSet(minReturnPercent?: null): MinReturnPercentSetEventFilter
 
-    "OwnershipTransferred(address,address)"(
+    'OwnershipTransferred(address,address)'(
       previousOwner?: string | null,
       newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
+    ): OwnershipTransferredEventFilter
+    OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): OwnershipTransferredEventFilter
 
-    "PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)"(
+    'PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)'(
       isOpen?: null,
       isLong?: null,
       market?: string | null,
@@ -1052,7 +800,7 @@ export interface OptionMarketWrapper extends BaseContract {
       totalFee?: null,
       swapFee?: null,
       token?: null
-    ): PositionTradedEventFilter;
+    ): PositionTradedEventFilter
     PositionTraded(
       isOpen?: null,
       isLong?: null,
@@ -1064,332 +812,252 @@ export interface OptionMarketWrapper extends BaseContract {
       totalFee?: null,
       swapFee?: null,
       token?: null
-    ): PositionTradedEventFilter;
+    ): PositionTradedEventFilter
 
-    "SetCollateralTo(uint256)"(
-      newCollateral?: null
-    ): SetCollateralToEventFilter;
-    SetCollateralTo(newCollateral?: null): SetCollateralToEventFilter;
+    'SetCollateralTo(uint256)'(newCollateral?: null): SetCollateralToEventFilter
+    SetCollateralTo(newCollateral?: null): SetCollateralToEventFilter
 
-    "SynthetixAdapterSet(address)"(
-      synthetixAdapter?: null
-    ): SynthetixAdapterSetEventFilter;
-    SynthetixAdapterSet(
-      synthetixAdapter?: null
-    ): SynthetixAdapterSetEventFilter;
-  };
+    'SynthetixAdapterSet(address)'(synthetixAdapter?: null): SynthetixAdapterSetEventFilter
+    SynthetixAdapterSet(synthetixAdapter?: null): SynthetixAdapterSetEventFilter
+  }
 
   estimateGas: {
     addCurveStable(
       stablecoin: string,
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    addLong(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    addLong(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     addMarket(
       optionMarket: string,
       id: BigNumberish,
       _marketContracts: OptionMarketWrapper.OptionMarketContractsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    addShort(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    addShort(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    closeLong(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    closeLong(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     closePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    closeShort(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    closeShort(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
     forceClosePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    getBalancesAndAllowances(
-      markets: string[],
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getBalancesAndAllowances(markets: string[], owner: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    getMarketAndStableIDs(overrides?: CallOverrides): Promise<BigNumber>;
+    getMarketAndStableIDs(overrides?: CallOverrides): Promise<BigNumber>
 
-    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    idToMarket(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    marketContracts(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    marketContracts(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    marketIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
 
-    minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
+    minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>
 
-    openLong(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    openLong(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     openPosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    openShort(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    openShort(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+    owner(overrides?: CallOverrides): Promise<BigNumber>
 
-    reduceLong(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    reduceLong(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    reduceShort(
-      params: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    reduceShort(params: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    removeCurveStable(
-      id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    removeCurveStable(id: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    removeMarket(
-      id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    removeMarket(id: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    renounceOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     setCollateralWrapper(
       market: BigNumberish,
       positionId: BigNumberish,
       setCollateralTo: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    setCurve(
-      _curveSwap: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    setCurve(_curveSwap: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     setMinReturnPercent(
       _minReturnPercent: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
     setSynthetixAdapter(
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    ): Promise<BigNumber>
 
-    synthetixAdapter(overrides?: CallOverrides): Promise<BigNumber>;
+    synthetixAdapter(overrides?: CallOverrides): Promise<BigNumber>
 
-    tradingRewards(overrides?: CallOverrides): Promise<BigNumber>;
+    tradingRewards(overrides?: CallOverrides): Promise<BigNumber>
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    transferOwnership(newOwner: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
 
     updateContractAddresses(
       _curveSwap: string,
       _synthetixAdapter: string,
       _tradingRewards: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-  };
+    ): Promise<BigNumber>
+  }
 
   populateTransaction: {
     addCurveStable(
       stablecoin: string,
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     addLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     addMarket(
       optionMarket: string,
       id: BigNumberish,
       _marketContracts: OptionMarketWrapper.OptionMarketContractsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     addShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     closeLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     closePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     closeShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    ercIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    ercIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     forceClosePosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    getBalancesAndAllowances(
-      markets: string[],
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getBalancesAndAllowances(markets: string[], owner: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    getMarketAndStableIDs(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getMarketAndStableIDs(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    idToERC(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    idToMarket(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    idToMarket(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    marketContracts(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    marketContracts(arg0: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    marketIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    marketIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    minReturnPercent(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    minReturnPercent(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     openLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     openPosition(
       params: OptionMarketWrapper.OptionPositionParamsStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     openShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     reduceLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     reduceShort(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     removeCurveStable(
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     removeMarket(
       id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    renounceOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
 
     setCollateralWrapper(
       market: BigNumberish,
       positionId: BigNumberish,
       setCollateralTo: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     setCurve(
       _curveSwap: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     setMinReturnPercent(
       _minReturnPercent: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     setSynthetixAdapter(
       _synthetixAdapter: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
-    synthetixAdapter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    synthetixAdapter(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
-    tradingRewards(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    tradingRewards(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    ): Promise<PopulatedTransaction>
 
     updateContractAddresses(
       _curveSwap: string,
       _synthetixAdapter: string,
       _tradingRewards: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+    ): Promise<PopulatedTransaction>
+  }
 }

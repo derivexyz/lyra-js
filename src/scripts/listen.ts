@@ -13,18 +13,15 @@ export default async function listen(argv: string[]) {
 
   lyra.onTrade(trade => {
     console.log({
-      market: trade.marketName,
-      marketAddress: trade.marketAddress,
-      positionId: trade.positionId,
       trader: trade.trader,
-      size: fromBigNumber(trade.size),
-      setCollateralTo: trade.setCollateralTo ? fromBigNumber(trade.setCollateralTo) : undefined,
+      positionId: trade.positionId,
+      market: trade.marketName,
+      size: trade.size,
       isBuy: trade.isBuy,
       isLong: trade.isLong,
+      premium: trade.premium,
+      setCollateralTo: trade.setCollateralTo,
       isLiquidation: trade.isLiquidation,
-      pricePerOption: fromBigNumber(trade.pricePerOption),
-      premium: fromBigNumber(trade.premium),
-      lpFees: trade.liquidation ? fromBigNumber(trade.liquidation.lpFee) : undefined,
     })
   })
 

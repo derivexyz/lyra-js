@@ -16,7 +16,6 @@ const getDeploymentRpcUrl = (deployment: Deployment) => {
 export type ScriptLyra = {
   lyra: Lyra
   signer: ethers.Wallet
-  wait: (hash: string) => Promise<ethers.providers.TransactionReceipt>
 }
 
 export default function getScriptLyra(argv: string[]): ScriptLyra {
@@ -35,6 +34,5 @@ export default function getScriptLyra(argv: string[]): ScriptLyra {
   }
   const wallet = new ethers.Wallet(privateKey)
   const signer = wallet.connect(lyra.provider)
-  const wait = (hash: string) => lyra.provider.waitForTransaction(hash, deployment === Deployment.Local ? undefined : 2)
-  return { lyra, signer, wait }
+  return { lyra, signer }
 }
