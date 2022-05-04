@@ -12,7 +12,7 @@ import getScriptLyra from './utils/getScriptLyra'
 const SLIPPAGE = 0.1 / 100
 
 export default async function positionTrade(argv: string[]) {
-  const { lyra, signer, wait } = getScriptLyra(argv)
+  const { lyra, signer } = getScriptLyra(argv)
   const args = await yargs(argv).options({
     id: { type: 'number', alias: 'i', require: true },
     size: { type: 'number', alias: 's', require: false },
@@ -44,7 +44,7 @@ export default async function positionTrade(argv: string[]) {
   )
 
   // TODO: @michaelxuwu Update to include multiple stables
-  await approve({ lyra, wait, signer }, market, market.quoteToken.address)
+  await approve({ lyra, signer }, market, market.quoteToken.address)
 
   const trade = await position.trade(isBuy, size, SLIPPAGE, {
     setToCollateral,
@@ -103,7 +103,7 @@ export default async function positionTrade(argv: string[]) {
   }
 
   const response = await signer.sendTransaction(trade.tx)
-  const receipt = await wait(response.hash)
+  const receipt = await response.wait()
   console.log('tx', response.hash)
   const tradeEvent = TradeEvent.getByReceiptSync(lyra, market, receipt, Date.now())
 

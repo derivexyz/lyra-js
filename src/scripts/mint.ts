@@ -2,7 +2,7 @@ import fromBigNumber from '../utils/fromBigNumber'
 import getScriptLyra from './utils/getScriptLyra'
 
 export default async function mint(argv: string[]): Promise<void> {
-  const { lyra, signer, wait } = getScriptLyra(argv)
+  const { lyra, signer } = getScriptLyra(argv)
   console.log('minting...', signer.address)
   const tx = await lyra.drip(signer.address)
   if (!tx) {
@@ -10,7 +10,7 @@ export default async function mint(argv: string[]): Promise<void> {
   }
   const res = await signer.sendTransaction(tx)
   console.log('tx', res.hash)
-  await wait(res.hash)
+  await res.wait()
   console.log('minted', signer.address)
   const balances = await lyra.account(signer.address).balances()
   const market = await lyra.market('eth')
