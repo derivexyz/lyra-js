@@ -1,8 +1,8 @@
 {
   "name": "@lyrafinance/lyra-js",
-  "version": "0.0.1-alpha",
+  "version": "0.0.2-alpha",
   "description": "A JavaScript SDK for Optimistic Ethereum and the Lyra Protocol.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "homepage": "www.lyra.finance",
   "author": "Lyra Finance",
   "license": "ISC",

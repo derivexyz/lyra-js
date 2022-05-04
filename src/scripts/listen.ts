@@ -1,4 +1,3 @@
-import fromBigNumber from '../utils/fromBigNumber'
 import getScriptLyra from './utils/getScriptLyra'
 
 function sleep(ms: number) {
