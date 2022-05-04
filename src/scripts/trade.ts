@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 
-import Trade from '../trade'
-import TradeEvent from '../trade_event'
+import { Trade } from '../trade'
+import { TradeEvent } from '../trade_event'
 import fromBigNumber from '../utils/fromBigNumber'
 import printObject from '../utils/printObject'
 import toBigNumber from '../utils/toBigNumber'

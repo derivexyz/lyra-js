@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 import { QuoteIteration } from '.'
 import getForceClosePrice from './getForceClosePrice'
 import getIVImpactForTrade from './getIVImpactForTrade'

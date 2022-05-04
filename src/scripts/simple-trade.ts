@@ -1,6 +1,6 @@
 import { MAX_BN, ONE_BN } from '../constants/bn'
-import Trade from '../trade'
-import TradeEvent from '../trade_event'
+import { Trade } from '../trade'
+import { TradeEvent } from '../trade_event'
 import printObject from '../utils/printObject'
 import getScriptLyra from './utils/getScriptLyra'
 

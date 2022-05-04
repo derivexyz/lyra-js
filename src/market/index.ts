@@ -2,14 +2,14 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Block } from '@ethersproject/providers'
 import { ethers } from 'ethers'
 
-import Lyra from '..'
-import Board from '../board'
+import { Board } from '../board'
 import { DataSource } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
-import Option from '../option'
-import Quote, { QuoteOptions } from '../quote'
-import Strike from '../strike'
-import Trade, { TradeOptions } from '../trade'
+import Lyra from '../lyra'
+import { Option } from '../option'
+import { Quote, QuoteOptions } from '../quote'
+import { Strike } from '../strike'
+import { Trade, TradeOptions } from '../trade'
 import getBoardView from '../utils/getBoardView'
 import getBoardViewForStrikeId from '../utils/getBoardViewForStrikeId'
 import getMarketAddresses from '../utils/getMarketAddresses'
@@ -35,7 +35,7 @@ export type MarketContractAddresses = {
 
 export type MarketTradeOptions = Omit<TradeOptions, 'minOrMaxPremium' | 'premiumSlippage'>
 
-export default class Market {
+export class Market {
   private lyra: Lyra
   private block: Block
   __source = DataSource.ContractCall

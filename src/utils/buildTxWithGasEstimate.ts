@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 
-import Lyra from '..'
 import { UNIT } from '../constants/bn'
+import Lyra from '../lyra'
 import buildTx from './buildTx'
 import toBigNumber from './toBigNumber'
 

@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Option from '../option'
+import { Option } from '../option'
 import getLiquidationPrice from '../utils/getLiquidationPrice'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 

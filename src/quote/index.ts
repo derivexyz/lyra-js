@@ -1,11 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Board from '../board'
+import { Board } from '../board'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS } from '../constants/contracts'
-import Market from '../market'
-import Option from '../option'
-import Strike from '../strike'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Strike } from '../strike'
 import { getDelta, getGamma, getRho, getTheta, getVega } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getBreakEvenPrice from '../utils/getBreakEvenPrice'
@@ -81,7 +81,7 @@ export type QuoteOptions = {
   iterations?: number
 }
 
-export default class Quote {
+export class Quote {
   private __option: Option
   __source = DataSource.ContractCall
   isBuy: boolean

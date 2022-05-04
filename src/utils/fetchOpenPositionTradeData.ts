@@ -1,6 +1,6 @@
-import Lyra from '..'
 import { CollateralUpdateData } from '../collateral_update_event'
-import Market from '../market'
+import Lyra from '../lyra'
+import { Market } from '../market'
 import { PositionData } from '../position'
 import { TradeEventData } from '../trade_event'
 import fetchTradeEventDataByPositionIDs from './fetchOpenPositionTradeDataByIDs'

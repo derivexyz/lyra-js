@@ -2,18 +2,18 @@ import { TransactionReceipt } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
 
-import Lyra from '..'
-import Board from '../board'
-import CollateralUpdateEvent from '../collateral_update_event'
+import { Board } from '../board'
+import { CollateralUpdateEvent } from '../collateral_update_event'
 import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS, LyraContractId } from '../constants/contracts'
 import { OptionMarketWrapper } from '../contracts/typechain'
-import Market from '../market'
-import Option from '../option'
-import Position from '../position'
-import Quote, { QuoteDisabledReason, QuoteFeeComponents, QuoteGreeks, QuoteIteration } from '../quote'
-import Strike from '../strike'
-import TradeEvent from '../trade_event'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Position } from '../position'
+import { Quote, QuoteDisabledReason, QuoteFeeComponents, QuoteGreeks, QuoteIteration } from '../quote'
+import { Strike } from '../strike'
+import { TradeEvent } from '../trade_event'
 import buildTx from '../utils/buildTx'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import fromBigNumber from '../utils/fromBigNumber'
@@ -67,8 +67,9 @@ export type TradeToken = {
   receive: BigNumber
 }
 
-export default class Trade {
-  private lyra: Lyra
+export class Trade {
+  // TODO: Use variables
+  lyra: Lyra
   private __option: Option
   private __position?: Position
   __source = DataSource.ContractCall

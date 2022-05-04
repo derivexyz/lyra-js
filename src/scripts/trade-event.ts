@@ -1,6 +1,6 @@
 import yargs from 'yargs'
 
-import TradeEvent from '../trade_event'
+import { TradeEvent } from '../trade_event'
 import fromBigNumber from '../utils/fromBigNumber'
 import getScriptLyra from './utils/getScriptLyra'
 

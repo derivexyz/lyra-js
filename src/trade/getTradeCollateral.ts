@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 import getLiquidationPrice from '../utils/getLiquidationPrice'
 import getMaxCollateral from '../utils/getMaxCollateral'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'

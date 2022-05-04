@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request'
 
-import Lyra from '..'
+import Lyra from '../lyra'
 
 // TODO: @earthtojake Support queries larger than 1k
 const blocksQuery = gql`

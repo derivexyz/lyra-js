@@ -1,5 +1,5 @@
 import { MAX_BN } from '../../constants/bn'
-import Market from '../../market'
+import { Market } from '../../market'
 import { ScriptLyra } from './getScriptLyra'
 
 export default async function approve(

@@ -1,7 +1,6 @@
 import { BigNumber } from 'ethers'
 import { gql } from 'graphql-request'
 
-import Lyra from '..'
 import { CollateralUpdateData } from '../collateral_update_event'
 import {
   CollateralUpdateQueryResult,
@@ -10,6 +9,7 @@ import {
   TRADE_QUERY_FRAGMENT,
   TradeQueryResult,
 } from '../constants/queries'
+import Lyra from '../lyra'
 import { TradeEventData } from '../trade_event'
 import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 

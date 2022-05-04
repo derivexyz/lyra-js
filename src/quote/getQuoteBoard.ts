@@ -1,8 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Board from '../board'
-import Option from '../option'
-import Quote from '.'
+import { Board } from '../board'
+import { Option } from '../option'
+import { Quote } from '.'
 
 export default function getQuoteBoard(board: Board, size: BigNumber): { bid: Quote; ask: Quote; option: Option }[] {
   const quotes = board.strikes().map(strike => {

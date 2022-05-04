@@ -1,8 +1,8 @@
 import { ethers } from 'ethers'
 
-import Lyra from '..'
 import { LyraContractId } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
+import Lyra from '../lyra'
 import getLyraContract from './getLyraContract'
 import parseBaseKey from './parseBaseKey'
 

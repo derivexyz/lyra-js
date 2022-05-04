@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers'
 import { gql } from 'graphql-request'
 
-import Lyra from '..'
 import { CollateralUpdateData } from '../collateral_update_event'
 import { META_QUERY, MetaQueryResult, POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queries'
+import Lyra from '../lyra'
 import { PositionData } from '../position'
 import { TradeEventData } from '../trade_event'
 import getClosedPositionDataFromSubgraph from './getClosedPositionDataFromSubgraph'

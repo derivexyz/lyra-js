@@ -1,4 +1,4 @@
-import Board from '../board'
+import { Board } from '../board'
 
 export default function getTimeToExpiryAnnualized(board: Board) {
   const timeToExpiry = board.timeToExpiry

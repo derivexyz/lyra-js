@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 import { getBlackScholesPrice, getDelta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'

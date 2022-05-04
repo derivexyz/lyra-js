@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers'
 
 import { UNIT } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 
 export default function getIVImpactForTrade(
   option: Option,

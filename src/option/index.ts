@@ -1,19 +1,19 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Lyra from '..'
-import Board from '../board'
+import { Board } from '../board'
 import { ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
-import Market from '../market'
-import Quote, { QuoteOptions } from '../quote'
-import Strike from '../strike'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Quote, QuoteOptions } from '../quote'
+import { Strike } from '../strike'
 import { getBlackScholesPrice, getDelta, getRho, getTheta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getBreakEvenPrice from '../utils/getBreakEvenPrice'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
 
-export default class Option {
+export class Option {
   private __strike: Strike
   __source = DataSource.ContractCall
   isCall: boolean

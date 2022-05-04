@@ -1,17 +1,17 @@
 import { TransactionReceipt } from '@ethersproject/providers'
 import { BigNumber, Contract } from 'ethers'
 
-import Lyra from '..'
-import Board from '../board'
-import CollateralUpdateEvent, { CollateralUpdateData } from '../collateral_update_event'
+import { Board } from '../board'
+import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
 import { ZERO_ADDRESS } from '../constants/bn'
 import { DataSource, LyraMarketContractId, PositionUpdatedType, TradeDirection } from '../constants/contracts'
 import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/typechain/OptionMarket'
-import Market from '../market'
-import Option from '../option'
-import Position from '../position'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Position } from '../position'
 import { QuoteFeeComponents } from '../quote'
-import Strike from '../strike'
+import { Strike } from '../strike'
 import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
 import getLyraContractABI from '../utils/getLyraContractABI'
@@ -65,7 +65,7 @@ export type TradeEventListenerOptions = {
   pollInterval?: number
 }
 
-export default class TradeEvent {
+export class TradeEvent {
   private lyra: Lyra
   private __tradeData: TradeEventData
   private __collateralUpdateData?: CollateralUpdateData

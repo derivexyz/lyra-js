@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
-import Market from '../market'
+import { Market } from '../market'
 import { QuoteVegaUtilFeeComponents } from '.'
 
 export default function getVegaUtilFee(

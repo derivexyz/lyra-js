@@ -1,15 +1,15 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Lyra from '..'
-import Board from '../board'
-import CollateralUpdateEvent, { CollateralUpdateData } from '../collateral_update_event'
+import { Board } from '../board'
+import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, PositionState } from '../constants/contracts'
-import Market from '../market'
-import Option from '../option'
-import Strike from '../strike'
-import Trade, { TradeOptions } from '../trade'
-import TradeEvent, { TradeEventData } from '../trade_event'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Strike } from '../strike'
+import { Trade, TradeOptions } from '../trade'
+import { TradeEvent, TradeEventData } from '../trade_event'
 import fetchOpenPositionDataByOwner from '../utils/fetchOpenPositionDataByOwner'
 import fetchPositionDataByID from '../utils/fetchPositionDataByID'
 import fetchPositionDataByOwner from '../utils/fetchPositionDataByOwner'
@@ -38,10 +38,10 @@ export type PositionData = {
   optionPrice: BigNumber
 }
 
-export default class Position {
-  // Internal
+export class Position {
   private lyra: Lyra
-  private __positionData: PositionData
+  // TODO: Use variables
+  __positionData: PositionData
   private __tradeData: TradeEventData[]
   private __collateralUpdateData: CollateralUpdateData[]
   __source: DataSource

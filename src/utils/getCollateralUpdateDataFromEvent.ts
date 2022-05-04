@@ -2,7 +2,7 @@ import { BigNumber } from 'ethers'
 
 import { CollateralUpdateData } from '../collateral_update_event'
 import { ZERO_ADDRESS } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 import { TradeEventData } from '../trade_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsCall from './getIsCall'

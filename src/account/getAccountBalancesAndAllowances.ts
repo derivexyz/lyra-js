@@ -1,6 +1,6 @@
-import Lyra from '..'
 import { LyraContractId } from '../constants/contracts'
-import Market from '../market'
+import Lyra from '../lyra'
+import { Market } from '../market'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
 import { AccountBaseBalance, AccountOptionTokenBalance, AccountStableBalance } from '.'

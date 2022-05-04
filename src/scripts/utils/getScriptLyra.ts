@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 
-import Lyra from '../..'
 import { Deployment } from '../../constants/contracts'
+import Lyra from '../../lyra'
 import getLyraDeploymentChainId from '../../utils/getLyraDeploymentChainId'
 
 const getDeploymentRpcUrl = (deployment: Deployment) => {

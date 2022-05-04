@@ -1,5 +1,5 @@
-import Lyra from '..'
 import { LyraContractId } from '../constants/contracts'
+import Lyra from '../lyra'
 import getLyraContract from './getLyraContract'
 
 export default async function getMarketAddresses(lyra: Lyra): Promise<string[]> {

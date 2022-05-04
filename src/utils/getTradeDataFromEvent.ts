@@ -1,6 +1,6 @@
 import { UNIT, ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
 import { TradeDirection } from '../constants/contracts'
-import Market from '../market'
+import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsBuy from './getIsBuy'

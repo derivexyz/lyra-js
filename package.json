@@ -1,8 +1,9 @@
 {
   "name": "@lyrafinance/lyra-js",
-  "version": "0.0.2",
+  "version": "0.0.3-alpha",
   "description": "A JavaScript SDK for Optimistic Ethereum and the Lyra Protocol.",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "homepage": "www.lyra.finance",
   "author": "Lyra Finance",
   "license": "ISC",
@@ -11,11 +12,14 @@
     "url": "https://github.com/lyra-finance/lyra-js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && yarn copy-files",
+    "dev": "yarn build && tsc --watch",
     "script": "env-cmd -f .env.local ts-node src/scripts/index.ts",
     "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
-    "format": "prettier --write \"src/**/*.ts\" && yarn lint --fix",
+    "copy-files": "copyfiles -u 1 src/**/*.json dist/",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint '**/*.ts'",
+    "clean": "rimraf node_modules dist",
     "prepare": "yarn build",
     "preversion": "yarn lint",
     "version": "yarn format && git add -A src",
@@ -37,12 +41,14 @@
     "@types/yargs": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
+    "copyfiles": "^2.4.1",
     "env-cmd": "^10.1.0",
     "eslint": "^7.31.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "fs-extra": "^10.0.1",
     "prettier": "^2.6.2",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.5.0",
     "tslib": "^2.3.1",
     "typechain": "^7.0.0",
@@ -50,6 +56,6 @@
     "yargs": "^17.3.1"
   },
   "files": [
-    "lib/**/*"
+    "dist"
   ]
 }

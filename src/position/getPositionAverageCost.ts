@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
-import TradeEvent from '../trade_event'
+import { TradeEvent } from '../trade_event'
 
 export default function getPositionAverageCost(trades: TradeEvent[]): BigNumber {
   if (trades.length === 0) {

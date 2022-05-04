@@ -1,6 +1,6 @@
-import Lyra from '..'
 import { LyraContractId } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
+import Lyra from '../lyra'
 import getLyraContract from './getLyraContract'
 
 export default async function getBoardViewForStrikeId(

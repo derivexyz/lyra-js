@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers'
 
 import { ONE_BN, UNIT } from '../constants/bn'
-import Strike from '../strike'
+import { Strike } from '../strike'
 import { getDelta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'

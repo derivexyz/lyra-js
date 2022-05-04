@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-import Lyra from '..'
+import Lyra from '../lyra'
 
 export default function buildTx(lyra: Lyra, to: string, from: string, data: string): ethers.PopulatedTransaction {
   return {

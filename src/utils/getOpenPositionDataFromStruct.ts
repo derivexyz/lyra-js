@@ -1,6 +1,6 @@
 import { PositionState } from '../constants/contracts'
 import { OptionToken } from '../contracts/typechain'
-import Option from '../option'
+import { Option } from '../option'
 import { PositionData } from '../position'
 import getPositionCollateral from '../position/getPositionCollateral'
 import getIsBaseCollateral from './getIsBaseCollateral'

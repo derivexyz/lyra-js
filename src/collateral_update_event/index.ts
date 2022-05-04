@@ -1,14 +1,14 @@
 import { TransactionReceipt } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
-import Lyra from '..'
-import Board from '../board'
+import { Board } from '../board'
 import { DataSource, PositionUpdatedType } from '../constants/contracts'
-import Market from '../market'
-import Option from '../option'
-import Position from '../position'
-import Strike from '../strike'
-import TradeEvent, { TradeEventData } from '../trade_event'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Position } from '../position'
+import { Strike } from '../strike'
+import { TradeEvent, TradeEventData } from '../trade_event'
 import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
 import getIsCall from '../utils/getIsCall'
@@ -33,7 +33,7 @@ export type CollateralUpdateData = {
   isCall: boolean
 }
 
-export default class CollateralUpdateEvent {
+export class CollateralUpdateEvent {
   private lyra: Lyra
   private __collateralUpdateData: CollateralUpdateData
   private __tradeData?: TradeEventData

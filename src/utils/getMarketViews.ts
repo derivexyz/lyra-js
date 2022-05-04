@@ -1,5 +1,5 @@
-import Lyra from '..'
 import { OptionMarketViewer } from '../contracts/typechain'
+import Lyra from '../lyra'
 import filterNulls from './filterNulls'
 import getMarketView from './getMarketView'
 

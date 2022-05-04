@@ -1,18 +1,19 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Block } from '@ethersproject/providers'
 
-import Lyra from '..'
 import { ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
-import Market from '../market'
-import Option from '../option'
-import Quote, { QuoteOptions } from '../quote'
-import Strike from '../strike'
+import Lyra from '../lyra'
+import { Market } from '../market'
+import { Option } from '../option'
+import { Quote, QuoteOptions } from '../quote'
+import { Strike } from '../strike'
 
-class Board {
-  private lyra: Lyra
-  private block: Block
+export class Board {
+  // TODO: Use variables
+  lyra: Lyra
+  block: Block
   private __market: Market
   __source = DataSource.ContractCall
   __boardData: OptionMarketViewer.BoardViewStructOutput
@@ -109,5 +110,3 @@ class Board {
     return await this.market().quote(strikeId, isCall, isBuy, size, options)
   }
 }
-
-export default Board

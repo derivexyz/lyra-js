@@ -1,9 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { ethers } from 'ethers'
 
-import Lyra from '..'
 import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
-import Market from '../market'
+import Lyra from '../lyra'
+import { Market } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
@@ -43,7 +43,7 @@ export type AccountBalances = {
   // TODO: @DillonLin Add LP token balances
 }
 
-export default class Account {
+export class Account {
   private lyra: Lyra
   address: string
 

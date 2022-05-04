@@ -1,8 +1,8 @@
 import { Contract } from 'ethers'
 
-import Lyra from '..'
 import { LyraMarketContractId } from '../constants/contracts'
 import { LyraMarketContractReturnType } from '../constants/mappings'
+import Lyra from '../lyra'
 import { MarketContractAddresses } from '../market'
 import getLyraContractABI from './getLyraContractABI'
 

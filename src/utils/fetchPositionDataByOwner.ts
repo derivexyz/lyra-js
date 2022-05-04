@@ -1,6 +1,6 @@
-import Lyra from '..'
 import { CollateralUpdateData } from '../collateral_update_event'
 import { DataSource } from '../constants/contracts'
+import Lyra from '../lyra'
 import { PositionData } from '../position'
 import { TradeEventData } from '../trade_event'
 import fetchClosedPositionDataByOwner from './fetchClosedPositionDataByOwner'

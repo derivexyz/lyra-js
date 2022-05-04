@@ -25,4 +25,4 @@ yarn-error.log*
 
 src/contracts/addresses/local.*.json
 
-/lib
+/dist

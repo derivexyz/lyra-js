@@ -1,5 +1,5 @@
-import Quote from '../quote'
-import Trade, { TradeDisabledReason } from '.'
+import { Quote } from '../quote'
+import { Trade, TradeDisabledReason } from '.'
 
 // Assume Trade is populated (except for disabled reason)
 export default function getTradeDisabledReason(quote: Quote, trade: Trade): TradeDisabledReason | null {

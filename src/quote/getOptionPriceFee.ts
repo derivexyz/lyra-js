@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Board from '../board'
+import { Board } from '../board'
 import { UNIT } from '../constants/bn'
 import getTimeWeightedFee from './getTimeWeightedFee'
 

@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT } from '../constants/bn'
-import Option from '../option'
+import { Option } from '../option'
 
 export default function getMaxCollateral(
   option: Option,
