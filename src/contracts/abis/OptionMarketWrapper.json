@@ -1,0 +1,1148 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "contract ICurve",
+        "name": "curveSwap",
+        "type": "address"
+      }
+    ],
+    "name": "CurveSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minReturnPercent",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinReturnPercentSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isOpen",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isLong",
+        "type": "bool"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "positionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "swapFee",
+        "type": "int256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "PositionTraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newCollateral",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCollateralTo",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "contract SynthetixAdapter",
+        "name": "synthetixAdapter",
+        "type": "address"
+      }
+    ],
+    "name": "SynthetixAdapterSet",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ERC20",
+        "name": "stablecoin",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      }
+    ],
+    "name": "addCurveStable",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "addLong",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract OptionMarket",
+        "name": "optionMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      },
+      {
+        "components": [
+          {
+            "internalType": "contract ERC20",
+            "name": "quoteAsset",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "baseAsset",
+            "type": "address"
+          },
+          {
+            "internalType": "contract OptionToken",
+            "name": "optionToken",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ShortCollateral",
+            "name": "shortCollateral",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.OptionMarketContracts",
+        "name": "_marketContracts",
+        "type": "tuple"
+      }
+    ],
+    "name": "addMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "addShort",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeLong",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract OptionMarket",
+            "name": "optionMarket",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikeId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "iterations",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "setCollateralTo",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stableAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "stableAsset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "closePosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "swapFee",
+            "type": "int256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "name": "returnDetails",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeShort",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ercIds",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract OptionMarket",
+            "name": "optionMarket",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikeId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "iterations",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "setCollateralTo",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stableAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "stableAsset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "forceClosePosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "swapFee",
+            "type": "int256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "name": "returnDetails",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract OptionMarket[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "getBalancesAndAllowances",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "id",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "allowance",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.StableBalanceAndAllowance[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "allowance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isApprovedForAll",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.MarketBalanceAndAllowance[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMarketAndStableIDs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "id",
+            "type": "uint8"
+          },
+          {
+            "internalType": "contract OptionMarket",
+            "name": "marketAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.MarketView[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "id",
+            "type": "uint8"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "stableAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.StableView[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "idToERC",
+    "outputs": [
+      {
+        "internalType": "contract ERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "idToMarket",
+    "outputs": [
+      {
+        "internalType": "contract OptionMarket",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract OptionMarket",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketContracts",
+    "outputs": [
+      {
+        "internalType": "contract ERC20",
+        "name": "quoteAsset",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ERC20",
+        "name": "baseAsset",
+        "type": "address"
+      },
+      {
+        "internalType": "contract OptionToken",
+        "name": "optionToken",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ShortCollateral",
+        "name": "shortCollateral",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "marketIds",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minReturnPercent",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "openLong",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract OptionMarket",
+            "name": "optionMarket",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikeId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "iterations",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "setCollateralTo",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stableAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "stableAsset",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "openPosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "positionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "swapFee",
+            "type": "int256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "name": "returnDetails",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "openShort",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "reduceLong",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "params",
+        "type": "uint256"
+      }
+    ],
+    "name": "reduceShort",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      }
+    ],
+    "name": "removeCurveStable",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      }
+    ],
+    "name": "removeMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "market",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint32",
+        "name": "positionId",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "setCollateralTo",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCollateralWrapper",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "newCollateral",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ICurve",
+        "name": "_curveSwap",
+        "type": "address"
+      }
+    ],
+    "name": "setCurve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minReturnPercent",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinReturnPercent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SynthetixAdapter",
+        "name": "_synthetixAdapter",
+        "type": "address"
+      }
+    ],
+    "name": "setSynthetixAdapter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "synthetixAdapter",
+    "outputs": [
+      {
+        "internalType": "contract SynthetixAdapter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tradingRewards",
+    "outputs": [
+      {
+        "internalType": "contract IFeeCounter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ICurve",
+        "name": "_curveSwap",
+        "type": "address"
+      },
+      {
+        "internalType": "contract SynthetixAdapter",
+        "name": "_synthetixAdapter",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IFeeCounter",
+        "name": "_tradingRewards",
+        "type": "address"
+      }
+    ],
+    "name": "updateContractAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
