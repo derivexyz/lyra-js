@@ -9,7 +9,7 @@ A JavaScript SDK for [Optimistic Ethereum](https://optimism.io/) and the [Lyra P
 ## Install
 
 ```
-yarn install @lyrafinance/lyra-js
+yarn add @lyrafinance/lyra-js
 ```
 
 ## Quickstart
