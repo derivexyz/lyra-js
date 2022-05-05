@@ -19,7 +19,7 @@ Read Lyra's market data with zero configuration.
 ```typescript
 import Lyra from '@lyrafinance/lyra-js'
 
-const Lyra = new Lyra()
+const lyra = new Lyra()
 
 // Fetch all markets
 const markets = await lyra.markets()

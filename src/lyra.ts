@@ -31,7 +31,7 @@ export default class Lyra {
 
   constructor(config?: LyraConfig, disableCache?: boolean) {
     const chainId = config?.chainId ?? 69 // Kovan
-    const rpcUrl = config?.rpcUrl ?? 'https://optimism.kovan.io' // Kovan
+    const rpcUrl = config?.rpcUrl ?? 'https://kovan.optimism.io' // Kovan
     const deployment = getLyraDeploymentForChainId(chainId)
 
     this.provider =
