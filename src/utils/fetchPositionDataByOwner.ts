@@ -5,6 +5,7 @@ import { PositionData } from '../position'
 import { TradeEventData } from '../trade_event'
 import fetchClosedPositionDataByOwner from './fetchClosedPositionDataByOwner'
 import fetchOpenPositionDataByOwner from './fetchOpenPositionDataByOwner'
+import getUniqueBy from './getUniqueBy'
 
 export default async function fetchPositionDataByOwner(
   lyra: Lyra,
@@ -21,7 +22,6 @@ export default async function fetchPositionDataByOwner(
   const positions = openPositions
     .map(p => ({ ...p, source: DataSource.ContractCall }))
     .concat(closedPositions.map(p => ({ ...p, source: DataSource.Subgraph })))
-  // Remove duplicates (should never happen, but just in case)
-  const uniquePositions = [...new Map(positions.map(item => [item.position.id, item])).values()]
-  return uniquePositions
+  // Remove duplicates
+  return getUniqueBy(positions, p => p.position.id)
 }

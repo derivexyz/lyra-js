@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc && yarn copy-files",
     "dev": "yarn build && tsc --watch",
-    "script": "env-cmd -f .env.local ts-node --project tsconfig-ts-node.json src/scripts/index.ts",
+    "script": "env-cmd -f .env.local ts-node src/scripts/index.ts",
     "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
     "copy-files": "copyfiles -u 1 src/**/*.json dist/",
     "format": "prettier --write \"src/**/*.ts\"",
