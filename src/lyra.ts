@@ -7,6 +7,8 @@ import { Account } from './account'
 import { Board } from './board'
 import { CollateralUpdateEvent } from './collateral_update_event'
 import { Deployment } from './constants/contracts'
+import { LiquidityDeposit } from './liquidity_deposit'
+import { LiquidityWithdrawal } from './liquidity_withdrawal'
 import { Market, MarketTradeOptions } from './market'
 import { Option } from './option'
 import { Position } from './position'
@@ -21,17 +23,18 @@ import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
 export type LyraConfig = {
   rpcUrl: string
   chainId: number
+  subgraphUri?: string
 }
 
 export default class Lyra {
   provider: JsonRpcProvider
   deployment: Deployment
   subgraphClient: GraphQLClient
-  blockSubgraphClient: GraphQLClient
 
   constructor(config?: LyraConfig, disableCache?: boolean) {
+    // TODO: @earthtojake Configure + default to mainnet
     const chainId = config?.chainId ?? 69 // Kovan
-    const rpcUrl = config?.rpcUrl ?? 'https://optimism.kovan.io' // Kovan
+    const rpcUrl = config?.rpcUrl ?? 'https://kovan.optimism.io'
     const deployment = getLyraDeploymentForChainId(chainId)
 
     this.provider =
@@ -40,19 +43,8 @@ export default class Lyra {
         : new LyraJsonRpcProvider({ url: rpcUrl, throttleLimit: 1 }, chainId)
     this.deployment = deployment
 
-    // TOOD: @earthtojake Configurable subgraph URIs
-    const subgraphUri = 'https://api.thegraph.com/subgraphs/name/paulvaden/lyra-kovan-2'
-    const blockSubgraphUri = 'https://api.thegraph.com/subgraphs/name/paulvaden/blocks-subgraph'
-
+    const subgraphUri = config?.subgraphUri ?? 'https://api.thegraph.com/subgraphs/name/lyra-finance/kovan'
     this.subgraphClient = new GraphQLClient(subgraphUri)
-    this.blockSubgraphClient = new GraphQLClient(blockSubgraphUri)
-
-    console.debug('Lyra', {
-      rpcUrl,
-      deployment,
-      subgraphUri,
-      blockSubgraphUri,
-    })
   }
 
   // Quote
@@ -172,5 +164,25 @@ export default class Lyra {
   async drip(owner: string): Promise<ethers.PopulatedTransaction> {
     const account = await Account.get(this, owner)
     return await account.drip()
+  }
+
+  // Liquidity Deposits
+
+  async liquidityDeposits(marketAddressOrName: string, owner: string): Promise<LiquidityDeposit[]> {
+    return await LiquidityDeposit.getByOwner(this, marketAddressOrName, owner)
+  }
+
+  async liquidityDeposit(marketAddressOrName: string, id: string): Promise<LiquidityDeposit> {
+    return await LiquidityDeposit.getByQueueId(this, marketAddressOrName, id)
+  }
+
+  // Liquidity Withdrawals
+
+  async liquidityWithdrawals(marketAddressOrName: string, owner: string): Promise<LiquidityWithdrawal[]> {
+    return await LiquidityWithdrawal.getByOwner(this, marketAddressOrName, owner)
+  }
+
+  async liquidityWithdrawal(marketAddressOrName: string, id: string): Promise<LiquidityWithdrawal> {
+    return await LiquidityWithdrawal.getByQueueId(this, marketAddressOrName, id)
   }
 }

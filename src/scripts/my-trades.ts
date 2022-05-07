@@ -9,7 +9,9 @@ export default async function myTrades(argv: string[]) {
     account: { type: 'string', alias: 'a', require: false },
   }).argv
   const trades = await lyra.trades(args.account ?? signer.address)
+  const collateralUpdates = await lyra.collateralUpdates(args.account ?? signer.address)
   console.log(
+    'Trades',
     trades.map(trade => ({
       id: trade.positionId,
       market: trade.marketName,
@@ -18,6 +20,17 @@ export default async function myTrades(argv: string[]) {
       pricePerOption: fromBigNumber(trade.pricePerOption),
       premium: fromBigNumber(trade.premium),
       transactionHash: trade.transactionHash,
+    }))
+  )
+  console.log(
+    'Collateral Updates',
+    collateralUpdates.map(update => ({
+      id: update.positionId,
+      market: update.marketName,
+      setCollateralTo: fromBigNumber(update.setCollateralTo),
+      isBaseCollateral: update.isBaseCollateral,
+      isAdjustment: update.isAdjustment,
+      transactionHash: update.transactionHash,
     }))
   )
 }

@@ -22,7 +22,7 @@ export default function getScriptLyra(argv: string[]): ScriptLyra {
   // TODO: @earthtojake Get deployment + rpc url from argv
   const deploymentIndex = argv.findIndex(arg => arg === '-d' || arg === '--deployment')
   const deployment = deploymentIndex != -1 ? (argv[deploymentIndex + 1] as Deployment) : Deployment.Kovan
-  const rpcUrl = getDeploymentRpcUrl(deployment)
+  const rpcUrl = process.env.RPC_URL ?? getDeploymentRpcUrl(deployment)
   const chainId = getLyraDeploymentChainId(deployment)
   if (!rpcUrl) {
     throw new Error('Invalid deployment')
@@ -32,7 +32,6 @@ export default function getScriptLyra(argv: string[]): ScriptLyra {
   if (!privateKey) {
     throw new Error('PRIVATE_KEY is missing in environment')
   }
-  const wallet = new ethers.Wallet(privateKey)
-  const signer = wallet.connect(lyra.provider)
+  const signer = new ethers.Wallet(privateKey, lyra.provider)
   return { lyra, signer }
 }

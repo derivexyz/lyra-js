@@ -1,34 +1,113 @@
 [
   {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "contract ICurve",
-        "name": "curveSwap",
+        "internalType": "address",
+        "name": "thrower",
         "type": "address"
-      }
-    ],
-    "name": "CurveSet",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
-        "indexed": false,
+        "internalType": "contract ERC20",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "approving",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
-        "name": "minReturnPercent",
+        "name": "approvalAmount",
         "type": "uint256"
       }
     ],
-    "name": "MinReturnPercentSet",
-    "type": "event"
+    "name": "ApprovalFailure",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ERC20",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AssetTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      }
+    ],
+    "name": "DuplicateEntry",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "enum OptionMarket.OptionType",
+        "name": "optionType",
+        "type": "uint8"
+      }
+    ],
+    "name": "OnlyShorts",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "id",
+        "type": "uint8"
+      }
+    ],
+    "name": "RemovingInvalidId",
+    "type": "error"
   },
   {
     "anonymous": false,
@@ -134,19 +213,37 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract ICurve",
+        "name": "curveSwap",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "contract SynthetixAdapter",
         "name": "synthetixAdapter",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IFeeCounter",
+        "name": "tradingRewards",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minReturnPercent",
+        "type": "uint256"
       }
     ],
-    "name": "SynthetixAdapterSet",
+    "name": "WrapperParamsUpdated",
     "type": "event"
   },
   {
     "inputs": [
       {
         "internalType": "contract ERC20",
-        "name": "stablecoin",
+        "name": "token",
         "type": "address"
       },
       {
@@ -207,14 +304,9 @@
             "internalType": "contract OptionToken",
             "name": "optionToken",
             "type": "address"
-          },
-          {
-            "internalType": "contract ShortCollateral",
-            "name": "shortCollateral",
-            "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.OptionMarketContracts",
+        "internalType": "struct OptionMarketWrapperWithSwaps.OptionMarketContracts",
         "name": "_marketContracts",
         "type": "tuple"
       }
@@ -318,16 +410,16 @@
           },
           {
             "internalType": "uint256",
-            "name": "stableAmount",
+            "name": "inputAmount",
             "type": "uint256"
           },
           {
             "internalType": "contract ERC20",
-            "name": "stableAsset",
+            "name": "inputAsset",
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "internalType": "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
         "name": "params",
         "type": "tuple"
       }
@@ -377,7 +469,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "internalType": "struct OptionMarketWrapperWithSwaps.ReturnDetails",
         "name": "returnDetails",
         "type": "tuple"
       }
@@ -402,6 +494,19 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "curveSwap",
+    "outputs": [
+      {
+        "internalType": "contract ICurve",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -479,16 +584,16 @@
           },
           {
             "internalType": "uint256",
-            "name": "stableAmount",
+            "name": "inputAmount",
             "type": "uint256"
           },
           {
             "internalType": "contract ERC20",
-            "name": "stableAsset",
+            "name": "inputAsset",
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "internalType": "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
         "name": "params",
         "type": "tuple"
       }
@@ -538,7 +643,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "internalType": "struct OptionMarketWrapperWithSwaps.ReturnDetails",
         "name": "returnDetails",
         "type": "tuple"
       }
@@ -548,11 +653,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "contract OptionMarket[]",
-        "name": "markets",
-        "type": "address[]"
-      },
       {
         "internalType": "address",
         "name": "owner",
@@ -574,6 +674,16 @@
             "type": "address"
           },
           {
+            "internalType": "uint8",
+            "name": "decimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
             "internalType": "uint256",
             "name": "balance",
             "type": "uint256"
@@ -584,14 +694,19 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.StableBalanceAndAllowance[]",
+        "internalType": "struct OptionMarketWrapperWithSwaps.StableAssetView[]",
         "name": "",
         "type": "tuple[]"
       },
       {
         "components": [
           {
-            "internalType": "address",
+            "internalType": "uint8",
+            "name": "id",
+            "type": "uint8"
+          },
+          {
+            "internalType": "contract OptionMarket",
             "name": "market",
             "type": "address"
           },
@@ -599,6 +714,16 @@
             "internalType": "address",
             "name": "token",
             "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "decimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
           },
           {
             "internalType": "uint256",
@@ -616,49 +741,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.MarketBalanceAndAllowance[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getMarketAndStableIDs",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint8",
-            "name": "id",
-            "type": "uint8"
-          },
-          {
-            "internalType": "contract OptionMarket",
-            "name": "marketAddress",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct OptionMarketWrapper.MarketView[]",
-        "name": "",
-        "type": "tuple[]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint8",
-            "name": "id",
-            "type": "uint8"
-          },
-          {
-            "internalType": "contract ERC20",
-            "name": "stableAddress",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct OptionMarketWrapper.StableView[]",
+        "internalType": "struct OptionMarketWrapperWithSwaps.MarketAssetView[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -727,11 +810,6 @@
       {
         "internalType": "contract OptionToken",
         "name": "optionToken",
-        "type": "address"
-      },
-      {
-        "internalType": "contract ShortCollateral",
-        "name": "shortCollateral",
         "type": "address"
       }
     ],
@@ -845,16 +923,16 @@
           },
           {
             "internalType": "uint256",
-            "name": "stableAmount",
+            "name": "inputAmount",
             "type": "uint256"
           },
           {
             "internalType": "contract ERC20",
-            "name": "stableAsset",
+            "name": "inputAsset",
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.OptionPositionParams",
+        "internalType": "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
         "name": "params",
         "type": "tuple"
       }
@@ -904,7 +982,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct OptionMarketWrapper.ReturnDetails",
+        "internalType": "struct OptionMarketWrapperWithSwaps.ReturnDetails",
         "name": "returnDetails",
         "type": "tuple"
       }
@@ -1045,45 +1123,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "contract ICurve",
-        "name": "_curveSwap",
-        "type": "address"
-      }
-    ],
-    "name": "setCurve",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minReturnPercent",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinReturnPercent",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SynthetixAdapter",
-        "name": "_synthetixAdapter",
-        "type": "address"
-      }
-    ],
-    "name": "setSynthetixAdapter",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "synthetixAdapter",
     "outputs": [
@@ -1138,9 +1177,14 @@
         "internalType": "contract IFeeCounter",
         "name": "_tradingRewards",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minReturnPercent",
+        "type": "uint256"
       }
     ],
-    "name": "updateContractAddresses",
+    "name": "updateContractParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

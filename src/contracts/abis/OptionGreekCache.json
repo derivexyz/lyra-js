@@ -1015,7 +1015,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getBoardView",
+    "name": "getBoardGreeksView",
     "outputs": [
       {
         "components": [
@@ -1084,7 +1084,7 @@
             "type": "uint256[]"
           }
         ],
-        "internalType": "struct OptionGreekCache.BoardView",
+        "internalType": "struct OptionGreekCache.BoardGreeksView",
         "name": "",
         "type": "tuple"
       }

@@ -1,4 +1,6 @@
 import {
+  LiquidityPool,
+  LiquidityTokens,
   OptionGreekCache,
   OptionMarketViewer,
   OptionMarketWrapper,
@@ -20,4 +22,6 @@ export type LyraMarketContractReturnType = {
   [LyraMarketContractId.OptionToken]: OptionToken
   [LyraMarketContractId.ShortCollateral]: ShortCollateral
   [LyraMarketContractId.OptionGreekCache]: OptionGreekCache
+  [LyraMarketContractId.LiquidityTokens]: LiquidityTokens
+  [LyraMarketContractId.LiquidityPool]: LiquidityPool
 }

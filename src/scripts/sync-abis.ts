@@ -10,10 +10,13 @@ import getLyraDeploymentFileName from '../utils/getLyraDeploymentFileName'
 const LYRA_TARGETS = [
   LyraContractId.OptionMarketViewer,
   LyraContractId.OptionMarketWrapper,
+  LyraContractId.TestFaucet,
   LyraMarketContractId.OptionMarket,
   LyraMarketContractId.OptionToken,
   LyraMarketContractId.ShortCollateral,
   LyraMarketContractId.OptionGreekCache,
+  LyraMarketContractId.LiquidityTokens,
+  LyraMarketContractId.LiquidityPool,
 ]
 
 export default async function syncABIs(_argv: string[]): Promise<void> {

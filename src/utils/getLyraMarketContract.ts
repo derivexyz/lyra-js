@@ -16,6 +16,10 @@ const getContractAddress = (marketAddresses: MarketContractAddresses, contractId
       return marketAddresses.shortCollateral
     case LyraMarketContractId.OptionGreekCache:
       return marketAddresses.greekCache
+    case LyraMarketContractId.LiquidityTokens:
+      return marketAddresses.liquidityTokens
+    case LyraMarketContractId.LiquidityPool:
+      return marketAddresses.liquidityPool
   }
 }
 

@@ -45,8 +45,11 @@ position {
 
 export const COLLATERAL_UPDATE_QUERY_FRAGMENT = `
 timestamp
+trader
+blockNumber
 transactionHash
 amount
+isBaseCollateral
 strike {
   strikeId
   strikePrice
@@ -107,6 +110,44 @@ _meta {
 }
 `
 
+export const MARKET_TOTAL_VALUE_SNAPSHOT_FRAGMENT = `
+  id
+  period
+  timestamp
+  tokenPrice
+  freeLiquidity
+  burnableLiquidity
+  usedCollatLiquidity
+  pendingDeltaLiquidity
+  usedDeltaLiquidity
+  NAV
+  netOptionValue
+`
+
+export const MARKET_GREEKS_SNAPSHOT_FRAGMENT = `
+  id
+  period
+  timestamp
+  netDelta
+`
+
+export const MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT = `
+  id
+  timestamp
+  period
+  premiumVolume
+  notionalVolume
+  totalPremiumVolume
+  totalNotionalVolume
+  spotPriceFees
+  optionPriceFees
+  vegaFees
+  deltaCutoffFees
+  liquidatorFees
+  smLiquidationFees
+  lpLiquidationFees
+`
+
 export type MetaQueryResult = {
   block: {
     number: number
@@ -158,9 +199,11 @@ export type TradeQueryResult = {
 
 export type CollateralUpdateQueryResult = {
   timestamp: number
+  blockNumber: number
   transactionHash: string
   amount: string
-  owner: string
+  trader: string
+  isBaseCollateral: boolean
   strike: {
     strikeId: string
     strikePrice: string
@@ -210,4 +253,42 @@ export type PositionQueryResult = {
   }
   trades: TradeQueryResult[]
   collateralUpdates: CollateralUpdateQueryResult[]
+}
+
+export type MarketTotalValueSnapshotQueryResult = {
+  id: string
+  period: number
+  timestamp: number
+  tokenPrice: string
+  freeLiquidity: string
+  burnableLiquidity: string
+  usedCollatLiquidity: string
+  pendingDeltaLiquidity: string
+  usedDeltaLiquidity: string
+  NAV: string
+  netOptionValue: string
+}
+
+export type MarketGreeksSnapshotQueryResult = {
+  id: string
+  period: number
+  timestamp: number
+  netDelta: string
+}
+
+export type MarketVolumeAndFeesSnapshotQueryResult = {
+  id: string
+  timestamp: number
+  period: number
+  premiumVolume: string
+  notionalVolume: string
+  totalPremiumVolume: string
+  totalNotionalVolume: string
+  spotPriceFees: string
+  optionPriceFees: string
+  vegaFees: string
+  deltaCutoffFees: string
+  liquidatorFees: string
+  smLiquidationFees: string
+  lpLiquidationFees: string
 }

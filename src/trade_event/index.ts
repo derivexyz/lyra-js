@@ -1,10 +1,10 @@
-import { TransactionReceipt } from '@ethersproject/providers'
+import { BlockTag, Log } from '@ethersproject/providers'
 import { BigNumber, Contract } from 'ethers'
 
 import { Board } from '../board'
 import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
 import { ZERO_ADDRESS } from '../constants/bn'
-import { DataSource, LyraMarketContractId, PositionUpdatedType, TradeDirection } from '../constants/contracts'
+import { DataSource, LyraMarketContractId } from '../constants/contracts'
 import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/typechain/OptionMarket'
 import Lyra from '../lyra'
 import { Market } from '../market'
@@ -14,12 +14,12 @@ import { QuoteFeeComponents } from '../quote'
 import { Strike } from '../strike'
 import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
+import getIsLong from '../utils/getIsLong'
 import getLyraContractABI from '../utils/getLyraContractABI'
 import getMarketAddresses from '../utils/getMarketAddresses'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventsFromLogs from '../utils/parsePartialTradeEventsFromLogs'
-import parsePartialTransferEventFromLogs from '../utils/parsePartialTransferEventFromLogs'
 
 export type TradeLiquidation = ContractTradeEvent['args']['liquidation']
 
@@ -63,6 +63,7 @@ export type TradeEventListenerCallback = (trade: TradeEvent) => void
 
 export type TradeEventListenerOptions = {
   pollInterval?: number
+  startBlockNumber?: BlockTag
 }
 
 export class TradeEvent {
@@ -102,7 +103,10 @@ export class TradeEvent {
 
   constructor(lyra: Lyra, source: DataSource, trade: TradeEventData, collateralUpdate?: CollateralUpdateData) {
     if (trade.size.isZero()) {
-      throw new Error('Trade with no size')
+      throw new Error('Attempted to initialize a trade with no size')
+    }
+    if (trade.isLong && collateralUpdate) {
+      throw new Error('Attempted to initialize a long Trade with a CollateralUpdate event')
     }
     this.lyra = lyra
     this.__tradeData = trade
@@ -141,43 +145,34 @@ export class TradeEvent {
 
   // Getters
 
-  static async getByHash(lyra: Lyra, transactionHash: string): Promise<TradeEvent> {
+  static async getByHash(lyra: Lyra, transactionHash: string): Promise<TradeEvent[]> {
     const receipt = await lyra.provider.getTransactionReceipt(transactionHash)
     const events = parsePartialTradeEventsFromLogs(receipt.logs)
     if (events.length === 0) {
       throw new Error('No Trade events in transaction')
     }
     const { address: marketAddress } = events[0]
-    const [{ timestamp }, market] = await Promise.all([
-      lyra.provider.getBlock(receipt.blockNumber),
-      Market.get(lyra, marketAddress),
-    ])
-    return TradeEvent.getByReceiptSync(lyra, market, receipt, timestamp)
+    const market = await Market.get(lyra, marketAddress)
+    return TradeEvent.getByLogsSync(lyra, market, receipt.logs)
   }
 
-  static getByReceiptSync(lyra: Lyra, market: Market, receipt: TransactionReceipt, timestamp: number): TradeEvent {
-    const transfers = parsePartialTransferEventFromLogs(receipt.logs)
-    // Ignore liquidations (which can have multiple trade events)
-    const tradeEvent = parsePartialTradeEventsFromLogs(receipt.logs).find(
-      t => t.args.trade.tradeDirection !== TradeDirection.Liquidate
-    )
-    if (!tradeEvent) {
-      throw new Error('No Trade event in transaction')
+  static getByLogsSync(lyra: Lyra, market: Market, logs: Log[]): TradeEvent[] {
+    // NOTE: Liquidations can have multiple trade events per receipt
+    // And should be broken up into multiple getByLogsSync functions
+    const tradeEvents = parsePartialTradeEventsFromLogs(logs)
+    if (tradeEvents.length === 0) {
+      throw new Error('No Trade events in logs')
     }
-    const trade = getTradeDataFromEvent(market, tradeEvent, transfers, timestamp)
-    const collateralUpdate = parsePartialPositionUpdatedEventsFromLogs(receipt.logs).find(
-      e =>
-        e.args.position.collateral.gt(0) &&
-        e.args.positionId.toNumber() === tradeEvent.args.positionId.toNumber() &&
-        // Extract matching open / close update event
-        [PositionUpdatedType.Opened, PositionUpdatedType.Closed].includes(e.args.updatedType)
-    )
-    return new TradeEvent(
-      lyra,
-      DataSource.Log,
-      trade,
-      collateralUpdate ? getCollateralUpdateDataFromEvent(trade, collateralUpdate, transfers, timestamp) : undefined
-    )
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
+    return tradeEvents.map(tradeEvent => {
+      const isLong = getIsLong(tradeEvent.args.trade.optionType)
+      const updatesForTrade = updates.filter(
+        u => u.args.positionId.toNumber() === tradeEvent.args.positionId.toNumber()
+      )
+      const trade = getTradeDataFromEvent(market, tradeEvent, updatesForTrade)
+      const collateralUpdate = !isLong ? getCollateralUpdateDataFromEvent(trade, updatesForTrade) : undefined
+      return new TradeEvent(lyra, DataSource.Log, trade, collateralUpdate)
+    })
   }
 
   static async getByOwner(lyra: Lyra, owner: string): Promise<TradeEvent[]> {
@@ -231,6 +226,7 @@ export class TradeEvent {
 
   static on(lyra: Lyra, callback: TradeEventListenerCallback, options?: TradeEventListenerOptions): TradeEventListener {
     const ms = options?.pollInterval ?? 7.5 * 1000
+    const startBlockTag = options?.startBlockNumber ?? 'latest'
 
     let timeout: NodeJS.Timeout | null
 
@@ -239,7 +235,8 @@ export class TradeEvent {
       getLyraContractABI(LyraMarketContractId.OptionMarket)
     ) as OptionMarket
 
-    Promise.all([getMarketAddresses(lyra), lyra.provider.getBlock('latest')]).then(async ([addresses, block]) => {
+    Promise.all([getMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
+      console.debug(`Polling from block ${block.number} every ${timeout}ms`)
       let prevBlock = block
 
       const poll = async () => {
@@ -248,22 +245,30 @@ export class TradeEvent {
         const toBlockNumber = latestBlock.number
         if (fromBlockNumber >= toBlockNumber) {
           // Skip if no new blocks
+          setTimeout(poll, ms)
           return
         }
+        console.debug(
+          `Querying block range: ${fromBlockNumber} to ${toBlockNumber} (${toBlockNumber - fromBlockNumber} blocks)`
+        )
         // Fetch new trades
         const trades: ContractTradeEvent[] = await lyra.provider.send('eth_getLogs', [
           {
-            address: addresses,
+            address: addresses.map(a => a.optionMarket),
             fromBlock: BigNumber.from(fromBlockNumber).toHexString(),
             toBlock: BigNumber.from(toBlockNumber).toHexString(),
             topics: [[(optionMarket.filters.Trade().topics ?? [])[0]]],
           },
         ])
+        if (trades.length > 0) {
+          console.debug(`Found ${trades.length} new trades`)
+        }
         // Parse trade events
         await Promise.all(
           trades.map(async trade => {
             try {
-              callback(await TradeEvent.getByHash(lyra, trade.transactionHash))
+              const tradeEvents = await TradeEvent.getByHash(lyra, trade.transactionHash)
+              tradeEvents.map(tradeEvent => callback(tradeEvent))
             } catch (e) {
               console.warn('Failed to read Trade event', trade.transactionHash)
             }

@@ -9,5 +9,7 @@ export * from './quote'
 export * from './strike'
 export * from './trade'
 export * from './trade_event'
+export * from './liquidity_deposit'
+export * from './liquidity_withdrawal'
 import Lyra from './lyra'
 export default Lyra

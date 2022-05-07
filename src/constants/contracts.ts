@@ -11,6 +11,8 @@ export enum LyraMarketContractId {
   OptionToken = 'OptionToken',
   ShortCollateral = 'ShortCollateral',
   OptionGreekCache = 'OptionGreekCache',
+  LiquidityTokens = 'LiquidityTokens',
+  LiquidityPool = 'LiquidityPool',
 }
 // Ordered enum from contracts
 export enum OptionType {
@@ -47,12 +49,13 @@ export enum PositionUpdatedType {
   Opened,
   Adjusted,
   Closed,
-  Split,
+  SplitFrom,
   SplitInto,
   Merged,
   MergedInto,
   Settled,
   Liquidated,
+  Transfer,
 }
 export enum TradeDirection {
   Open,

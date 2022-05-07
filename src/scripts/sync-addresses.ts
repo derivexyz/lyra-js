@@ -6,7 +6,7 @@ import { Deployment, LyraContractId } from '../constants/contracts'
 import getLyraDeploymentDirectory from '../utils/getLyraDeploymentDirectory'
 import getLyraDeploymentFileName from '../utils/getLyraDeploymentFileName'
 
-const LYRA_TARGETS = [LyraContractId.OptionMarketViewer, LyraContractId.OptionMarketWrapper]
+const LYRA_TARGETS = [LyraContractId.OptionMarketViewer, LyraContractId.OptionMarketWrapper, LyraContractId.TestFaucet]
 
 export default async function syncAddresses(_argv: string[]): Promise<void> {
   console.log('sync addresses')

@@ -1,6 +1,6 @@
 {
   "name": "@lyrafinance/lyra-js",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "description": "A JavaScript SDK for Optimistic Ethereum and the Lyra Protocol.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc && yarn copy-files",
     "dev": "yarn build && tsc --watch",
-    "script": "env-cmd -f .env.local ts-node src/scripts/index.ts",
+    "script": "env-cmd -f .env.local ts-node --project tsconfig-ts-node.json src/scripts/index.ts",
     "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
     "copy-files": "copyfiles -u 1 src/**/*.json dist/",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -50,7 +50,7 @@
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
     "ts-node": "^10.5.0",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "typechain": "^7.0.0",
     "typescript": "^4.5.5",
     "yargs": "^17.3.1"

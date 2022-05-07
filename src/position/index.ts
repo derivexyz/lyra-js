@@ -193,7 +193,6 @@ export class Position {
   // Trade
 
   async trade(isBuy: boolean, size: BigNumber, slippage: number, options?: PositionTradeOptions): Promise<Trade> {
-    // TODO: @earthtojake Add refresh()
     const option = await this.option()
     return Trade.getSync(this.lyra, this.owner, option, isBuy, size, {
       premiumSlippage: slippage,

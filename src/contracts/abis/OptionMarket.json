@@ -375,6 +375,37 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "iterations",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tradeAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TradeIterationsHasRemainder",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -718,6 +749,11 @@
         "components": [
           {
             "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "premium",
             "type": "uint256"
           },
@@ -893,6 +929,12 @@
         "internalType": "struct OptionMarket.LiquidationEventData",
         "name": "liquidation",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
     "name": "Trade",
@@ -1760,40 +1802,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "optionBoards",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expiry",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "iv",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "frozen",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "optionMarketParams",
     "outputs": [
@@ -1946,65 +1954,6 @@
       {
         "internalType": "uint256",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "strikes",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "skew",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "longCall",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "shortCallBase",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "shortCallQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "longPut",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "shortPut",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "boardId",
         "type": "uint256"
       }
     ],

@@ -33,6 +33,14 @@ export type AccountOptionTokenBalance = {
   isApprovedForAll: boolean
 }
 
+export type AccountLPTokenBalance = {
+  marketAddress: string
+  address: string
+  balance: BigNumber
+  symbol: string
+  decimals: number
+}
+
 export type AccountBalances = {
   stables: AccountStableBalance[]
   stable: (tokenAddressOrName: string) => AccountStableBalance
@@ -40,7 +48,8 @@ export type AccountBalances = {
   base: (tokenOrMarketAddressOrName: string) => AccountBaseBalance
   optionTokens: AccountOptionTokenBalance[]
   optionToken: (tokenOrMarketAddress: string) => AccountOptionTokenBalance
-  // TODO: @DillonLin Add LP token balances
+  liquidityTokens: AccountLPTokenBalance[]
+  liquidityToken: (tokenOrMarketAddress: string) => AccountLPTokenBalance
 }
 
 export class Account {
@@ -61,8 +70,10 @@ export class Account {
   // Dynamic Fields
 
   async balances(): Promise<AccountBalances> {
-    const markets = await Market.getAll(this.lyra)
-    const { stables, bases, optionTokens } = await getAccountBalancesAndAllowances(this.lyra, this.address, markets)
+    const { stables, bases, optionTokens, liquidityTokens } = await getAccountBalancesAndAllowances(
+      this.lyra,
+      this.address
+    )
     const stable = (tokenAddressOrName: string): AccountStableBalance => {
       const stable = stables.find(
         stable =>
@@ -79,7 +90,7 @@ export class Account {
         base =>
           [base.marketAddress.toLowerCase(), base.address.toLowerCase()].includes(
             tokenOrMarketAddressOrName.toLowerCase()
-          ) || base.symbol.toLowerCase() === tokenOrMarketAddressOrName
+          ) || base.symbol.toLowerCase() === tokenOrMarketAddressOrName.toLowerCase()
       )
       if (!base) {
         throw new Error('Base token does not exist')
@@ -97,6 +108,17 @@ export class Account {
       }
       return optionToken
     }
+    const liquidityToken = (tokenOrMarketAddress: string): AccountLPTokenBalance => {
+      const liquidityToken = liquidityTokens.find(liquidityToken =>
+        [liquidityToken.marketAddress.toLowerCase(), liquidityToken.address.toLocaleLowerCase()].includes(
+          tokenOrMarketAddress.toLowerCase()
+        )
+      )
+      if (!liquidityToken) {
+        throw new Error('Option token does not exist')
+      }
+      return liquidityToken
+    }
     return {
       stables,
       stable,
@@ -104,6 +126,8 @@ export class Account {
       base,
       optionTokens,
       optionToken,
+      liquidityTokens,
+      liquidityToken,
     }
   }
 
@@ -128,9 +152,6 @@ export class Account {
     const erc20 = getERC20Contract(this.lyra.provider, stable.address)
     const data = erc20.interface.encodeFunctionData('approve', [wrapper.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
-    if (!tx) {
-      throw new Error('Failed to estimate gas for approve transaction')
-    }
     return tx
   }
 
@@ -141,9 +162,6 @@ export class Account {
     const erc20 = getERC20Contract(this.lyra.provider, stable.address)
     const data = erc20.interface.encodeFunctionData('approve', [wrapper.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
-    if (!tx) {
-      throw new Error('Failed to estimate gas for approve transaction')
-    }
     return tx
   }
 

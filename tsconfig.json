@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "module": "commonjs",
+    "module": "esnext",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,

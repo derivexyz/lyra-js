@@ -6,7 +6,7 @@ import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
 import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS, LyraContractId } from '../constants/contracts'
-import { OptionMarketWrapper } from '../contracts/typechain'
+import { OptionMarketWrapperWithSwaps } from '../contracts/typechain/OptionMarketWrapper'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
@@ -101,7 +101,7 @@ export class Trade {
 
   tx: ethers.PopulatedTransaction | null
   iterations: QuoteIteration[]
-  __params: OptionMarketWrapper.OptionPositionParamsStruct | null
+  __params: OptionMarketWrapperWithSwaps.OptionPositionParamsStruct | null
   __calldata: string | null
 
   private constructor(
@@ -270,8 +270,8 @@ export class Trade {
       amount: size,
       minCost: !isBuy ? minOrMaxPremium : ZERO_BN,
       maxCost: isBuy ? minOrMaxPremium : MAX_BN,
-      stableAmount: this.quoteToken.transfer,
-      stableAsset: this.quoteToken.address,
+      inputAmount: this.quoteToken.transfer,
+      inputAsset: this.quoteToken.address,
     }
 
     this.isCollateralUpdate = !!(this.collateral && this.size.isZero() && this.collateral.amount.gt(0))
@@ -328,24 +328,21 @@ export class Trade {
     return new Trade(lyra, owner, option, isBuy, size, options)
   }
 
+  // TODO: @earthtojake Support liquidations with multiple Trade/Collateral results
   static async getResult(lyra: Lyra, transactionHash: string): Promise<TradeEvent | CollateralUpdateEvent> {
     try {
-      return await TradeEvent.getByHash(lyra, transactionHash)
+      return (await TradeEvent.getByHash(lyra, transactionHash))[0]
     } catch (e) {
-      return await CollateralUpdateEvent.getByHash(lyra, transactionHash)
+      return (await CollateralUpdateEvent.getByHash(lyra, transactionHash))[0]
     }
   }
 
-  static getResultSync(
-    lyra: Lyra,
-    option: Option,
-    receipt: TransactionReceipt,
-    timestamp: number
-  ): TradeEvent | CollateralUpdateEvent {
+  // TODO: @earthtojake Support liquidations with multiple Trade/Collateral results
+  static getResultSync(lyra: Lyra, option: Option, receipt: TransactionReceipt): TradeEvent | CollateralUpdateEvent {
     try {
-      return TradeEvent.getByReceiptSync(lyra, option.market(), receipt, timestamp)
+      return TradeEvent.getByLogsSync(lyra, option.market(), receipt.logs)[0]
     } catch (e) {
-      return CollateralUpdateEvent.getByReceiptSync(lyra, option, receipt, timestamp)
+      return CollateralUpdateEvent.getByLogsSync(lyra, option, receipt.logs)[0]
     }
   }
 

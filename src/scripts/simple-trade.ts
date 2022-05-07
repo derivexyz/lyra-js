@@ -24,6 +24,7 @@ export default async function simpleTrade(argv: string[]) {
   const approveTx = await account.approveStableToken(market.quoteToken.address, MAX_BN)
   const approveResponse = await signer.sendTransaction(approveTx)
   await approveResponse.wait()
+  console.log('Approved sUSD')
 
   // Prepare trade (Open 1.0 Long ETH Call)
   const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, true, ONE_BN, {
@@ -37,12 +38,14 @@ export default async function simpleTrade(argv: string[]) {
 
   // Execute trade
   const tradeResponse = await signer.sendTransaction(trade.tx)
+  console.log('Executed trade:', tradeResponse.hash)
   const tradeReceipt = await tradeResponse.wait()
 
   // Get trade result
-  const tradeEvent = await TradeEvent.getByHash(lyra, tradeReceipt.transactionHash)
+  const tradeEvent = (await TradeEvent.getByHash(lyra, tradeReceipt.transactionHash))[0]
 
   printObject('Trade Result', {
+    blockNumber: tradeEvent.blockNumber,
     positionId: tradeEvent.positionId,
     premium: tradeEvent.premium,
     fee: tradeEvent.fee,

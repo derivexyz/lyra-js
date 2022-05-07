@@ -105,7 +105,7 @@ export default async function positionTrade(argv: string[]) {
   const response = await signer.sendTransaction(trade.tx)
   const receipt = await response.wait()
   console.log('tx', response.hash)
-  const tradeEvent = TradeEvent.getByReceiptSync(lyra, market, receipt, Date.now())
+  const tradeEvent = TradeEvent.getByLogsSync(lyra, market, receipt.logs)[0]
 
   printObject('Result', {
     positionId: tradeEvent.positionId,

@@ -2,1165 +2,1219 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from 'ethers'
-import { Provider } from '@ethersproject/providers'
-import type { OptionMarketWrapper, OptionMarketWrapperInterface } from '../OptionMarketWrapper'
+import { Contract, Signer, utils } from "ethers";
+import { Provider } from "@ethersproject/providers";
+import type {
+  OptionMarketWrapper,
+  OptionMarketWrapperInterface,
+} from "../OptionMarketWrapper";
 
 const _abi = [
   {
-    inputs: [],
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
-  {
-    anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: 'contract ICurve',
-        name: 'curveSwap',
-        type: 'address',
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "contract ERC20",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "approving",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "approvalAmount",
+        type: "uint256",
       },
     ],
-    name: 'CurveSet',
-    type: 'event',
+    name: "ApprovalFailure",
+    type: "error",
   },
   {
-    anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'minReturnPercent',
-        type: 'uint256',
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "contract ERC20",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "receiver",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
       },
     ],
-    name: 'MinReturnPercentSet',
-    type: 'event',
+    name: "AssetTransferFailed",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
+      },
+      {
+        internalType: "address",
+        name: "addr",
+        type: "address",
+      },
+    ],
+    name: "DuplicateEntry",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "enum OptionMarket.OptionType",
+        name: "optionType",
+        type: "uint8",
+      },
+    ],
+    name: "OnlyShorts",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
+      },
+    ],
+    name: "RemovingInvalidId",
+    type: "error",
   },
   {
     anonymous: false,
     inputs: [
       {
         indexed: true,
-        internalType: 'address',
-        name: 'previousOwner',
-        type: 'address',
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
       },
       {
         indexed: true,
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
-    name: 'OwnershipTransferred',
-    type: 'event',
+    name: "OwnershipTransferred",
+    type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
         indexed: false,
-        internalType: 'bool',
-        name: 'isOpen',
-        type: 'bool',
+        internalType: "bool",
+        name: "isOpen",
+        type: "bool",
       },
       {
         indexed: false,
-        internalType: 'bool',
-        name: 'isLong',
-        type: 'bool',
+        internalType: "bool",
+        name: "isLong",
+        type: "bool",
       },
       {
         indexed: true,
-        internalType: 'address',
-        name: 'market',
-        type: 'address',
+        internalType: "address",
+        name: "market",
+        type: "address",
       },
       {
         indexed: true,
-        internalType: 'uint256',
-        name: 'positionId',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "positionId",
+        type: "uint256",
       },
       {
         indexed: true,
-        internalType: 'address',
-        name: 'owner',
-        type: 'address',
+        internalType: "address",
+        name: "owner",
+        type: "address",
       },
       {
         indexed: false,
-        internalType: 'uint256',
-        name: 'amount',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
       },
       {
         indexed: false,
-        internalType: 'uint256',
-        name: 'totalCost',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalCost",
+        type: "uint256",
       },
       {
         indexed: false,
-        internalType: 'uint256',
-        name: 'totalFee',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalFee",
+        type: "uint256",
       },
       {
         indexed: false,
-        internalType: 'int256',
-        name: 'swapFee',
-        type: 'int256',
+        internalType: "int256",
+        name: "swapFee",
+        type: "int256",
       },
       {
         indexed: false,
-        internalType: 'address',
-        name: 'token',
-        type: 'address',
+        internalType: "address",
+        name: "token",
+        type: "address",
       },
     ],
-    name: 'PositionTraded',
-    type: 'event',
+    name: "PositionTraded",
+    type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
         indexed: false,
-        internalType: 'uint256',
-        name: 'newCollateral',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "newCollateral",
+        type: "uint256",
       },
     ],
-    name: 'SetCollateralTo',
-    type: 'event',
+    name: "SetCollateralTo",
+    type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
         indexed: false,
-        internalType: 'contract SynthetixAdapter',
-        name: 'synthetixAdapter',
-        type: 'address',
+        internalType: "contract ICurve",
+        name: "curveSwap",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "contract SynthetixAdapter",
+        name: "synthetixAdapter",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "contract IFeeCounter",
+        name: "tradingRewards",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "minReturnPercent",
+        type: "uint256",
       },
     ],
-    name: 'SynthetixAdapterSet',
-    type: 'event',
+    name: "WrapperParamsUpdated",
+    type: "event",
   },
   {
     inputs: [
       {
-        internalType: 'contract ERC20',
-        name: 'stablecoin',
-        type: 'address',
+        internalType: "contract ERC20",
+        name: "token",
+        type: "address",
       },
       {
-        internalType: 'uint8',
-        name: 'id',
-        type: 'uint8',
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
       },
     ],
-    name: 'addCurveStable',
+    name: "addCurveStable",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'addLong',
+    name: "addLong",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalCost',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalCost",
+        type: "uint256",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'contract OptionMarket',
-        name: 'optionMarket',
-        type: 'address',
+        internalType: "contract OptionMarket",
+        name: "optionMarket",
+        type: "address",
       },
       {
-        internalType: 'uint8',
-        name: 'id',
-        type: 'uint8',
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
       },
       {
         components: [
           {
-            internalType: 'contract ERC20',
-            name: 'quoteAsset',
-            type: 'address',
+            internalType: "contract ERC20",
+            name: "quoteAsset",
+            type: "address",
           },
           {
-            internalType: 'contract ERC20',
-            name: 'baseAsset',
-            type: 'address',
+            internalType: "contract ERC20",
+            name: "baseAsset",
+            type: "address",
           },
           {
-            internalType: 'contract OptionToken',
-            name: 'optionToken',
-            type: 'address',
-          },
-          {
-            internalType: 'contract ShortCollateral',
-            name: 'shortCollateral',
-            type: 'address',
+            internalType: "contract OptionToken",
+            name: "optionToken",
+            type: "address",
           },
         ],
-        internalType: 'struct OptionMarketWrapper.OptionMarketContracts',
-        name: '_marketContracts',
-        type: 'tuple',
+        internalType:
+          "struct OptionMarketWrapperWithSwaps.OptionMarketContracts",
+        name: "_marketContracts",
+        type: "tuple",
       },
     ],
-    name: 'addMarket',
+    name: "addMarket",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'addShort',
+    name: "addShort",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalReceived',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalReceived",
+        type: "uint256",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'closeLong',
+    name: "closeLong",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalReceived',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalReceived",
+        type: "uint256",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: 'contract OptionMarket',
-            name: 'optionMarket',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'strikeId',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'iterations',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'setCollateralTo',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'currentCollateral',
-            type: 'uint256',
-          },
-          {
-            internalType: 'enum OptionMarket.OptionType',
-            name: 'optionType',
-            type: 'uint8',
-          },
-          {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'minCost',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'maxCost',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'stableAmount',
-            type: 'uint256',
-          },
-          {
-            internalType: 'contract ERC20',
-            name: 'stableAsset',
-            type: 'address',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.OptionPositionParams',
-        name: 'params',
-        type: 'tuple',
-      },
-    ],
-    name: 'closePosition',
-    outputs: [
-      {
-        components: [
-          {
-            internalType: 'address',
-            name: 'market',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
-          },
-          {
-            internalType: 'address',
-            name: 'owner',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalCost',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalFee',
-            type: 'uint256',
-          },
-          {
-            internalType: 'int256',
-            name: 'swapFee',
-            type: 'int256',
-          },
-          {
-            internalType: 'address',
-            name: 'token',
-            type: 'address',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.ReturnDetails',
-        name: 'returnDetails',
-        type: 'tuple',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
-      },
-    ],
-    name: 'closeShort',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: 'totalCost',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    name: 'ercIds',
-    outputs: [
-      {
-        internalType: 'uint8',
-        name: '',
-        type: 'uint8',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
         components: [
           {
-            internalType: 'contract OptionMarket',
-            name: 'optionMarket',
-            type: 'address',
+            internalType: "contract OptionMarket",
+            name: "optionMarket",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'strikeId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "strikeId",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'iterations',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "iterations",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'setCollateralTo',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "setCollateralTo",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'currentCollateral',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "currentCollateral",
+            type: "uint256",
           },
           {
-            internalType: 'enum OptionMarket.OptionType',
-            name: 'optionType',
-            type: 'uint8',
+            internalType: "enum OptionMarket.OptionType",
+            name: "optionType",
+            type: "uint8",
           },
           {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'minCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "minCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'maxCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "maxCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'stableAmount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "inputAmount",
+            type: "uint256",
           },
           {
-            internalType: 'contract ERC20',
-            name: 'stableAsset',
-            type: 'address',
+            internalType: "contract ERC20",
+            name: "inputAsset",
+            type: "address",
           },
         ],
-        internalType: 'struct OptionMarketWrapper.OptionPositionParams',
-        name: 'params',
-        type: 'tuple',
+        internalType:
+          "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
+        name: "params",
+        type: "tuple",
       },
     ],
-    name: 'forceClosePosition',
+    name: "closePosition",
     outputs: [
       {
         components: [
           {
-            internalType: 'address',
-            name: 'market',
-            type: 'address',
+            internalType: "address",
+            name: "market",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
           },
           {
-            internalType: 'address',
-            name: 'owner',
-            type: 'address',
+            internalType: "address",
+            name: "owner",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalFee',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalFee",
+            type: "uint256",
           },
           {
-            internalType: 'int256',
-            name: 'swapFee',
-            type: 'int256',
+            internalType: "int256",
+            name: "swapFee",
+            type: "int256",
           },
           {
-            internalType: 'address',
-            name: 'token',
-            type: 'address',
+            internalType: "address",
+            name: "token",
+            type: "address",
           },
         ],
-        internalType: 'struct OptionMarketWrapper.ReturnDetails',
-        name: 'returnDetails',
-        type: 'tuple',
+        internalType: "struct OptionMarketWrapperWithSwaps.ReturnDetails",
+        name: "returnDetails",
+        type: "tuple",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'contract OptionMarket[]',
-        name: 'markets',
-        type: 'address[]',
-      },
-      {
-        internalType: 'address',
-        name: 'owner',
-        type: 'address',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'getBalancesAndAllowances',
+    name: "closeShort",
     outputs: [
       {
-        components: [
-          {
-            internalType: 'uint8',
-            name: 'id',
-            type: 'uint8',
-          },
-          {
-            internalType: 'address',
-            name: 'token',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'balance',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'allowance',
-            type: 'uint256',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.StableBalanceAndAllowance[]',
-        name: '',
-        type: 'tuple[]',
-      },
-      {
-        components: [
-          {
-            internalType: 'address',
-            name: 'market',
-            type: 'address',
-          },
-          {
-            internalType: 'address',
-            name: 'token',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'balance',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'allowance',
-            type: 'uint256',
-          },
-          {
-            internalType: 'bool',
-            name: 'isApprovedForAll',
-            type: 'bool',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.MarketBalanceAndAllowance[]',
-        name: '',
-        type: 'tuple[]',
+        internalType: "uint256",
+        name: "totalCost",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'getMarketAndStableIDs',
+    name: "curveSwap",
     outputs: [
       {
-        components: [
-          {
-            internalType: 'uint8',
-            name: 'id',
-            type: 'uint8',
-          },
-          {
-            internalType: 'contract OptionMarket',
-            name: 'marketAddress',
-            type: 'address',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.MarketView[]',
-        name: '',
-        type: 'tuple[]',
-      },
-      {
-        components: [
-          {
-            internalType: 'uint8',
-            name: 'id',
-            type: 'uint8',
-          },
-          {
-            internalType: 'contract ERC20',
-            name: 'stableAddress',
-            type: 'address',
-          },
-        ],
-        internalType: 'struct OptionMarketWrapper.StableView[]',
-        name: '',
-        type: 'tuple[]',
+        internalType: "contract ICurve",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint8',
-        name: '',
-        type: 'uint8',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    name: 'idToERC',
+    name: "ercIds",
     outputs: [
       {
-        internalType: 'contract ERC20',
-        name: '',
-        type: 'address',
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint8',
-        name: '',
-        type: 'uint8',
-      },
-    ],
-    name: 'idToMarket',
-    outputs: [
-      {
-        internalType: 'contract OptionMarket',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'contract OptionMarket',
-        name: '',
-        type: 'address',
-      },
-    ],
-    name: 'marketContracts',
-    outputs: [
-      {
-        internalType: 'contract ERC20',
-        name: 'quoteAsset',
-        type: 'address',
-      },
-      {
-        internalType: 'contract ERC20',
-        name: 'baseAsset',
-        type: 'address',
-      },
-      {
-        internalType: 'contract OptionToken',
-        name: 'optionToken',
-        type: 'address',
-      },
-      {
-        internalType: 'contract ShortCollateral',
-        name: 'shortCollateral',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    name: 'marketIds',
-    outputs: [
-      {
-        internalType: 'uint8',
-        name: '',
-        type: 'uint8',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'minReturnPercent',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
-      },
-    ],
-    name: 'openLong',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: 'totalCost',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
         components: [
           {
-            internalType: 'contract OptionMarket',
-            name: 'optionMarket',
-            type: 'address',
+            internalType: "contract OptionMarket",
+            name: "optionMarket",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'strikeId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "strikeId",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'iterations',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "iterations",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'setCollateralTo',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "setCollateralTo",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'currentCollateral',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "currentCollateral",
+            type: "uint256",
           },
           {
-            internalType: 'enum OptionMarket.OptionType',
-            name: 'optionType',
-            type: 'uint8',
+            internalType: "enum OptionMarket.OptionType",
+            name: "optionType",
+            type: "uint8",
           },
           {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'minCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "minCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'maxCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "maxCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'stableAmount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "inputAmount",
+            type: "uint256",
           },
           {
-            internalType: 'contract ERC20',
-            name: 'stableAsset',
-            type: 'address',
+            internalType: "contract ERC20",
+            name: "inputAsset",
+            type: "address",
           },
         ],
-        internalType: 'struct OptionMarketWrapper.OptionPositionParams',
-        name: 'params',
-        type: 'tuple',
+        internalType:
+          "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
+        name: "params",
+        type: "tuple",
       },
     ],
-    name: 'openPosition',
+    name: "forceClosePosition",
     outputs: [
       {
         components: [
           {
-            internalType: 'address',
-            name: 'market',
-            type: 'address',
+            internalType: "address",
+            name: "market",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'positionId',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
           },
           {
-            internalType: 'address',
-            name: 'owner',
-            type: 'address',
+            internalType: "address",
+            name: "owner",
+            type: "address",
           },
           {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalCost',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalCost",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalFee',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalFee",
+            type: "uint256",
           },
           {
-            internalType: 'int256',
-            name: 'swapFee',
-            type: 'int256',
+            internalType: "int256",
+            name: "swapFee",
+            type: "int256",
           },
           {
-            internalType: 'address',
-            name: 'token',
-            type: 'address',
+            internalType: "address",
+            name: "token",
+            type: "address",
           },
         ],
-        internalType: 'struct OptionMarketWrapper.ReturnDetails',
-        name: 'returnDetails',
-        type: 'tuple',
+        internalType: "struct OptionMarketWrapperWithSwaps.ReturnDetails",
+        name: "returnDetails",
+        type: "tuple",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        internalType: "address",
+        name: "owner",
+        type: "address",
       },
     ],
-    name: 'openShort',
+    name: "getBalancesAndAllowances",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalReceived',
-        type: 'uint256',
+        components: [
+          {
+            internalType: "uint8",
+            name: "id",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint8",
+            name: "decimals",
+            type: "uint8",
+          },
+          {
+            internalType: "string",
+            name: "symbol",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "balance",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "allowance",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct OptionMarketWrapperWithSwaps.StableAssetView[]",
+        name: "",
+        type: "tuple[]",
+      },
+      {
+        components: [
+          {
+            internalType: "uint8",
+            name: "id",
+            type: "uint8",
+          },
+          {
+            internalType: "contract OptionMarket",
+            name: "market",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint8",
+            name: "decimals",
+            type: "uint8",
+          },
+          {
+            internalType: "string",
+            name: "symbol",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "balance",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "allowance",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "isApprovedForAll",
+            type: "bool",
+          },
+        ],
+        internalType: "struct OptionMarketWrapperWithSwaps.MarketAssetView[]",
+        name: "",
+        type: "tuple[]",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    name: "idToERC",
+    outputs: [
+      {
+        internalType: "contract ERC20",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    name: "idToMarket",
+    outputs: [
+      {
+        internalType: "contract OptionMarket",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract OptionMarket",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "marketContracts",
+    outputs: [
+      {
+        internalType: "contract ERC20",
+        name: "quoteAsset",
+        type: "address",
+      },
+      {
+        internalType: "contract ERC20",
+        name: "baseAsset",
+        type: "address",
+      },
+      {
+        internalType: "contract OptionToken",
+        name: "optionToken",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "marketIds",
+    outputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'owner',
+    name: "minReturnPercent",
     outputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'reduceLong',
+    name: "openLong",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalReceived',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalCost",
+        type: "uint256",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: 'params',
-        type: 'uint256',
+        components: [
+          {
+            internalType: "contract OptionMarket",
+            name: "optionMarket",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "strikeId",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "iterations",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "setCollateralTo",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "currentCollateral",
+            type: "uint256",
+          },
+          {
+            internalType: "enum OptionMarket.OptionType",
+            name: "optionType",
+            type: "uint8",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minCost",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "maxCost",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "inputAmount",
+            type: "uint256",
+          },
+          {
+            internalType: "contract ERC20",
+            name: "inputAsset",
+            type: "address",
+          },
+        ],
+        internalType:
+          "struct OptionMarketWrapperWithSwaps.OptionPositionParams",
+        name: "params",
+        type: "tuple",
       },
     ],
-    name: 'reduceShort',
+    name: "openPosition",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'totalCost',
-        type: 'uint256',
+        components: [
+          {
+            internalType: "address",
+            name: "market",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "positionId",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "totalCost",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "totalFee",
+            type: "uint256",
+          },
+          {
+            internalType: "int256",
+            name: "swapFee",
+            type: "int256",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+        ],
+        internalType: "struct OptionMarketWrapperWithSwaps.ReturnDetails",
+        name: "returnDetails",
+        type: "tuple",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint8',
-        name: 'id',
-        type: 'uint8',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'removeCurveStable',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
+    name: "openShort",
+    outputs: [
       {
-        internalType: 'uint8',
-        name: 'id',
-        type: 'uint8',
+        internalType: "uint256",
+        name: "totalReceived",
+        type: "uint256",
       },
     ],
-    name: 'removeMarket',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'renounceOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint8',
-        name: 'market',
-        type: 'uint8',
-      },
-      {
-        internalType: 'uint32',
-        name: 'positionId',
-        type: 'uint32',
-      },
-      {
-        internalType: 'uint256',
-        name: 'setCollateralTo',
-        type: 'uint256',
-      },
-    ],
-    name: 'setCollateralWrapper',
+    name: "owner",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'newCollateral',
-        type: 'uint256',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'contract ICurve',
-        name: '_curveSwap',
-        type: 'address',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'setCurve',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    name: "reduceLong",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "totalReceived",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: '_minReturnPercent',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "params",
+        type: "uint256",
       },
     ],
-    name: 'setMinReturnPercent',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    name: "reduceShort",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "totalCost",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'contract SynthetixAdapter',
-        name: '_synthetixAdapter',
-        type: 'address',
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
       },
     ],
-    name: 'setSynthetixAdapter',
+    name: "removeCurveStable",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint8",
+        name: "id",
+        type: "uint8",
+      },
+    ],
+    name: "removeMarket",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'synthetixAdapter',
-    outputs: [
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
       {
-        internalType: 'contract SynthetixAdapter',
-        name: '',
-        type: 'address',
+        internalType: "uint8",
+        name: "market",
+        type: "uint8",
+      },
+      {
+        internalType: "uint32",
+        name: "positionId",
+        type: "uint32",
+      },
+      {
+        internalType: "uint256",
+        name: "setCollateralTo",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    name: "setCollateralWrapper",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "newCollateral",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'tradingRewards',
+    name: "synthetixAdapter",
     outputs: [
       {
-        internalType: 'contract IFeeCounter',
-        name: '',
-        type: 'address',
+        internalType: "contract SynthetixAdapter",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "tradingRewards",
+    outputs: [
+      {
+        internalType: "contract IFeeCounter",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
-    name: 'transferOwnership',
+    name: "transferOwnership",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'contract ICurve',
-        name: '_curveSwap',
-        type: 'address',
+        internalType: "contract ICurve",
+        name: "_curveSwap",
+        type: "address",
       },
       {
-        internalType: 'contract SynthetixAdapter',
-        name: '_synthetixAdapter',
-        type: 'address',
+        internalType: "contract SynthetixAdapter",
+        name: "_synthetixAdapter",
+        type: "address",
       },
       {
-        internalType: 'contract IFeeCounter',
-        name: '_tradingRewards',
-        type: 'address',
+        internalType: "contract IFeeCounter",
+        name: "_tradingRewards",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_minReturnPercent",
+        type: "uint256",
       },
     ],
-    name: 'updateContractAddresses',
+    name: "updateContractParams",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
-]
+];
 
 export class OptionMarketWrapper__factory {
-  static readonly abi = _abi
+  static readonly abi = _abi;
   static createInterface(): OptionMarketWrapperInterface {
-    return new utils.Interface(_abi) as OptionMarketWrapperInterface
+    return new utils.Interface(_abi) as OptionMarketWrapperInterface;
   }
-  static connect(address: string, signerOrProvider: Signer | Provider): OptionMarketWrapper {
-    return new Contract(address, _abi, signerOrProvider) as OptionMarketWrapper
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): OptionMarketWrapper {
+    return new Contract(address, _abi, signerOrProvider) as OptionMarketWrapper;
   }
 }

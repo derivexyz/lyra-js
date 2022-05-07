@@ -7,14 +7,12 @@ export default function getCollateralUpdateDataFromSubgraph(update: CollateralUp
   const setCollateralTo = BigNumber.from(update.amount)
   const strikePrice = BigNumber.from(update.strike.strikePrice)
   return {
-    owner: update.owner,
+    owner: update.trader,
     timestamp: update.timestamp,
     setCollateralTo,
     positionId: update.position.positionId,
-    // TODO: @earthtojake Add blockNumber to CollateralUpdate entity
-    blockNumber: 0,
-    // TODO: @earthtojake Add isBaseCollateral to CollateralUpdate entity
-    isBaseCollateral: true,
+    blockNumber: update.blockNumber,
+    isBaseCollateral: update.isBaseCollateral,
     marketName: update.market.name.substring(1),
     marketAddress: update.market.id,
     isCall: update.option.isCall,

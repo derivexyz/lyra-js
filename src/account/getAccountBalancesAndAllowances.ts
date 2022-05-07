@@ -1,30 +1,42 @@
 import { LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'
-import { Market } from '../market'
-import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
-import { AccountBaseBalance, AccountOptionTokenBalance, AccountStableBalance } from '.'
+import getMarketAddresses from '../utils/getMarketAddresses'
+import { AccountBaseBalance, AccountLPTokenBalance, AccountOptionTokenBalance, AccountStableBalance } from '.'
 
 export default async function getAccountBalancesAndAllowances(
   lyra: Lyra,
-  owner: string,
-  markets: Market[]
+  owner: string
 ): Promise<{
   stables: AccountStableBalance[]
   bases: AccountBaseBalance[]
   optionTokens: AccountOptionTokenBalance[]
+  liquidityTokens: AccountLPTokenBalance[]
 }> {
   const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+  const optionMarketViewer = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketViewer)
 
-  const [stableBalances, marketBalances] = await wrapper.getBalancesAndAllowances(
-    markets.map(market => market.address),
-    owner
-  )
+  const marketAddresses = (await getMarketAddresses(lyra)).map(m => m.optionMarket)
+
+  const [[stableBalances, marketBalances], liquidityTokenBalances] = await Promise.all([
+    wrapper.getBalancesAndAllowances(owner),
+    // TODO: @earthtojake Remove markets parameter from getLiquidityBalancesAndAllowances
+    optionMarketViewer.getLiquidityBalancesAndAllowances(marketAddresses, owner),
+  ])
+
+  const liquidityTokens = liquidityTokenBalances.map((liquidityTokenBalance, idx) => {
+    return {
+      marketAddress: marketAddresses[idx],
+      address: liquidityTokenBalance.token,
+      balance: liquidityTokenBalance.balance,
+      // TODO: @earthtojake Add symbol and decimals to getLiquidityBalancesAndAllowances
+      symbol: 'LyLP',
+      decimals: 18,
+    }
+  })
 
   const stables: AccountStableBalance[] = await Promise.all(
-    stableBalances.map(async ({ token: address, balance, allowance }) => {
-      const erc20 = getERC20Contract(lyra.provider, address)
-      const [decimals, symbol] = await Promise.all([erc20.decimals(), erc20.symbol()])
+    stableBalances.map(async ({ token: address, balance, allowance, symbol, decimals }) => {
       return {
         address,
         balance,
@@ -34,20 +46,22 @@ export default async function getAccountBalancesAndAllowances(
       }
     })
   )
-  const bases: AccountBaseBalance[] = marketBalances.map(({ token: address, balance, allowance }, idx) => {
-    return {
-      marketAddress: markets[idx].address,
-      address,
-      balance,
-      allowance,
-      symbol: markets[idx].baseToken.symbol,
-      decimals: 18,
+  const bases: AccountBaseBalance[] = marketBalances.map(
+    ({ token: address, symbol, decimals, balance, allowance }, idx) => {
+      return {
+        marketAddress: marketAddresses[idx],
+        address,
+        balance,
+        allowance,
+        symbol,
+        decimals,
+      }
     }
-  })
+  )
 
   const optionTokens: AccountOptionTokenBalance[] = marketBalances.map(({ token: address, isApprovedForAll }, idx) => {
     return {
-      marketAddress: markets[idx].address,
+      marketAddress: marketAddresses[idx],
       address,
       isApprovedForAll,
     }
@@ -57,5 +71,6 @@ export default async function getAccountBalancesAndAllowances(
     stables,
     bases,
     optionTokens,
+    liquidityTokens,
   }
 }

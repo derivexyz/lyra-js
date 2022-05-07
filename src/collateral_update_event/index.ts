@@ -1,4 +1,4 @@
-import { TransactionReceipt } from '@ethersproject/providers'
+import { Log } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
 import { Board } from '../board'
@@ -12,10 +12,11 @@ import { TradeEvent, TradeEventData } from '../trade_event'
 import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
 import getIsCall from '../utils/getIsCall'
+import getIsLong from '../utils/getIsLong'
+import getMarketAddresses from '../utils/getMarketAddresses'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventFromLogs from '../utils/parsePartialTradeEventsFromLogs'
-import parsePartialTransferEventFromLogs from '../utils/parsePartialTransferEventFromLogs'
 
 export type CollateralUpdateData = {
   owner: string
@@ -76,7 +77,7 @@ export class CollateralUpdateEvent {
 
   // Getters
 
-  static async getByHash(lyra: Lyra, transactionHash: string): Promise<CollateralUpdateEvent> {
+  static async getByHash(lyra: Lyra, transactionHash: string): Promise<CollateralUpdateEvent[]> {
     const receipt = await lyra.provider.getTransactionReceipt(transactionHash)
     const collateralAdjustedEvent = parsePartialPositionUpdatedEventsFromLogs(receipt.logs).find(
       e => e.args.updatedType === PositionUpdatedType.Adjusted
@@ -85,43 +86,39 @@ export class CollateralUpdateEvent {
       throw new Error('No CollateralUpdate event in transaction')
     }
     const { address } = collateralAdjustedEvent
-    // TODO: @earthtojake Use efficient getMarketAddresses call with OptionMarket address
-    const [markets, { timestamp }] = await Promise.all([lyra.markets(), lyra.provider.getBlock(receipt.blockNumber)])
-    const market = markets.find(market => market.__marketData.marketAddresses.optionToken === address)
-    if (!market) {
+    const marketAddresses = (await getMarketAddresses(lyra)).find(
+      marketAddresses => marketAddresses.optionToken === address
+    )
+    if (!marketAddresses) {
       throw new Error('Transaction hash does not exist for OptionToken contract')
     }
+    const marketAddress = marketAddresses.optionMarket
+    const market = await Market.get(lyra, marketAddress)
     const option = await market.option(
       collateralAdjustedEvent.args.position.strikeId.toNumber(),
       getIsCall(collateralAdjustedEvent.args.position.optionType)
     )
-    return CollateralUpdateEvent.getByReceiptSync(lyra, option, receipt, timestamp)
+    return CollateralUpdateEvent.getByLogsSync(lyra, option, receipt.logs)
   }
 
-  static getByReceiptSync(
-    lyra: Lyra,
-    option: Option,
-    receipt: TransactionReceipt,
-    timestamp: number
-  ): CollateralUpdateEvent {
-    const transfers = parsePartialTransferEventFromLogs(receipt.logs)
-    // Max one collateral update per transaction
-    const collateralAdjustedEvent = parsePartialPositionUpdatedEventsFromLogs(receipt.logs).find(
-      e => e.args.updatedType === PositionUpdatedType.Adjusted
-    )
-    if (!collateralAdjustedEvent) {
-      throw new Error('No CollateralUpdate event in transaction')
+  static getByLogsSync(lyra: Lyra, option: Option, logs: Log[]): CollateralUpdateEvent[] {
+    // Filter out long position updates
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs).filter(u => !getIsLong(u.args.position.optionType))
+
+    if (updates.length === 0) {
+      throw new Error('No PositionUpdated events in logs')
     }
-    const collateralUpdate = getCollateralUpdateDataFromEvent(option, collateralAdjustedEvent, transfers, timestamp)
-    const tradeEvent = parsePartialTradeEventFromLogs(receipt.logs).find(
-      t => t.args.positionId.toNumber() === collateralUpdate.positionId
-    )
-    if (tradeEvent) {
-      const trade = getTradeDataFromEvent(option.market(), tradeEvent, transfers, timestamp)
+
+    const positionIds = Array.from(new Set(updates.map(u => u.args.positionId.toNumber())))
+    const trades = parsePartialTradeEventFromLogs(logs)
+
+    return positionIds.map(positionId => {
+      const updatesForPosition = updates.filter(u => u.args.positionId.toNumber() === positionId)
+      const collateralUpdate = getCollateralUpdateDataFromEvent(option, updatesForPosition)
+      const tradeEvent = trades.find(t => t.args.positionId.toNumber() === positionId)
+      const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, updates) : undefined
       return new CollateralUpdateEvent(lyra, DataSource.Log, collateralUpdate, trade)
-    } else {
-      return new CollateralUpdateEvent(lyra, DataSource.Log, collateralUpdate)
-    }
+    })
   }
 
   static async getByOwner(lyra: Lyra, owner: string): Promise<CollateralUpdateEvent[]> {

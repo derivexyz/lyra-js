@@ -2,7 +2,7 @@
 
 A JavaScript SDK for [Optimistic Ethereum](https://optimism.io/) and the [Lyra Protocol](https://docs.lyra.finance/). Wraps around [Ethers.js](https://docs.ethers.io/v5/). Works in the web browser and Node.js.
 
-*Documentation coming soon.*
+_Documentation coming soon._
 
 ⚠️ This SDK is in open alpha for Optimistic Kovan testnet, and is constantly under development. USE AT YOUR OWN RISK.
 
@@ -19,7 +19,7 @@ Read Lyra's market data with zero configuration.
 ```typescript
 import Lyra from '@lyrafinance/lyra-js'
 
-const Lyra = new Lyra()
+const lyra = new Lyra()
 
 // Fetch all markets
 const markets = await lyra.markets()
@@ -46,7 +46,6 @@ console.log(
 
 Prepare and execute trades with a simple interface.
 
-
 ```typescript
 import Lyra, { TradeEvent } from '@lyrafinance/lyra-js'
 
@@ -56,7 +55,6 @@ const lyra = new Lyra()
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, lyra.provider)
 const account = lyra.account(signer.address)
 
-// Get ETH market
 const market = await lyra.market('eth')
 
 // Select most recent expiry
@@ -72,6 +70,7 @@ if (!strike) {
 const approveTx = await account.approveStableToken(market.quoteToken.address, MAX_BN)
 const approveResponse = await signer.sendTransaction(approveTx)
 await approveResponse.wait()
+console.log('Approved sUSD')
 
 // Prepare trade (Open 1.0 Long ETH Call)
 const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, true, ONE_BN, {
@@ -85,12 +84,14 @@ if (!trade.tx) {
 
 // Execute trade
 const tradeResponse = await signer.sendTransaction(trade.tx)
+console.log('Executed trade:', tradeResponse.hash)
 const tradeReceipt = await tradeResponse.wait()
 
 // Get trade result
-const tradeEvent = await TradeEvent.getByHash(lyra, tradeReceipt.transactionHash)
+const tradeEvent = (await TradeEvent.getByHash(lyra, tradeReceipt.transactionHash))[0]
 
 printObject('Trade Result', {
+  blockNumber: tradeEvent.blockNumber,
   positionId: tradeEvent.positionId,
   premium: tradeEvent.premium,
   fee: tradeEvent.fee,
@@ -124,3 +125,5 @@ lyra.onTrade(trade => {
 ## Examples
 
 See the `src/scripts` directory for more examples of SDK interactions.
+
+You can run any example scripts with `yarn script <filename>`.

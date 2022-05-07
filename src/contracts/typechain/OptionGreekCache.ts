@@ -12,35 +12,35 @@ import {
   PopulatedTransaction,
   Signer,
   utils,
-} from 'ethers'
-import { FunctionFragment, Result, EventFragment } from '@ethersproject/abi'
-import { Listener, Provider } from '@ethersproject/providers'
-import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common'
+} from "ethers";
+import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
+import { Listener, Provider } from "@ethersproject/providers";
+import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace OptionGreekCache {
   export type NetGreeksStruct = {
-    netDelta: BigNumberish
-    netStdVega: BigNumberish
-    netOptionValue: BigNumberish
-  }
+    netDelta: BigNumberish;
+    netStdVega: BigNumberish;
+    netOptionValue: BigNumberish;
+  };
 
   export type NetGreeksStructOutput = [BigNumber, BigNumber, BigNumber] & {
-    netDelta: BigNumber
-    netStdVega: BigNumber
-    netOptionValue: BigNumber
-  }
+    netDelta: BigNumber;
+    netStdVega: BigNumber;
+    netOptionValue: BigNumber;
+  };
 
   export type OptionBoardCacheStruct = {
-    id: BigNumberish
-    strikes: BigNumberish[]
-    expiry: BigNumberish
-    iv: BigNumberish
-    netGreeks: OptionGreekCache.NetGreeksStruct
-    updatedAt: BigNumberish
-    updatedAtPrice: BigNumberish
-    maxSkewVariance: BigNumberish
-    ivVariance: BigNumberish
-  }
+    id: BigNumberish;
+    strikes: BigNumberish[];
+    expiry: BigNumberish;
+    iv: BigNumberish;
+    netGreeks: OptionGreekCache.NetGreeksStruct;
+    updatedAt: BigNumberish;
+    updatedAtPrice: BigNumberish;
+    maxSkewVariance: BigNumberish;
+    ivVariance: BigNumberish;
+  };
 
   export type OptionBoardCacheStructOutput = [
     BigNumber,
@@ -53,29 +53,29 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    id: BigNumber
-    strikes: BigNumber[]
-    expiry: BigNumber
-    iv: BigNumber
-    netGreeks: OptionGreekCache.NetGreeksStructOutput
-    updatedAt: BigNumber
-    updatedAtPrice: BigNumber
-    maxSkewVariance: BigNumber
-    ivVariance: BigNumber
-  }
+    id: BigNumber;
+    strikes: BigNumber[];
+    expiry: BigNumber;
+    iv: BigNumber;
+    netGreeks: OptionGreekCache.NetGreeksStructOutput;
+    updatedAt: BigNumber;
+    updatedAtPrice: BigNumber;
+    maxSkewVariance: BigNumber;
+    ivVariance: BigNumber;
+  };
 
   export type ForceCloseParametersStruct = {
-    ivGWAVPeriod: BigNumberish
-    skewGWAVPeriod: BigNumberish
-    shortVolShock: BigNumberish
-    shortPostCutoffVolShock: BigNumberish
-    longVolShock: BigNumberish
-    longPostCutoffVolShock: BigNumberish
-    liquidateVolShock: BigNumberish
-    liquidatePostCutoffVolShock: BigNumberish
-    shortSpotMin: BigNumberish
-    liquidateSpotMin: BigNumberish
-  }
+    ivGWAVPeriod: BigNumberish;
+    skewGWAVPeriod: BigNumberish;
+    shortVolShock: BigNumberish;
+    shortPostCutoffVolShock: BigNumberish;
+    longVolShock: BigNumberish;
+    longPostCutoffVolShock: BigNumberish;
+    liquidateVolShock: BigNumberish;
+    liquidatePostCutoffVolShock: BigNumberish;
+    shortSpotMin: BigNumberish;
+    liquidateSpotMin: BigNumberish;
+  };
 
   export type ForceCloseParametersStructOutput = [
     BigNumber,
@@ -89,26 +89,26 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    ivGWAVPeriod: BigNumber
-    skewGWAVPeriod: BigNumber
-    shortVolShock: BigNumber
-    shortPostCutoffVolShock: BigNumber
-    longVolShock: BigNumber
-    longPostCutoffVolShock: BigNumber
-    liquidateVolShock: BigNumber
-    liquidatePostCutoffVolShock: BigNumber
-    shortSpotMin: BigNumber
-    liquidateSpotMin: BigNumber
-  }
+    ivGWAVPeriod: BigNumber;
+    skewGWAVPeriod: BigNumber;
+    shortVolShock: BigNumber;
+    shortPostCutoffVolShock: BigNumber;
+    longVolShock: BigNumber;
+    longPostCutoffVolShock: BigNumber;
+    liquidateVolShock: BigNumber;
+    liquidatePostCutoffVolShock: BigNumber;
+    shortSpotMin: BigNumber;
+    liquidateSpotMin: BigNumber;
+  };
 
   export type GlobalCacheStruct = {
-    minUpdatedAt: BigNumberish
-    minUpdatedAtPrice: BigNumberish
-    maxUpdatedAtPrice: BigNumberish
-    maxSkewVariance: BigNumberish
-    maxIvVariance: BigNumberish
-    netGreeks: OptionGreekCache.NetGreeksStruct
-  }
+    minUpdatedAt: BigNumberish;
+    minUpdatedAtPrice: BigNumberish;
+    maxUpdatedAtPrice: BigNumberish;
+    maxSkewVariance: BigNumberish;
+    maxIvVariance: BigNumberish;
+    netGreeks: OptionGreekCache.NetGreeksStruct;
+  };
 
   export type GlobalCacheStructOutput = [
     BigNumber,
@@ -118,26 +118,26 @@ export declare namespace OptionGreekCache {
     BigNumber,
     OptionGreekCache.NetGreeksStructOutput
   ] & {
-    minUpdatedAt: BigNumber
-    minUpdatedAtPrice: BigNumber
-    maxUpdatedAtPrice: BigNumber
-    maxSkewVariance: BigNumber
-    maxIvVariance: BigNumber
-    netGreeks: OptionGreekCache.NetGreeksStructOutput
-  }
+    minUpdatedAt: BigNumber;
+    minUpdatedAtPrice: BigNumber;
+    maxUpdatedAtPrice: BigNumber;
+    maxSkewVariance: BigNumber;
+    maxIvVariance: BigNumber;
+    netGreeks: OptionGreekCache.NetGreeksStructOutput;
+  };
 
   export type GreekCacheParametersStruct = {
-    maxStrikesPerBoard: BigNumberish
-    acceptableSpotPricePercentMove: BigNumberish
-    staleUpdateDuration: BigNumberish
-    varianceIvGWAVPeriod: BigNumberish
-    varianceSkewGWAVPeriod: BigNumberish
-    optionValueIvGWAVPeriod: BigNumberish
-    optionValueSkewGWAVPeriod: BigNumberish
-    gwavSkewFloor: BigNumberish
-    gwavSkewCap: BigNumberish
-    rateAndCarry: BigNumberish
-  }
+    maxStrikesPerBoard: BigNumberish;
+    acceptableSpotPricePercentMove: BigNumberish;
+    staleUpdateDuration: BigNumberish;
+    varianceIvGWAVPeriod: BigNumberish;
+    varianceSkewGWAVPeriod: BigNumberish;
+    optionValueIvGWAVPeriod: BigNumberish;
+    optionValueSkewGWAVPeriod: BigNumberish;
+    gwavSkewFloor: BigNumberish;
+    gwavSkewCap: BigNumberish;
+    rateAndCarry: BigNumberish;
+  };
 
   export type GreekCacheParametersStructOutput = [
     BigNumber,
@@ -151,28 +151,28 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    maxStrikesPerBoard: BigNumber
-    acceptableSpotPricePercentMove: BigNumber
-    staleUpdateDuration: BigNumber
-    varianceIvGWAVPeriod: BigNumber
-    varianceSkewGWAVPeriod: BigNumber
-    optionValueIvGWAVPeriod: BigNumber
-    optionValueSkewGWAVPeriod: BigNumber
-    gwavSkewFloor: BigNumber
-    gwavSkewCap: BigNumber
-    rateAndCarry: BigNumber
-  }
+    maxStrikesPerBoard: BigNumber;
+    acceptableSpotPricePercentMove: BigNumber;
+    staleUpdateDuration: BigNumber;
+    varianceIvGWAVPeriod: BigNumber;
+    varianceSkewGWAVPeriod: BigNumber;
+    optionValueIvGWAVPeriod: BigNumber;
+    optionValueSkewGWAVPeriod: BigNumber;
+    gwavSkewFloor: BigNumber;
+    gwavSkewCap: BigNumber;
+    rateAndCarry: BigNumber;
+  };
 
   export type MinCollateralParametersStruct = {
-    minStaticQuoteCollateral: BigNumberish
-    minStaticBaseCollateral: BigNumberish
-    shockVolA: BigNumberish
-    shockVolPointA: BigNumberish
-    shockVolB: BigNumberish
-    shockVolPointB: BigNumberish
-    callSpotPriceShock: BigNumberish
-    putSpotPriceShock: BigNumberish
-  }
+    minStaticQuoteCollateral: BigNumberish;
+    minStaticBaseCollateral: BigNumberish;
+    shockVolA: BigNumberish;
+    shockVolPointA: BigNumberish;
+    shockVolB: BigNumberish;
+    shockVolPointB: BigNumberish;
+    callSpotPriceShock: BigNumberish;
+    putSpotPriceShock: BigNumberish;
+  };
 
   export type MinCollateralParametersStructOutput = [
     BigNumber,
@@ -184,42 +184,48 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    minStaticQuoteCollateral: BigNumber
-    minStaticBaseCollateral: BigNumber
-    shockVolA: BigNumber
-    shockVolPointA: BigNumber
-    shockVolB: BigNumber
-    shockVolPointB: BigNumber
-    callSpotPriceShock: BigNumber
-    putSpotPriceShock: BigNumber
-  }
+    minStaticQuoteCollateral: BigNumber;
+    minStaticBaseCollateral: BigNumber;
+    shockVolA: BigNumber;
+    shockVolPointA: BigNumber;
+    shockVolB: BigNumber;
+    shockVolPointB: BigNumber;
+    callSpotPriceShock: BigNumber;
+    putSpotPriceShock: BigNumber;
+  };
 
   export type StrikeGreeksStruct = {
-    callDelta: BigNumberish
-    putDelta: BigNumberish
-    stdVega: BigNumberish
-    callPrice: BigNumberish
-    putPrice: BigNumberish
-  }
+    callDelta: BigNumberish;
+    putDelta: BigNumberish;
+    stdVega: BigNumberish;
+    callPrice: BigNumberish;
+    putPrice: BigNumberish;
+  };
 
-  export type StrikeGreeksStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-    callDelta: BigNumber
-    putDelta: BigNumber
-    stdVega: BigNumber
-    callPrice: BigNumber
-    putPrice: BigNumber
-  }
+  export type StrikeGreeksStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    callDelta: BigNumber;
+    putDelta: BigNumber;
+    stdVega: BigNumber;
+    callPrice: BigNumber;
+    putPrice: BigNumber;
+  };
 
   export type StrikeCacheStruct = {
-    id: BigNumberish
-    boardId: BigNumberish
-    strikePrice: BigNumberish
-    skew: BigNumberish
-    greeks: OptionGreekCache.StrikeGreeksStruct
-    callExposure: BigNumberish
-    putExposure: BigNumberish
-    skewVariance: BigNumberish
-  }
+    id: BigNumberish;
+    boardId: BigNumberish;
+    strikePrice: BigNumberish;
+    skew: BigNumberish;
+    greeks: OptionGreekCache.StrikeGreeksStruct;
+    callExposure: BigNumberish;
+    putExposure: BigNumberish;
+    skewVariance: BigNumberish;
+  };
 
   export type StrikeCacheStructOutput = [
     BigNumber,
@@ -231,44 +237,44 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    id: BigNumber
-    boardId: BigNumber
-    strikePrice: BigNumber
-    skew: BigNumber
-    greeks: OptionGreekCache.StrikeGreeksStructOutput
-    callExposure: BigNumber
-    putExposure: BigNumber
-    skewVariance: BigNumber
-  }
+    id: BigNumber;
+    boardId: BigNumber;
+    strikePrice: BigNumber;
+    skew: BigNumber;
+    greeks: OptionGreekCache.StrikeGreeksStructOutput;
+    callExposure: BigNumber;
+    putExposure: BigNumber;
+    skewVariance: BigNumber;
+  };
 
-  export type BoardViewStruct = {
-    boardGreeks: OptionGreekCache.NetGreeksStruct
-    ivGWAV: BigNumberish
-    strikeGreeks: OptionGreekCache.StrikeGreeksStruct[]
-    skewGWAVs: BigNumberish[]
-  }
+  export type BoardGreeksViewStruct = {
+    boardGreeks: OptionGreekCache.NetGreeksStruct;
+    ivGWAV: BigNumberish;
+    strikeGreeks: OptionGreekCache.StrikeGreeksStruct[];
+    skewGWAVs: BigNumberish[];
+  };
 
-  export type BoardViewStructOutput = [
+  export type BoardGreeksViewStructOutput = [
     OptionGreekCache.NetGreeksStructOutput,
     BigNumber,
     OptionGreekCache.StrikeGreeksStructOutput[],
     BigNumber[]
   ] & {
-    boardGreeks: OptionGreekCache.NetGreeksStructOutput
-    ivGWAV: BigNumber
-    strikeGreeks: OptionGreekCache.StrikeGreeksStructOutput[]
-    skewGWAVs: BigNumber[]
-  }
+    boardGreeks: OptionGreekCache.NetGreeksStructOutput;
+    ivGWAV: BigNumber;
+    strikeGreeks: OptionGreekCache.StrikeGreeksStructOutput[];
+    skewGWAVs: BigNumber[];
+  };
 
   export type TradePricingStruct = {
-    optionPrice: BigNumberish
-    preTradeAmmNetStdVega: BigNumberish
-    postTradeAmmNetStdVega: BigNumberish
-    callDelta: BigNumberish
-    volTraded: BigNumberish
-    ivVariance: BigNumberish
-    vega: BigNumberish
-  }
+    optionPrice: BigNumberish;
+    preTradeAmmNetStdVega: BigNumberish;
+    postTradeAmmNetStdVega: BigNumberish;
+    callDelta: BigNumberish;
+    volTraded: BigNumberish;
+    ivVariance: BigNumberish;
+    vega: BigNumberish;
+  };
 
   export type TradePricingStructOutput = [
     BigNumber,
@@ -279,44 +285,50 @@ export declare namespace OptionGreekCache {
     BigNumber,
     BigNumber
   ] & {
-    optionPrice: BigNumber
-    preTradeAmmNetStdVega: BigNumber
-    postTradeAmmNetStdVega: BigNumber
-    callDelta: BigNumber
-    volTraded: BigNumber
-    ivVariance: BigNumber
-    vega: BigNumber
-  }
+    optionPrice: BigNumber;
+    preTradeAmmNetStdVega: BigNumber;
+    postTradeAmmNetStdVega: BigNumber;
+    callDelta: BigNumber;
+    volTraded: BigNumber;
+    ivVariance: BigNumber;
+    vega: BigNumber;
+  };
 }
 
 export declare namespace OptionMarket {
   export type OptionBoardStruct = {
-    id: BigNumberish
-    expiry: BigNumberish
-    iv: BigNumberish
-    frozen: boolean
-    strikeIds: BigNumberish[]
-  }
+    id: BigNumberish;
+    expiry: BigNumberish;
+    iv: BigNumberish;
+    frozen: boolean;
+    strikeIds: BigNumberish[];
+  };
 
-  export type OptionBoardStructOutput = [BigNumber, BigNumber, BigNumber, boolean, BigNumber[]] & {
-    id: BigNumber
-    expiry: BigNumber
-    iv: BigNumber
-    frozen: boolean
-    strikeIds: BigNumber[]
-  }
+  export type OptionBoardStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean,
+    BigNumber[]
+  ] & {
+    id: BigNumber;
+    expiry: BigNumber;
+    iv: BigNumber;
+    frozen: boolean;
+    strikeIds: BigNumber[];
+  };
 
   export type StrikeStruct = {
-    id: BigNumberish
-    strikePrice: BigNumberish
-    skew: BigNumberish
-    longCall: BigNumberish
-    shortCallBase: BigNumberish
-    shortCallQuote: BigNumberish
-    longPut: BigNumberish
-    shortPut: BigNumberish
-    boardId: BigNumberish
-  }
+    id: BigNumberish;
+    strikePrice: BigNumberish;
+    skew: BigNumberish;
+    longCall: BigNumberish;
+    shortCallBase: BigNumberish;
+    shortCallQuote: BigNumberish;
+    longPut: BigNumberish;
+    shortPut: BigNumberish;
+    boardId: BigNumberish;
+  };
 
   export type StrikeStructOutput = [
     BigNumber,
@@ -329,28 +341,28 @@ export declare namespace OptionMarket {
     BigNumber,
     BigNumber
   ] & {
-    id: BigNumber
-    strikePrice: BigNumber
-    skew: BigNumber
-    longCall: BigNumber
-    shortCallBase: BigNumber
-    shortCallQuote: BigNumber
-    longPut: BigNumber
-    shortPut: BigNumber
-    boardId: BigNumber
-  }
+    id: BigNumber;
+    strikePrice: BigNumber;
+    skew: BigNumber;
+    longCall: BigNumber;
+    shortCallBase: BigNumber;
+    shortCallQuote: BigNumber;
+    longPut: BigNumber;
+    shortPut: BigNumber;
+    boardId: BigNumber;
+  };
 
   export type TradeParametersStruct = {
-    isBuy: boolean
-    isForceClose: boolean
-    tradeDirection: BigNumberish
-    optionType: BigNumberish
-    amount: BigNumberish
-    expiry: BigNumberish
-    strikePrice: BigNumberish
-    liquidity: LiquidityPool.LiquidityStruct
-    exchangeParams: SynthetixAdapter.ExchangeParamsStruct
-  }
+    isBuy: boolean;
+    isForceClose: boolean;
+    tradeDirection: BigNumberish;
+    optionType: BigNumberish;
+    amount: BigNumberish;
+    expiry: BigNumberish;
+    strikePrice: BigNumberish;
+    liquidity: LiquidityPool.LiquidityStruct;
+    exchangeParams: SynthetixAdapter.ExchangeParamsStruct;
+  };
 
   export type TradeParametersStructOutput = [
     boolean,
@@ -363,314 +375,514 @@ export declare namespace OptionMarket {
     LiquidityPool.LiquidityStructOutput,
     SynthetixAdapter.ExchangeParamsStructOutput
   ] & {
-    isBuy: boolean
-    isForceClose: boolean
-    tradeDirection: number
-    optionType: number
-    amount: BigNumber
-    expiry: BigNumber
-    strikePrice: BigNumber
-    liquidity: LiquidityPool.LiquidityStructOutput
-    exchangeParams: SynthetixAdapter.ExchangeParamsStructOutput
-  }
+    isBuy: boolean;
+    isForceClose: boolean;
+    tradeDirection: number;
+    optionType: number;
+    amount: BigNumber;
+    expiry: BigNumber;
+    strikePrice: BigNumber;
+    liquidity: LiquidityPool.LiquidityStructOutput;
+    exchangeParams: SynthetixAdapter.ExchangeParamsStructOutput;
+  };
 }
 
 export declare namespace LiquidityPool {
   export type LiquidityStruct = {
-    freeLiquidity: BigNumberish
-    burnableLiquidity: BigNumberish
-    usedCollatLiquidity: BigNumberish
-    pendingDeltaLiquidity: BigNumberish
-    usedDeltaLiquidity: BigNumberish
-    NAV: BigNumberish
-  }
+    freeLiquidity: BigNumberish;
+    burnableLiquidity: BigNumberish;
+    usedCollatLiquidity: BigNumberish;
+    pendingDeltaLiquidity: BigNumberish;
+    usedDeltaLiquidity: BigNumberish;
+    NAV: BigNumberish;
+  };
 
-  export type LiquidityStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-    freeLiquidity: BigNumber
-    burnableLiquidity: BigNumber
-    usedCollatLiquidity: BigNumber
-    pendingDeltaLiquidity: BigNumber
-    usedDeltaLiquidity: BigNumber
-    NAV: BigNumber
-  }
+  export type LiquidityStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    freeLiquidity: BigNumber;
+    burnableLiquidity: BigNumber;
+    usedCollatLiquidity: BigNumber;
+    pendingDeltaLiquidity: BigNumber;
+    usedDeltaLiquidity: BigNumber;
+    NAV: BigNumber;
+  };
 }
 
 export declare namespace SynthetixAdapter {
   export type ExchangeParamsStruct = {
-    spotPrice: BigNumberish
-    quoteKey: BytesLike
-    baseKey: BytesLike
-    short: string
-    quoteBaseFeeRate: BigNumberish
-    baseQuoteFeeRate: BigNumberish
-  }
+    spotPrice: BigNumberish;
+    quoteKey: BytesLike;
+    baseKey: BytesLike;
+    short: string;
+    quoteBaseFeeRate: BigNumberish;
+    baseQuoteFeeRate: BigNumberish;
+  };
 
-  export type ExchangeParamsStructOutput = [BigNumber, string, string, string, BigNumber, BigNumber] & {
-    spotPrice: BigNumber
-    quoteKey: string
-    baseKey: string
-    short: string
-    quoteBaseFeeRate: BigNumber
-    baseQuoteFeeRate: BigNumber
-  }
+  export type ExchangeParamsStructOutput = [
+    BigNumber,
+    string,
+    string,
+    string,
+    BigNumber,
+    BigNumber
+  ] & {
+    spotPrice: BigNumber;
+    quoteKey: string;
+    baseKey: string;
+    short: string;
+    quoteBaseFeeRate: BigNumber;
+    baseQuoteFeeRate: BigNumber;
+  };
 }
 
 export interface OptionGreekCacheInterface extends utils.Interface {
-  contractName: 'OptionGreekCache'
+  contractName: "OptionGreekCache";
   functions: {
-    'acceptOwnership()': FunctionFragment
-    'addBoard((uint256,uint256,uint256,bool,uint256[]),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[])': FunctionFragment
-    'addStrikeToBoard(uint256,uint256,uint256,uint256)': FunctionFragment
-    'getBoardView(uint256)': FunctionFragment
-    'getForceCloseParams()': FunctionFragment
-    'getGlobalCache()': FunctionFragment
-    'getGlobalNetDelta()': FunctionFragment
-    'getGlobalOptionValue()': FunctionFragment
-    'getGreekCacheParams()': FunctionFragment
-    'getIvGWAV(uint256,uint256)': FunctionFragment
-    'getMinCollatParams()': FunctionFragment
-    'getMinCollateral(uint8,uint256,uint256,uint256,uint256)': FunctionFragment
-    'getOptionBoardCache(uint256)': FunctionFragment
-    'getPriceForForceClose((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256,bool)': FunctionFragment
-    'getShockVol(uint256)': FunctionFragment
-    'getSkewGWAV(uint256,uint256)': FunctionFragment
-    'getStrikeCache(uint256)': FunctionFragment
-    'init(address,address,address)': FunctionFragment
-    'isBoardCacheStale(uint256)': FunctionFragment
-    'isGlobalCacheStale(uint256)': FunctionFragment
-    'nominateNewOwner(address)': FunctionFragment
-    'nominatedOwner()': FunctionFragment
-    'owner()': FunctionFragment
-    'removeBoard(uint256)': FunctionFragment
-    'setBoardIv(uint256,uint256)': FunctionFragment
-    'setForceCloseParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))': FunctionFragment
-    'setGreekCacheParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256))': FunctionFragment
-    'setMinCollateralParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))': FunctionFragment
-    'setStrikeSkew(uint256,uint256)': FunctionFragment
-    'updateBoardCachedGreeks(uint256)': FunctionFragment
-    'updateStrikeExposureAndGetPrice((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,uint256,bool)': FunctionFragment
-  }
+    "acceptOwnership()": FunctionFragment;
+    "addBoard((uint256,uint256,uint256,bool,uint256[]),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[])": FunctionFragment;
+    "addStrikeToBoard(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "getBoardGreeksView(uint256)": FunctionFragment;
+    "getForceCloseParams()": FunctionFragment;
+    "getGlobalCache()": FunctionFragment;
+    "getGlobalNetDelta()": FunctionFragment;
+    "getGlobalOptionValue()": FunctionFragment;
+    "getGreekCacheParams()": FunctionFragment;
+    "getIvGWAV(uint256,uint256)": FunctionFragment;
+    "getMinCollatParams()": FunctionFragment;
+    "getMinCollateral(uint8,uint256,uint256,uint256,uint256)": FunctionFragment;
+    "getOptionBoardCache(uint256)": FunctionFragment;
+    "getPriceForForceClose((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256,bool)": FunctionFragment;
+    "getShockVol(uint256)": FunctionFragment;
+    "getSkewGWAV(uint256,uint256)": FunctionFragment;
+    "getStrikeCache(uint256)": FunctionFragment;
+    "init(address,address,address)": FunctionFragment;
+    "isBoardCacheStale(uint256)": FunctionFragment;
+    "isGlobalCacheStale(uint256)": FunctionFragment;
+    "nominateNewOwner(address)": FunctionFragment;
+    "nominatedOwner()": FunctionFragment;
+    "owner()": FunctionFragment;
+    "removeBoard(uint256)": FunctionFragment;
+    "setBoardIv(uint256,uint256)": FunctionFragment;
+    "setForceCloseParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "setGreekCacheParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256))": FunctionFragment;
+    "setMinCollateralParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "setStrikeSkew(uint256,uint256)": FunctionFragment;
+    "updateBoardCachedGreeks(uint256)": FunctionFragment;
+    "updateStrikeExposureAndGetPrice((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,uint256,bool)": FunctionFragment;
+  };
 
-  encodeFunctionData(functionFragment: 'acceptOwnership', values?: undefined): string
   encodeFunctionData(
-    functionFragment: 'addBoard',
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addBoard",
     values: [OptionMarket.OptionBoardStruct, OptionMarket.StrikeStruct[]]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'addStrikeToBoard',
+    functionFragment: "addStrikeToBoard",
     values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
-  ): string
-  encodeFunctionData(functionFragment: 'getBoardView', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getForceCloseParams', values?: undefined): string
-  encodeFunctionData(functionFragment: 'getGlobalCache', values?: undefined): string
-  encodeFunctionData(functionFragment: 'getGlobalNetDelta', values?: undefined): string
-  encodeFunctionData(functionFragment: 'getGlobalOptionValue', values?: undefined): string
-  encodeFunctionData(functionFragment: 'getGreekCacheParams', values?: undefined): string
-  encodeFunctionData(functionFragment: 'getIvGWAV', values: [BigNumberish, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getMinCollatParams', values?: undefined): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'getMinCollateral',
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish]
-  ): string
-  encodeFunctionData(functionFragment: 'getOptionBoardCache', values: [BigNumberish]): string
+    functionFragment: "getBoardGreeksView",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
-    functionFragment: 'getPriceForForceClose',
-    values: [OptionMarket.TradeParametersStruct, OptionMarket.StrikeStruct, BigNumberish, BigNumberish, boolean]
-  ): string
-  encodeFunctionData(functionFragment: 'getShockVol', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getSkewGWAV', values: [BigNumberish, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getStrikeCache', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'init', values: [string, string, string]): string
-  encodeFunctionData(functionFragment: 'isBoardCacheStale', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'isGlobalCacheStale', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'nominateNewOwner', values: [string]): string
-  encodeFunctionData(functionFragment: 'nominatedOwner', values?: undefined): string
-  encodeFunctionData(functionFragment: 'owner', values?: undefined): string
-  encodeFunctionData(functionFragment: 'removeBoard', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'setBoardIv', values: [BigNumberish, BigNumberish]): string
+    functionFragment: "getForceCloseParams",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setForceCloseParameters',
+    functionFragment: "getGlobalCache",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getGlobalNetDelta",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getGlobalOptionValue",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getGreekCacheParams",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getIvGWAV",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMinCollatParams",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMinCollateral",
+    values: [
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getOptionBoardCache",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPriceForForceClose",
+    values: [
+      OptionMarket.TradeParametersStruct,
+      OptionMarket.StrikeStruct,
+      BigNumberish,
+      BigNumberish,
+      boolean
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getShockVol",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getSkewGWAV",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getStrikeCache",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "init",
+    values: [string, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isBoardCacheStale",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isGlobalCacheStale",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominateNewOwner",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominatedOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "removeBoard",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setBoardIv",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setForceCloseParameters",
     values: [OptionGreekCache.ForceCloseParametersStruct]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setGreekCacheParameters',
+    functionFragment: "setGreekCacheParameters",
     values: [OptionGreekCache.GreekCacheParametersStruct]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setMinCollateralParameters',
+    functionFragment: "setMinCollateralParameters",
     values: [OptionGreekCache.MinCollateralParametersStruct]
-  ): string
-  encodeFunctionData(functionFragment: 'setStrikeSkew', values: [BigNumberish, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'updateBoardCachedGreeks', values: [BigNumberish]): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'updateStrikeExposureAndGetPrice',
-    values: [OptionMarket.StrikeStruct, OptionMarket.TradeParametersStruct, BigNumberish, BigNumberish, boolean]
-  ): string
+    functionFragment: "setStrikeSkew",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateBoardCachedGreeks",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateStrikeExposureAndGetPrice",
+    values: [
+      OptionMarket.StrikeStruct,
+      OptionMarket.TradeParametersStruct,
+      BigNumberish,
+      BigNumberish,
+      boolean
+    ]
+  ): string;
 
-  decodeFunctionResult(functionFragment: 'acceptOwnership', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addBoard', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addStrikeToBoard', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getBoardView', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getForceCloseParams', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getGlobalCache', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getGlobalNetDelta', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getGlobalOptionValue', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getGreekCacheParams', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getIvGWAV', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getMinCollatParams', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getMinCollateral', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getOptionBoardCache', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getPriceForForceClose', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getShockVol', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getSkewGWAV', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getStrikeCache', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'init', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'isBoardCacheStale', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'isGlobalCacheStale', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'nominateNewOwner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'nominatedOwner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'removeBoard', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setBoardIv', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setForceCloseParameters', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setGreekCacheParameters', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setMinCollateralParameters', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setStrikeSkew', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'updateBoardCachedGreeks', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'updateStrikeExposureAndGetPrice', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "addBoard", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "addStrikeToBoard",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getBoardGreeksView",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getForceCloseParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGlobalCache",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGlobalNetDelta",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGlobalOptionValue",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGreekCacheParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getIvGWAV", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getMinCollatParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMinCollateral",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getOptionBoardCache",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPriceForForceClose",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getShockVol",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSkewGWAV",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getStrikeCache",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isBoardCacheStale",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isGlobalCacheStale",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominateNewOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominatedOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removeBoard",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setBoardIv", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setForceCloseParameters",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setGreekCacheParameters",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMinCollateralParameters",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setStrikeSkew",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateBoardCachedGreeks",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateStrikeExposureAndGetPrice",
+    data: BytesLike
+  ): Result;
 
   events: {
-    'BoardCacheRemoved(uint256)': EventFragment
-    'BoardCacheUpdated(tuple)': EventFragment
-    'BoardIvUpdated(uint256,uint256,uint256)': EventFragment
-    'ForceCloseParametersSet(tuple)': EventFragment
-    'GlobalCacheUpdated(tuple)': EventFragment
-    'GreekCacheParametersSet(tuple)': EventFragment
-    'MinCollateralParametersSet(tuple)': EventFragment
-    'OwnerChanged(address,address)': EventFragment
-    'OwnerNominated(address)': EventFragment
-    'StrikeCacheRemoved(uint256)': EventFragment
-    'StrikeCacheUpdated(tuple)': EventFragment
-    'StrikeSkewUpdated(uint256,uint256,uint256)': EventFragment
-  }
+    "BoardCacheRemoved(uint256)": EventFragment;
+    "BoardCacheUpdated(tuple)": EventFragment;
+    "BoardIvUpdated(uint256,uint256,uint256)": EventFragment;
+    "ForceCloseParametersSet(tuple)": EventFragment;
+    "GlobalCacheUpdated(tuple)": EventFragment;
+    "GreekCacheParametersSet(tuple)": EventFragment;
+    "MinCollateralParametersSet(tuple)": EventFragment;
+    "OwnerChanged(address,address)": EventFragment;
+    "OwnerNominated(address)": EventFragment;
+    "StrikeCacheRemoved(uint256)": EventFragment;
+    "StrikeCacheUpdated(tuple)": EventFragment;
+    "StrikeSkewUpdated(uint256,uint256,uint256)": EventFragment;
+  };
 
-  getEvent(nameOrSignatureOrTopic: 'BoardCacheRemoved'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BoardCacheUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BoardIvUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'ForceCloseParametersSet'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GlobalCacheUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'GreekCacheParametersSet'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'MinCollateralParametersSet'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'OwnerChanged'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'OwnerNominated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'StrikeCacheRemoved'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'StrikeCacheUpdated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'StrikeSkewUpdated'): EventFragment
+  getEvent(nameOrSignatureOrTopic: "BoardCacheRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoardCacheUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BoardIvUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ForceCloseParametersSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GlobalCacheUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "GreekCacheParametersSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MinCollateralParametersSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StrikeCacheRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StrikeCacheUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StrikeSkewUpdated"): EventFragment;
 }
 
-export type BoardCacheRemovedEvent = TypedEvent<[BigNumber], { boardId: BigNumber }>
+export type BoardCacheRemovedEvent = TypedEvent<
+  [BigNumber],
+  { boardId: BigNumber }
+>;
 
-export type BoardCacheRemovedEventFilter = TypedEventFilter<BoardCacheRemovedEvent>
+export type BoardCacheRemovedEventFilter =
+  TypedEventFilter<BoardCacheRemovedEvent>;
 
 export type BoardCacheUpdatedEvent = TypedEvent<
   [OptionGreekCache.OptionBoardCacheStructOutput],
   { boardCache: OptionGreekCache.OptionBoardCacheStructOutput }
->
+>;
 
-export type BoardCacheUpdatedEventFilter = TypedEventFilter<BoardCacheUpdatedEvent>
+export type BoardCacheUpdatedEventFilter =
+  TypedEventFilter<BoardCacheUpdatedEvent>;
 
 export type BoardIvUpdatedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber],
   { boardId: BigNumber; newIv: BigNumber; globalMaxIvVariance: BigNumber }
->
+>;
 
-export type BoardIvUpdatedEventFilter = TypedEventFilter<BoardIvUpdatedEvent>
+export type BoardIvUpdatedEventFilter = TypedEventFilter<BoardIvUpdatedEvent>;
 
 export type ForceCloseParametersSetEvent = TypedEvent<
   [OptionGreekCache.ForceCloseParametersStructOutput],
   { params: OptionGreekCache.ForceCloseParametersStructOutput }
->
+>;
 
-export type ForceCloseParametersSetEventFilter = TypedEventFilter<ForceCloseParametersSetEvent>
+export type ForceCloseParametersSetEventFilter =
+  TypedEventFilter<ForceCloseParametersSetEvent>;
 
 export type GlobalCacheUpdatedEvent = TypedEvent<
   [OptionGreekCache.GlobalCacheStructOutput],
   { globalCache: OptionGreekCache.GlobalCacheStructOutput }
->
+>;
 
-export type GlobalCacheUpdatedEventFilter = TypedEventFilter<GlobalCacheUpdatedEvent>
+export type GlobalCacheUpdatedEventFilter =
+  TypedEventFilter<GlobalCacheUpdatedEvent>;
 
 export type GreekCacheParametersSetEvent = TypedEvent<
   [OptionGreekCache.GreekCacheParametersStructOutput],
   { params: OptionGreekCache.GreekCacheParametersStructOutput }
->
+>;
 
-export type GreekCacheParametersSetEventFilter = TypedEventFilter<GreekCacheParametersSetEvent>
+export type GreekCacheParametersSetEventFilter =
+  TypedEventFilter<GreekCacheParametersSetEvent>;
 
 export type MinCollateralParametersSetEvent = TypedEvent<
   [OptionGreekCache.MinCollateralParametersStructOutput],
   { params: OptionGreekCache.MinCollateralParametersStructOutput }
->
+>;
 
-export type MinCollateralParametersSetEventFilter = TypedEventFilter<MinCollateralParametersSetEvent>
+export type MinCollateralParametersSetEventFilter =
+  TypedEventFilter<MinCollateralParametersSetEvent>;
 
-export type OwnerChangedEvent = TypedEvent<[string, string], { oldOwner: string; newOwner: string }>
+export type OwnerChangedEvent = TypedEvent<
+  [string, string],
+  { oldOwner: string; newOwner: string }
+>;
 
-export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>
+export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>;
 
-export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>
+export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
 
-export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>
+export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
-export type StrikeCacheRemovedEvent = TypedEvent<[BigNumber], { strikeId: BigNumber }>
+export type StrikeCacheRemovedEvent = TypedEvent<
+  [BigNumber],
+  { strikeId: BigNumber }
+>;
 
-export type StrikeCacheRemovedEventFilter = TypedEventFilter<StrikeCacheRemovedEvent>
+export type StrikeCacheRemovedEventFilter =
+  TypedEventFilter<StrikeCacheRemovedEvent>;
 
 export type StrikeCacheUpdatedEvent = TypedEvent<
   [OptionGreekCache.StrikeCacheStructOutput],
   { strikeCache: OptionGreekCache.StrikeCacheStructOutput }
->
+>;
 
-export type StrikeCacheUpdatedEventFilter = TypedEventFilter<StrikeCacheUpdatedEvent>
+export type StrikeCacheUpdatedEventFilter =
+  TypedEventFilter<StrikeCacheUpdatedEvent>;
 
 export type StrikeSkewUpdatedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber],
   { strikeId: BigNumber; newSkew: BigNumber; globalMaxSkewVariance: BigNumber }
->
+>;
 
-export type StrikeSkewUpdatedEventFilter = TypedEventFilter<StrikeSkewUpdatedEvent>
+export type StrikeSkewUpdatedEventFilter =
+  TypedEventFilter<StrikeSkewUpdatedEvent>;
 
 export interface OptionGreekCache extends BaseContract {
-  contractName: 'OptionGreekCache'
-  connect(signerOrProvider: Signer | Provider | string): this
-  attach(addressOrName: string): this
-  deployed(): Promise<this>
+  contractName: "OptionGreekCache";
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
-  interface: OptionGreekCacheInterface
+  interface: OptionGreekCacheInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>
+  ): Promise<Array<TEvent>>;
 
-  listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>
-  listeners(eventName?: string): Array<Listener>
-  removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this
-  removeAllListeners(eventName?: string): this
-  off: OnEvent<this>
-  on: OnEvent<this>
-  once: OnEvent<this>
-  removeListener: OnEvent<this>
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
   functions: {
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     addBoard(
       board: OptionMarket.OptionBoardStruct,
       strikes: OptionMarket.StrikeStruct[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     addStrikeToBoard(
       boardId: BigNumberish,
@@ -678,27 +890,38 @@ export interface OptionGreekCache extends BaseContract {
       strikePrice: BigNumberish,
       skew: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    getBoardView(boardId: BigNumberish, overrides?: CallOverrides): Promise<[OptionGreekCache.BoardViewStructOutput]>
+    getBoardGreeksView(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[OptionGreekCache.BoardGreeksViewStructOutput]>;
 
-    getForceCloseParams(overrides?: CallOverrides): Promise<[OptionGreekCache.ForceCloseParametersStructOutput]>
+    getForceCloseParams(
+      overrides?: CallOverrides
+    ): Promise<[OptionGreekCache.ForceCloseParametersStructOutput]>;
 
-    getGlobalCache(overrides?: CallOverrides): Promise<[OptionGreekCache.GlobalCacheStructOutput]>
+    getGlobalCache(
+      overrides?: CallOverrides
+    ): Promise<[OptionGreekCache.GlobalCacheStructOutput]>;
 
-    getGlobalNetDelta(overrides?: CallOverrides): Promise<[BigNumber]>
+    getGlobalNetDelta(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getGlobalOptionValue(overrides?: CallOverrides): Promise<[BigNumber]>
+    getGlobalOptionValue(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    getGreekCacheParams(overrides?: CallOverrides): Promise<[OptionGreekCache.GreekCacheParametersStructOutput]>
+    getGreekCacheParams(
+      overrides?: CallOverrides
+    ): Promise<[OptionGreekCache.GreekCacheParametersStructOutput]>;
 
     getIvGWAV(
       boardId: BigNumberish,
       secondsAgo: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { ivGWAV: BigNumber }>
+    ): Promise<[BigNumber] & { ivGWAV: BigNumber }>;
 
-    getMinCollatParams(overrides?: CallOverrides): Promise<[OptionGreekCache.MinCollateralParametersStructOutput]>
+    getMinCollatParams(
+      overrides?: CallOverrides
+    ): Promise<[OptionGreekCache.MinCollateralParametersStructOutput]>;
 
     getMinCollateral(
       optionType: BigNumberish,
@@ -707,12 +930,12 @@ export interface OptionGreekCache extends BaseContract {
       spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>
+    ): Promise<[BigNumber]>;
 
     getOptionBoardCache(
       boardId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[OptionGreekCache.OptionBoardCacheStructOutput]>
+    ): Promise<[OptionGreekCache.OptionBoardCacheStructOutput]>;
 
     getPriceForForceClose(
       trade: OptionMarket.TradeParametersStruct,
@@ -723,81 +946,90 @@ export interface OptionGreekCache extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
-        optionPrice: BigNumber
-        callDelta: BigNumber
-        forceCloseVol: BigNumber
+        optionPrice: BigNumber;
+        callDelta: BigNumber;
+        forceCloseVol: BigNumber;
       }
-    >
+    >;
 
-    getShockVol(timeToMaturity: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>
+    getShockVol(
+      timeToMaturity: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     getSkewGWAV(
       strikeId: BigNumberish,
       secondsAgo: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { skewGWAV: BigNumber }>
+    ): Promise<[BigNumber] & { skewGWAV: BigNumber }>;
 
     getStrikeCache(
       strikeId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[OptionGreekCache.StrikeCacheStructOutput]>
+    ): Promise<[OptionGreekCache.StrikeCacheStructOutput]>;
 
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
       _optionMarketPricer: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    isBoardCacheStale(boardId: BigNumberish, overrides?: CallOverrides): Promise<[boolean]>
+    isBoardCacheStale(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
-    isGlobalCacheStale(spotPrice: BigNumberish, overrides?: CallOverrides): Promise<[boolean]>
+    isGlobalCacheStale(
+      spotPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    nominatedOwner(overrides?: CallOverrides): Promise<[string]>
+    nominatedOwner(overrides?: CallOverrides): Promise<[string]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>
+    owner(overrides?: CallOverrides): Promise<[string]>;
 
     removeBoard(
       boardId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setBoardIv(
       boardId: BigNumberish,
       newBaseIv: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setForceCloseParameters(
       _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setGreekCacheParameters(
       _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setMinCollateralParameters(
       _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setStrikeSkew(
       strikeId: BigNumberish,
       newSkew: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     updateBoardCachedGreeks(
       boardId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     updateStrikeExposureAndGetPrice(
       strike: OptionMarket.StrikeStruct,
@@ -806,16 +1038,18 @@ export interface OptionGreekCache extends BaseContract {
       skew: BigNumberish,
       isPostCutoff: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
-  }
+    ): Promise<ContractTransaction>;
+  };
 
-  acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
+  acceptOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   addBoard(
     board: OptionMarket.OptionBoardStruct,
     strikes: OptionMarket.StrikeStruct[],
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   addStrikeToBoard(
     boardId: BigNumberish,
@@ -823,23 +1057,38 @@ export interface OptionGreekCache extends BaseContract {
     strikePrice: BigNumberish,
     skew: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  getBoardView(boardId: BigNumberish, overrides?: CallOverrides): Promise<OptionGreekCache.BoardViewStructOutput>
+  getBoardGreeksView(
+    boardId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.BoardGreeksViewStructOutput>;
 
-  getForceCloseParams(overrides?: CallOverrides): Promise<OptionGreekCache.ForceCloseParametersStructOutput>
+  getForceCloseParams(
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.ForceCloseParametersStructOutput>;
 
-  getGlobalCache(overrides?: CallOverrides): Promise<OptionGreekCache.GlobalCacheStructOutput>
+  getGlobalCache(
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.GlobalCacheStructOutput>;
 
-  getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>
+  getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>
+  getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getGreekCacheParams(overrides?: CallOverrides): Promise<OptionGreekCache.GreekCacheParametersStructOutput>
+  getGreekCacheParams(
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.GreekCacheParametersStructOutput>;
 
-  getIvGWAV(boardId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
+  getIvGWAV(
+    boardId: BigNumberish,
+    secondsAgo: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  getMinCollatParams(overrides?: CallOverrides): Promise<OptionGreekCache.MinCollateralParametersStructOutput>
+  getMinCollatParams(
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.MinCollateralParametersStructOutput>;
 
   getMinCollateral(
     optionType: BigNumberish,
@@ -848,12 +1097,12 @@ export interface OptionGreekCache extends BaseContract {
     spotPrice: BigNumberish,
     amount: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>
+  ): Promise<BigNumber>;
 
   getOptionBoardCache(
     boardId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<OptionGreekCache.OptionBoardCacheStructOutput>
+  ): Promise<OptionGreekCache.OptionBoardCacheStructOutput>;
 
   getPriceForForceClose(
     trade: OptionMarket.TradeParametersStruct,
@@ -864,74 +1113,90 @@ export interface OptionGreekCache extends BaseContract {
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber, BigNumber] & {
-      optionPrice: BigNumber
-      callDelta: BigNumber
-      forceCloseVol: BigNumber
+      optionPrice: BigNumber;
+      callDelta: BigNumber;
+      forceCloseVol: BigNumber;
     }
-  >
+  >;
 
-  getShockVol(timeToMaturity: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
+  getShockVol(
+    timeToMaturity: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  getSkewGWAV(strikeId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
+  getSkewGWAV(
+    strikeId: BigNumberish,
+    secondsAgo: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  getStrikeCache(strikeId: BigNumberish, overrides?: CallOverrides): Promise<OptionGreekCache.StrikeCacheStructOutput>
+  getStrikeCache(
+    strikeId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<OptionGreekCache.StrikeCacheStructOutput>;
 
   init(
     _synthetixAdapter: string,
     _optionMarket: string,
     _optionMarketPricer: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  isBoardCacheStale(boardId: BigNumberish, overrides?: CallOverrides): Promise<boolean>
+  isBoardCacheStale(
+    boardId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
-  isGlobalCacheStale(spotPrice: BigNumberish, overrides?: CallOverrides): Promise<boolean>
+  isGlobalCacheStale(
+    spotPrice: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   nominateNewOwner(
     _owner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  nominatedOwner(overrides?: CallOverrides): Promise<string>
+  nominatedOwner(overrides?: CallOverrides): Promise<string>;
 
-  owner(overrides?: CallOverrides): Promise<string>
+  owner(overrides?: CallOverrides): Promise<string>;
 
   removeBoard(
     boardId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setBoardIv(
     boardId: BigNumberish,
     newBaseIv: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setForceCloseParameters(
     _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setGreekCacheParameters(
     _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setMinCollateralParameters(
     _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setStrikeSkew(
     strikeId: BigNumberish,
     newSkew: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   updateBoardCachedGreeks(
     boardId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   updateStrikeExposureAndGetPrice(
     strike: OptionMarket.StrikeStruct,
@@ -940,16 +1205,16 @@ export interface OptionGreekCache extends BaseContract {
     skew: BigNumberish,
     isPostCutoff: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    acceptOwnership(overrides?: CallOverrides): Promise<void>
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
 
     addBoard(
       board: OptionMarket.OptionBoardStruct,
       strikes: OptionMarket.StrikeStruct[],
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     addStrikeToBoard(
       boardId: BigNumberish,
@@ -957,23 +1222,38 @@ export interface OptionGreekCache extends BaseContract {
       strikePrice: BigNumberish,
       skew: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    getBoardView(boardId: BigNumberish, overrides?: CallOverrides): Promise<OptionGreekCache.BoardViewStructOutput>
+    getBoardGreeksView(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.BoardGreeksViewStructOutput>;
 
-    getForceCloseParams(overrides?: CallOverrides): Promise<OptionGreekCache.ForceCloseParametersStructOutput>
+    getForceCloseParams(
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.ForceCloseParametersStructOutput>;
 
-    getGlobalCache(overrides?: CallOverrides): Promise<OptionGreekCache.GlobalCacheStructOutput>
+    getGlobalCache(
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.GlobalCacheStructOutput>;
 
-    getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>
+    getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>
+    getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getGreekCacheParams(overrides?: CallOverrides): Promise<OptionGreekCache.GreekCacheParametersStructOutput>
+    getGreekCacheParams(
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.GreekCacheParametersStructOutput>;
 
-    getIvGWAV(boardId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
+    getIvGWAV(
+      boardId: BigNumberish,
+      secondsAgo: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    getMinCollatParams(overrides?: CallOverrides): Promise<OptionGreekCache.MinCollateralParametersStructOutput>
+    getMinCollatParams(
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.MinCollateralParametersStructOutput>;
 
     getMinCollateral(
       optionType: BigNumberish,
@@ -982,12 +1262,12 @@ export interface OptionGreekCache extends BaseContract {
       spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     getOptionBoardCache(
       boardId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<OptionGreekCache.OptionBoardCacheStructOutput>
+    ): Promise<OptionGreekCache.OptionBoardCacheStructOutput>;
 
     getPriceForForceClose(
       trade: OptionMarket.TradeParametersStruct,
@@ -998,353 +1278,312 @@ export interface OptionGreekCache extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber] & {
-        optionPrice: BigNumber
-        callDelta: BigNumber
-        forceCloseVol: BigNumber
+        optionPrice: BigNumber;
+        callDelta: BigNumber;
+        forceCloseVol: BigNumber;
       }
-    >
+    >;
 
-    getShockVol(timeToMaturity: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getSkewGWAV(strikeId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getStrikeCache(strikeId: BigNumberish, overrides?: CallOverrides): Promise<OptionGreekCache.StrikeCacheStructOutput>
-
-    init(
-      _synthetixAdapter: string,
-      _optionMarket: string,
-      _optionMarketPricer: string,
+    getShockVol(
+      timeToMaturity: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>
-
-    isBoardCacheStale(boardId: BigNumberish, overrides?: CallOverrides): Promise<boolean>
-
-    isGlobalCacheStale(spotPrice: BigNumberish, overrides?: CallOverrides): Promise<boolean>
-
-    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>
-
-    nominatedOwner(overrides?: CallOverrides): Promise<string>
-
-    owner(overrides?: CallOverrides): Promise<string>
-
-    removeBoard(boardId: BigNumberish, overrides?: CallOverrides): Promise<void>
-
-    setBoardIv(boardId: BigNumberish, newBaseIv: BigNumberish, overrides?: CallOverrides): Promise<void>
-
-    setForceCloseParameters(
-      _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
-      overrides?: CallOverrides
-    ): Promise<void>
-
-    setGreekCacheParameters(
-      _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
-      overrides?: CallOverrides
-    ): Promise<void>
-
-    setMinCollateralParameters(
-      _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
-      overrides?: CallOverrides
-    ): Promise<void>
-
-    setStrikeSkew(strikeId: BigNumberish, newSkew: BigNumberish, overrides?: CallOverrides): Promise<void>
-
-    updateBoardCachedGreeks(boardId: BigNumberish, overrides?: CallOverrides): Promise<void>
-
-    updateStrikeExposureAndGetPrice(
-      strike: OptionMarket.StrikeStruct,
-      trade: OptionMarket.TradeParametersStruct,
-      iv: BigNumberish,
-      skew: BigNumberish,
-      isPostCutoff: boolean,
-      overrides?: CallOverrides
-    ): Promise<OptionGreekCache.TradePricingStructOutput>
-  }
-
-  filters: {
-    'BoardCacheRemoved(uint256)'(boardId?: null): BoardCacheRemovedEventFilter
-    BoardCacheRemoved(boardId?: null): BoardCacheRemovedEventFilter
-
-    'BoardCacheUpdated(tuple)'(boardCache?: null): BoardCacheUpdatedEventFilter
-    BoardCacheUpdated(boardCache?: null): BoardCacheUpdatedEventFilter
-
-    'BoardIvUpdated(uint256,uint256,uint256)'(
-      boardId?: null,
-      newIv?: null,
-      globalMaxIvVariance?: null
-    ): BoardIvUpdatedEventFilter
-    BoardIvUpdated(boardId?: null, newIv?: null, globalMaxIvVariance?: null): BoardIvUpdatedEventFilter
-
-    'ForceCloseParametersSet(tuple)'(params?: null): ForceCloseParametersSetEventFilter
-    ForceCloseParametersSet(params?: null): ForceCloseParametersSetEventFilter
-
-    'GlobalCacheUpdated(tuple)'(globalCache?: null): GlobalCacheUpdatedEventFilter
-    GlobalCacheUpdated(globalCache?: null): GlobalCacheUpdatedEventFilter
-
-    'GreekCacheParametersSet(tuple)'(params?: null): GreekCacheParametersSetEventFilter
-    GreekCacheParametersSet(params?: null): GreekCacheParametersSetEventFilter
-
-    'MinCollateralParametersSet(tuple)'(params?: null): MinCollateralParametersSetEventFilter
-    MinCollateralParametersSet(params?: null): MinCollateralParametersSetEventFilter
-
-    'OwnerChanged(address,address)'(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
-    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
-
-    'OwnerNominated(address)'(newOwner?: null): OwnerNominatedEventFilter
-    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter
-
-    'StrikeCacheRemoved(uint256)'(strikeId?: null): StrikeCacheRemovedEventFilter
-    StrikeCacheRemoved(strikeId?: null): StrikeCacheRemovedEventFilter
-
-    'StrikeCacheUpdated(tuple)'(strikeCache?: null): StrikeCacheUpdatedEventFilter
-    StrikeCacheUpdated(strikeCache?: null): StrikeCacheUpdatedEventFilter
-
-    'StrikeSkewUpdated(uint256,uint256,uint256)'(
-      strikeId?: null,
-      newSkew?: null,
-      globalMaxSkewVariance?: null
-    ): StrikeSkewUpdatedEventFilter
-    StrikeSkewUpdated(strikeId?: null, newSkew?: null, globalMaxSkewVariance?: null): StrikeSkewUpdatedEventFilter
-  }
-
-  estimateGas: {
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
-
-    addBoard(
-      board: OptionMarket.OptionBoardStruct,
-      strikes: OptionMarket.StrikeStruct[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    addStrikeToBoard(
-      boardId: BigNumberish,
-      strikeId: BigNumberish,
-      strikePrice: BigNumberish,
-      skew: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    getBoardView(boardId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getForceCloseParams(overrides?: CallOverrides): Promise<BigNumber>
-
-    getGlobalCache(overrides?: CallOverrides): Promise<BigNumber>
-
-    getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>
-
-    getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>
-
-    getGreekCacheParams(overrides?: CallOverrides): Promise<BigNumber>
-
-    getIvGWAV(boardId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getMinCollatParams(overrides?: CallOverrides): Promise<BigNumber>
-
-    getMinCollateral(
-      optionType: BigNumberish,
-      strikePrice: BigNumberish,
-      expiry: BigNumberish,
-      spotPrice: BigNumberish,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    getOptionBoardCache(boardId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getPriceForForceClose(
-      trade: OptionMarket.TradeParametersStruct,
-      strike: OptionMarket.StrikeStruct,
-      expiry: BigNumberish,
-      newVol: BigNumberish,
-      isPostCutoff: boolean,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
-
-    getShockVol(timeToMaturity: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getSkewGWAV(strikeId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    getStrikeCache(strikeId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    init(
-      _synthetixAdapter: string,
-      _optionMarket: string,
-      _optionMarketPricer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    isBoardCacheStale(boardId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    isGlobalCacheStale(spotPrice: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-
-    nominateNewOwner(_owner: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
-
-    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>
-
-    removeBoard(boardId: BigNumberish, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
-
-    setBoardIv(
-      boardId: BigNumberish,
-      newBaseIv: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    setForceCloseParameters(
-      _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    setGreekCacheParameters(
-      _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    setMinCollateralParameters(
-      _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    setStrikeSkew(
-      strikeId: BigNumberish,
-      newSkew: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    updateBoardCachedGreeks(
-      boardId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    updateStrikeExposureAndGetPrice(
-      strike: OptionMarket.StrikeStruct,
-      trade: OptionMarket.TradeParametersStruct,
-      iv: BigNumberish,
-      skew: BigNumberish,
-      isPostCutoff: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-  }
-
-  populateTransaction: {
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
-
-    addBoard(
-      board: OptionMarket.OptionBoardStruct,
-      strikes: OptionMarket.StrikeStruct[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
-
-    addStrikeToBoard(
-      boardId: BigNumberish,
-      strikeId: BigNumberish,
-      strikePrice: BigNumberish,
-      skew: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
-
-    getBoardView(boardId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getForceCloseParams(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getGlobalCache(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getGlobalNetDelta(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getGlobalOptionValue(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getGreekCacheParams(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getIvGWAV(boardId: BigNumberish, secondsAgo: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getMinCollatParams(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getMinCollateral(
-      optionType: BigNumberish,
-      strikePrice: BigNumberish,
-      expiry: BigNumberish,
-      spotPrice: BigNumberish,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    getOptionBoardCache(boardId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    getPriceForForceClose(
-      trade: OptionMarket.TradeParametersStruct,
-      strike: OptionMarket.StrikeStruct,
-      expiry: BigNumberish,
-      newVol: BigNumberish,
-      isPostCutoff: boolean,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-
-    getShockVol(timeToMaturity: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     getSkewGWAV(
       strikeId: BigNumberish,
       secondsAgo: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    getStrikeCache(strikeId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
+    getStrikeCache(
+      strikeId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.StrikeCacheStructOutput>;
+
+    init(
+      _synthetixAdapter: string,
+      _optionMarket: string,
+      _optionMarketPricer: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    isBoardCacheStale(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isGlobalCacheStale(
+      spotPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<string>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    removeBoard(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setBoardIv(
+      boardId: BigNumberish,
+      newBaseIv: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setForceCloseParameters(
+      _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setGreekCacheParameters(
+      _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMinCollateralParameters(
+      _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setStrikeSkew(
+      strikeId: BigNumberish,
+      newSkew: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateBoardCachedGreeks(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateStrikeExposureAndGetPrice(
+      strike: OptionMarket.StrikeStruct,
+      trade: OptionMarket.TradeParametersStruct,
+      iv: BigNumberish,
+      skew: BigNumberish,
+      isPostCutoff: boolean,
+      overrides?: CallOverrides
+    ): Promise<OptionGreekCache.TradePricingStructOutput>;
+  };
+
+  filters: {
+    "BoardCacheRemoved(uint256)"(boardId?: null): BoardCacheRemovedEventFilter;
+    BoardCacheRemoved(boardId?: null): BoardCacheRemovedEventFilter;
+
+    "BoardCacheUpdated(tuple)"(boardCache?: null): BoardCacheUpdatedEventFilter;
+    BoardCacheUpdated(boardCache?: null): BoardCacheUpdatedEventFilter;
+
+    "BoardIvUpdated(uint256,uint256,uint256)"(
+      boardId?: null,
+      newIv?: null,
+      globalMaxIvVariance?: null
+    ): BoardIvUpdatedEventFilter;
+    BoardIvUpdated(
+      boardId?: null,
+      newIv?: null,
+      globalMaxIvVariance?: null
+    ): BoardIvUpdatedEventFilter;
+
+    "ForceCloseParametersSet(tuple)"(
+      params?: null
+    ): ForceCloseParametersSetEventFilter;
+    ForceCloseParametersSet(params?: null): ForceCloseParametersSetEventFilter;
+
+    "GlobalCacheUpdated(tuple)"(
+      globalCache?: null
+    ): GlobalCacheUpdatedEventFilter;
+    GlobalCacheUpdated(globalCache?: null): GlobalCacheUpdatedEventFilter;
+
+    "GreekCacheParametersSet(tuple)"(
+      params?: null
+    ): GreekCacheParametersSetEventFilter;
+    GreekCacheParametersSet(params?: null): GreekCacheParametersSetEventFilter;
+
+    "MinCollateralParametersSet(tuple)"(
+      params?: null
+    ): MinCollateralParametersSetEventFilter;
+    MinCollateralParametersSet(
+      params?: null
+    ): MinCollateralParametersSetEventFilter;
+
+    "OwnerChanged(address,address)"(
+      oldOwner?: null,
+      newOwner?: null
+    ): OwnerChangedEventFilter;
+    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter;
+
+    "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
+    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
+
+    "StrikeCacheRemoved(uint256)"(
+      strikeId?: null
+    ): StrikeCacheRemovedEventFilter;
+    StrikeCacheRemoved(strikeId?: null): StrikeCacheRemovedEventFilter;
+
+    "StrikeCacheUpdated(tuple)"(
+      strikeCache?: null
+    ): StrikeCacheUpdatedEventFilter;
+    StrikeCacheUpdated(strikeCache?: null): StrikeCacheUpdatedEventFilter;
+
+    "StrikeSkewUpdated(uint256,uint256,uint256)"(
+      strikeId?: null,
+      newSkew?: null,
+      globalMaxSkewVariance?: null
+    ): StrikeSkewUpdatedEventFilter;
+    StrikeSkewUpdated(
+      strikeId?: null,
+      newSkew?: null,
+      globalMaxSkewVariance?: null
+    ): StrikeSkewUpdatedEventFilter;
+  };
+
+  estimateGas: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addBoard(
+      board: OptionMarket.OptionBoardStruct,
+      strikes: OptionMarket.StrikeStruct[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addStrikeToBoard(
+      boardId: BigNumberish,
+      strikeId: BigNumberish,
+      strikePrice: BigNumberish,
+      skew: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getBoardGreeksView(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getForceCloseParams(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getGlobalCache(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getGlobalNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getGlobalOptionValue(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getGreekCacheParams(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getIvGWAV(
+      boardId: BigNumberish,
+      secondsAgo: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMinCollatParams(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getMinCollateral(
+      optionType: BigNumberish,
+      strikePrice: BigNumberish,
+      expiry: BigNumberish,
+      spotPrice: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getOptionBoardCache(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPriceForForceClose(
+      trade: OptionMarket.TradeParametersStruct,
+      strike: OptionMarket.StrikeStruct,
+      expiry: BigNumberish,
+      newVol: BigNumberish,
+      isPostCutoff: boolean,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getShockVol(
+      timeToMaturity: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getSkewGWAV(
+      strikeId: BigNumberish,
+      secondsAgo: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getStrikeCache(
+      strikeId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
       _optionMarketPricer: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    isBoardCacheStale(boardId: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
+    isBoardCacheStale(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    isGlobalCacheStale(spotPrice: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>
+    isGlobalCacheStale(
+      spotPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeBoard(
       boardId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setBoardIv(
       boardId: BigNumberish,
       newBaseIv: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setForceCloseParameters(
       _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setGreekCacheParameters(
       _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setMinCollateralParameters(
       _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     setStrikeSkew(
       strikeId: BigNumberish,
       newSkew: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     updateBoardCachedGreeks(
       boardId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     updateStrikeExposureAndGetPrice(
       strike: OptionMarket.StrikeStruct,
@@ -1353,6 +1592,168 @@ export interface OptionGreekCache extends BaseContract {
       skew: BigNumberish,
       isPostCutoff: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
-  }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addBoard(
+      board: OptionMarket.OptionBoardStruct,
+      strikes: OptionMarket.StrikeStruct[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addStrikeToBoard(
+      boardId: BigNumberish,
+      strikeId: BigNumberish,
+      strikePrice: BigNumberish,
+      skew: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getBoardGreeksView(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getForceCloseParams(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getGlobalCache(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getGlobalNetDelta(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getGlobalOptionValue(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getGreekCacheParams(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getIvGWAV(
+      boardId: BigNumberish,
+      secondsAgo: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMinCollatParams(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMinCollateral(
+      optionType: BigNumberish,
+      strikePrice: BigNumberish,
+      expiry: BigNumberish,
+      spotPrice: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOptionBoardCache(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getPriceForForceClose(
+      trade: OptionMarket.TradeParametersStruct,
+      strike: OptionMarket.StrikeStruct,
+      expiry: BigNumberish,
+      newVol: BigNumberish,
+      isPostCutoff: boolean,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getShockVol(
+      timeToMaturity: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getSkewGWAV(
+      strikeId: BigNumberish,
+      secondsAgo: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getStrikeCache(
+      strikeId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    init(
+      _synthetixAdapter: string,
+      _optionMarket: string,
+      _optionMarketPricer: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    isBoardCacheStale(
+      boardId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isGlobalCacheStale(
+      spotPrice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    removeBoard(
+      boardId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setBoardIv(
+      boardId: BigNumberish,
+      newBaseIv: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setForceCloseParameters(
+      _forceCloseParams: OptionGreekCache.ForceCloseParametersStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setGreekCacheParameters(
+      _greekCacheParams: OptionGreekCache.GreekCacheParametersStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setMinCollateralParameters(
+      _minCollatParams: OptionGreekCache.MinCollateralParametersStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setStrikeSkew(
+      strikeId: BigNumberish,
+      newSkew: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateBoardCachedGreeks(
+      boardId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateStrikeExposureAndGetPrice(
+      strike: OptionMarket.StrikeStruct,
+      trade: OptionMarket.TradeParametersStruct,
+      iv: BigNumberish,
+      skew: BigNumberish,
+      isPostCutoff: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+  };
 }

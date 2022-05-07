@@ -6,16 +6,14 @@ import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsBuy from './getIsBuy'
 import getIsCall from './getIsCall'
 import getIsLong from './getIsLong'
+import { PartialPositionUpdatedEvent } from './parsePartialPositionUpdatedEventsFromLogs'
 import { PartialTradeEvent } from './parsePartialTradeEventsFromLogs'
-import { PartialTransferEvent } from './parsePartialTransferEventFromLogs'
 import sortEvents from './sortEvents'
 
 export default function getTradeDataFromEvent(
   market: Market,
   trade: PartialTradeEvent,
-  transfers: PartialTransferEvent[],
-  // TODO: @earthtojake Put block timestamp in Trade event
-  timestamp: number
+  updates: PartialPositionUpdatedEvent[]
 ): TradeEventData {
   const marketName = market.name
   const marketAddress = market.address
@@ -52,15 +50,17 @@ export default function getTradeDataFromEvent(
   const setCollateralTo = !isLong ? trade.args.trade.setCollateralTo : undefined
   const isBaseCollateral = !isLong ? getIsBaseCollateral(trade.args.trade.optionType) : undefined
 
-  // If transfers exist, owner is last transfer
+  const timestamp = trade.args.timestamp.toNumber()
+
   let trader = trade.args.trader
   // Reverse chronological (most to least recent)
-  const latestTransfer = sortEvents(
-    // Match trade transaction, remove burns to 0x0
-    transfers.filter(t => t.transactionHash === trade.transactionHash && t.args.to !== ZERO_ADDRESS)
+  const latestUpdate = sortEvents(
+    // Match trade transaction, filter out burns to 0x0
+    updates.filter(t => t.transactionHash === trade.transactionHash && t.args.owner !== ZERO_ADDRESS)
   ).reverse()[0]
-  if (latestTransfer) {
-    trader = latestTransfer.args.to
+  if (latestUpdate) {
+    // Select last trade (transfer) event
+    trader = latestUpdate.args.owner
   }
 
   return {
