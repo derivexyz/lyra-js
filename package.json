@@ -17,7 +17,7 @@
     "url": "https://github.com/lyra-finance/lyra-js"
   },
   "scripts": {
-    "build": "rimraf dist && tsc --project tsconfig.esm.json && tsc --project tsconfig.cjs.json",
+    "build": "tsc --project tsconfig.esm.json && tsc --project tsconfig.cjs.json",
     "dev": "concurrently \"tsc --project tsconfig.esm.json --watch\" \"tsc --project tsconfig.cjs.json --watch\"",
     "script": "env-cmd -f .env.local ts-node src/scripts/index.ts",
     "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
