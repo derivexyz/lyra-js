@@ -1,8 +1,8 @@
-import { ethers } from 'ethers'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import Lyra from '../lyra'
 
-export default function buildTx(lyra: Lyra, to: string, from: string, data: string): ethers.PopulatedTransaction {
+export default function buildTx(lyra: Lyra, to: string, from: string, data: string): PopulatedTransaction {
   return {
     to,
     data,

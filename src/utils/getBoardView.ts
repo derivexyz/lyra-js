@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { isAddress } from '@ethersproject/address'
 
 import { LyraContractId } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
@@ -12,7 +12,7 @@ export default async function getBoardView(
   boardId: number
 ): Promise<OptionMarketViewer.BoardViewStructOutput> {
   const viewer = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketViewer)
-  if (ethers.utils.isAddress(marketAddressOrName)) {
+  if (isAddress(marketAddressOrName)) {
     return await viewer.getBoard(marketAddressOrName, boardId)
   } else {
     const baseKey = parseBaseKey(marketAddressOrName)

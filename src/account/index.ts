@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { ethers } from 'ethers'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
 import Lyra from '../lyra'
@@ -133,7 +133,7 @@ export class Account {
 
   // Approval
 
-  async approveOptionToken(marketAddressOrName: string, isAllowed: boolean): Promise<ethers.PopulatedTransaction> {
+  async approveOptionToken(marketAddressOrName: string, isAllowed: boolean): Promise<PopulatedTransaction> {
     const market = await Market.get(this.lyra, marketAddressOrName)
     const optionToken = getLyraMarketContract(this.lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
     const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
@@ -145,7 +145,7 @@ export class Account {
     return tx
   }
 
-  async approveStableToken(tokenAddressOrName: string, amount: BigNumber): Promise<ethers.PopulatedTransaction> {
+  async approveStableToken(tokenAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
     const balances = await this.balances()
     const stable = balances.stable(tokenAddressOrName)
     const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
@@ -155,7 +155,7 @@ export class Account {
     return tx
   }
 
-  async approveBaseToken(tokenOrMarketAddressOrName: string, amount: BigNumber): Promise<ethers.PopulatedTransaction> {
+  async approveBaseToken(tokenOrMarketAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
     const balances = await this.balances()
     const stable = balances.base(tokenOrMarketAddressOrName)
     const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
@@ -167,7 +167,7 @@ export class Account {
 
   // Faucet (Local, Kovan)
 
-  async drip(): Promise<ethers.PopulatedTransaction> {
+  async drip(): Promise<PopulatedTransaction> {
     if (![Deployment.Kovan, Deployment.Local].includes(this.lyra.deployment)) {
       throw new Error('Faucet is only supported on local and kovan contracts')
     }

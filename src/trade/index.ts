@@ -1,6 +1,6 @@
+import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 import { TransactionReceipt } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
-import { ethers } from 'ethers'
 
 import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
@@ -99,7 +99,7 @@ export class Trade {
   isDisabled: boolean
   disabledReason: TradeDisabledReason | null
 
-  tx: ethers.PopulatedTransaction | null
+  tx: PopulatedTransaction | null
   iterations: QuoteIteration[]
   __params: OptionMarketWrapperWithSwaps.OptionPositionParamsStruct | null
   __calldata: string | null

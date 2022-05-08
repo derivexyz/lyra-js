@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { ethers } from 'ethers'
 import { GraphQLClient } from 'graphql-request'
 
 import { Account } from './account'
@@ -140,15 +140,11 @@ export default class Lyra {
     return Account.get(this, address)
   }
 
-  async approveStableToken(
-    owner: string,
-    tokenAddress: string,
-    amount: BigNumber
-  ): Promise<ethers.PopulatedTransaction> {
+  async approveStableToken(owner: string, tokenAddress: string, amount: BigNumber): Promise<PopulatedTransaction> {
     return await Account.get(this, owner).approveStableToken(tokenAddress, amount)
   }
 
-  async approveBaseToken(owner: string, tokenAddress: string, amount: BigNumber): Promise<ethers.PopulatedTransaction> {
+  async approveBaseToken(owner: string, tokenAddress: string, amount: BigNumber): Promise<PopulatedTransaction> {
     return await Account.get(this, owner).approveBaseToken(tokenAddress, amount)
   }
 
@@ -156,12 +152,12 @@ export default class Lyra {
     owner: string,
     marketAddressOrName: string,
     isAllowed: boolean
-  ): Promise<ethers.PopulatedTransaction> {
+  ): Promise<PopulatedTransaction> {
     const account = await Account.get(this, owner)
     return await account.approveOptionToken(marketAddressOrName, isAllowed)
   }
 
-  async drip(owner: string): Promise<ethers.PopulatedTransaction> {
+  async drip(owner: string): Promise<PopulatedTransaction> {
     const account = await Account.get(this, owner)
     return await account.drip()
   }

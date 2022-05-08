@@ -23,6 +23,4 @@ yarn-error.log*
 .env.local
 .env.**.local
 
-src/contracts/addresses/local.*.json
-
 /dist

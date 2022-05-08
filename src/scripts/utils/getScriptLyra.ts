@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { Wallet } from '@ethersproject/wallet'
 
 import { Deployment } from '../../constants/contracts'
 import Lyra from '../../lyra'
@@ -15,7 +15,7 @@ const getDeploymentRpcUrl = (deployment: Deployment) => {
 
 export type ScriptLyra = {
   lyra: Lyra
-  signer: ethers.Wallet
+  signer: Wallet
 }
 
 export default function getScriptLyra(argv: string[]): ScriptLyra {
@@ -32,6 +32,6 @@ export default function getScriptLyra(argv: string[]): ScriptLyra {
   if (!privateKey) {
     throw new Error('PRIVATE_KEY is missing in environment')
   }
-  const signer = new ethers.Wallet(privateKey, lyra.provider)
+  const signer = new Wallet(privateKey, lyra.provider)
   return { lyra, signer }
 }

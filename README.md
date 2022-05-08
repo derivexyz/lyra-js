@@ -125,5 +125,3 @@ lyra.onTrade(trade => {
 ## Examples
 
 See the `src/scripts` directory for more examples of SDK interactions.
-
-You can run any example scripts with `yarn script <filename>`.

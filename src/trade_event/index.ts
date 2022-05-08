@@ -1,5 +1,6 @@
+import { BigNumber } from '@ethersproject/bignumber'
+import { Contract } from '@ethersproject/contracts'
 import { BlockTag, Log } from '@ethersproject/providers'
-import { BigNumber, Contract } from 'ethers'
 
 import { Board } from '../board'
 import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'

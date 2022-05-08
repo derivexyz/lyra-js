@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { CollateralUpdateData } from '../collateral_update_event'
 import { ZERO_ADDRESS } from '../constants/bn'

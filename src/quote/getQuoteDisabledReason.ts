@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { ONE_BN, UNIT } from '../constants/bn'
 import { Strike } from '../strike'

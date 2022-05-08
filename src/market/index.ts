@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Block } from '@ethersproject/providers'
-import { ethers } from 'ethers'
+import { parseBytes32String } from '@ethersproject/strings'
 
 import { Board } from '../board'
 import { ZERO_BN } from '../constants/bn'
@@ -131,8 +131,8 @@ export class Market {
     const address = marketView.marketAddresses.optionMarket
     const isPaused = marketView.isPaused
     const spotPrice = marketView.exchangeParams.spotPrice
-    const quoteKey = ethers.utils.parseBytes32String(marketView.exchangeParams.quoteKey)
-    const baseKey = ethers.utils.parseBytes32String(marketView.exchangeParams.baseKey)
+    const quoteKey = parseBytes32String(marketView.exchangeParams.quoteKey)
+    const baseKey = parseBytes32String(marketView.exchangeParams.baseKey)
     const quoteAddress = marketView.marketAddresses.quoteAsset
     const baseAddress = marketView.marketAddresses.baseAsset
     const name = baseKey.substring(1) // Remove leading 's'

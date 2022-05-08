@@ -14,7 +14,7 @@ export default async function approve(
     console.log('approving quote...')
     const tx = await account.approveStableToken(stableToken, MAX_BN)
     if (!tx) {
-      throw new Error('Cannot approve base')
+      throw new Error('Cannot approve quote')
     }
     const response = await signer.sendTransaction(tx)
     await response.wait()

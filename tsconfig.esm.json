@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "esnext",
+    "sourceMap": true,
+    "outDir": "dist/esm",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

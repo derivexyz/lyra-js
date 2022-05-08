@@ -1,5 +1,5 @@
+import { Contract } from '@ethersproject/contracts'
 import { Log } from '@ethersproject/providers'
-import { Contract } from 'ethers'
 
 import { ZERO_ADDRESS } from '../constants/bn'
 import { EventName, LyraMarketContractId } from '../constants/contracts'

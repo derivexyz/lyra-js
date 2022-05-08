@@ -1,5 +1,5 @@
+import { Contract } from '@ethersproject/contracts'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { Contract } from 'ethers'
 
 import { Deployment, LyraContractId } from '../constants/contracts'
 import { LyraContractReturnType } from '../constants/mappings'

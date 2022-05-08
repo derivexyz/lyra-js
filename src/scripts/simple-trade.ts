@@ -27,7 +27,7 @@ export default async function simpleTrade(argv: string[]) {
   console.log('Approved sUSD')
 
   // Prepare trade (Open 1.0 Long ETH Call)
-  const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, true, ONE_BN, {
+  const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, true, ONE_BN.div(100), {
     premiumSlippage: 0.1 / 100, // 0.1%
   })
 

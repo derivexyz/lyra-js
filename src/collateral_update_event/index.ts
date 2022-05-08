@@ -1,5 +1,5 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { Log } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
 
 import { Board } from '../board'
 import { DataSource, PositionUpdatedType } from '../constants/contracts'

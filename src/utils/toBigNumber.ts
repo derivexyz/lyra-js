@@ -1,5 +1,5 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { parseUnits } from '@ethersproject/units'
-import { BigNumber } from 'ethers'
 
 export default function toBigNumber(number: number, decimals: number = 18): BigNumber {
   if (isNaN(number)) {

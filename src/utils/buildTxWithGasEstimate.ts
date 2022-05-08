@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { UNIT } from '../constants/bn'
 import Lyra from '../lyra'
@@ -12,7 +12,7 @@ export default async function buildTxWithGasEstimate(
   to: string,
   from: string,
   data: string
-): Promise<ethers.PopulatedTransaction> {
+): Promise<PopulatedTransaction> {
   const tx = buildTx(lyra, to, from, data)
   const gasEstimate = await lyra.provider.estimateGas(tx)
   return {

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { formatBytes32String } from '@ethersproject/strings'
 
 export default function parseBaseKey(baseKey: string) {
   if (baseKey.startsWith('0x')) {
@@ -11,6 +11,6 @@ export default function parseBaseKey(baseKey: string) {
       baseKey.startsWith('s') && baseKey.substring(1).toUpperCase() === baseKey.substring(1)
         ? baseKey
         : 's' + baseKey.toUpperCase()
-    return ethers.utils.formatBytes32String(parsedBasekey)
+    return formatBytes32String(parsedBasekey)
   }
 }
