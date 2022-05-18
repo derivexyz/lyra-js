@@ -40,7 +40,7 @@ export default class Lyra {
   subgraphUri: string
   subgraphClient: GraphQLClient
 
-  constructor(config: LyraConfig | Deployment | number = Deployment.Kovan, disableCache?: boolean) {
+  constructor(config: LyraConfig | Deployment | number = Deployment.Mainnet, disableCache?: boolean) {
     if (typeof config === 'object') {
       // LyraConfig
       const configObj = config as LyraConfig
