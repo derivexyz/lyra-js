@@ -98,5 +98,7 @@ export default function getTradeDataFromEvent(
     skew: newSkew,
     baseIv: newBaseIv,
     volTraded,
+    // TODO(@michaelxuwu): fix this
+    externalSwapFee: ZERO_BN,
   }
 }

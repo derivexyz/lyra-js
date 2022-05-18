@@ -1716,11 +1716,6 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "int256",
-        name: "callDelta",
-        type: "int256",
-      },
-      {
         internalType: "uint256",
         name: "forceCloseVol",
         type: "uint256",

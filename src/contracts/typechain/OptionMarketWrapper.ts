@@ -164,6 +164,7 @@ export declare namespace OptionMarketWrapperWithSwaps {
 export interface OptionMarketWrapperInterface extends utils.Interface {
   contractName: "OptionMarketWrapper";
   functions: {
+    "acceptOwnership()": FunctionFragment;
     "addCurveStable(address,uint8)": FunctionFragment;
     "addLong(uint256)": FunctionFragment;
     "addMarket(address,uint8,(address,address,address))": FunctionFragment;
@@ -180,22 +181,26 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     "marketContracts(address)": FunctionFragment;
     "marketIds(uint256)": FunctionFragment;
     "minReturnPercent()": FunctionFragment;
+    "nominateNewOwner(address)": FunctionFragment;
+    "nominatedOwner()": FunctionFragment;
     "openLong(uint256)": FunctionFragment;
     "openPosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
     "openShort(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
+    "quoteCurveSwap(address,address,uint256)": FunctionFragment;
     "reduceLong(uint256)": FunctionFragment;
     "reduceShort(uint256)": FunctionFragment;
     "removeCurveStable(uint8)": FunctionFragment;
     "removeMarket(uint8)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "setCollateralWrapper(uint8,uint32,uint256)": FunctionFragment;
     "synthetixAdapter()": FunctionFragment;
     "tradingRewards()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
     "updateContractParams(address,address,address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "addCurveStable",
     values: [string, BigNumberish]
@@ -262,6 +267,14 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "nominateNewOwner",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominatedOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "openLong",
     values: [BigNumberish]
   ): string;
@@ -274,6 +287,10 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "quoteCurveSwap",
+    values: [string, string, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "reduceLong",
     values: [BigNumberish]
@@ -291,14 +308,6 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setCollateralWrapper",
-    values: [BigNumberish, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "synthetixAdapter",
     values?: undefined
   ): string;
@@ -307,14 +316,14 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "updateContractParams",
     values: [string, string, string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "addCurveStable",
     data: BytesLike
@@ -349,6 +358,14 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     functionFragment: "minReturnPercent",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominateNewOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominatedOwner",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "openLong", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "openPosition",
@@ -356,6 +373,10 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "openShort", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "quoteCurveSwap",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "reduceLong", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "reduceShort",
@@ -370,14 +391,6 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCollateralWrapper",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "synthetixAdapter",
     data: BytesLike
   ): Result;
@@ -386,34 +399,35 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "updateContractParams",
     data: BytesLike
   ): Result;
 
   events: {
-    "OwnershipTransferred(address,address)": EventFragment;
+    "OwnerChanged(address,address)": EventFragment;
+    "OwnerNominated(address)": EventFragment;
     "PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)": EventFragment;
     "SetCollateralTo(uint256)": EventFragment;
     "WrapperParamsUpdated(address,address,address,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PositionTraded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetCollateralTo"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WrapperParamsUpdated"): EventFragment;
 }
 
-export type OwnershipTransferredEvent = TypedEvent<
+export type OwnerChangedEvent = TypedEvent<
   [string, string],
-  { previousOwner: string; newOwner: string }
+  { oldOwner: string; newOwner: string }
 >;
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>;
+
+export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
+
+export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
 export type PositionTradedEvent = TypedEvent<
   [
@@ -492,6 +506,10 @@ export interface OptionMarketWrapper extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     addCurveStable(
       token: string,
       id: BigNumberish,
@@ -571,6 +589,13 @@ export interface OptionMarketWrapper extends BaseContract {
 
     minReturnPercent(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<[string]>;
+
     openLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -587,6 +612,13 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    quoteCurveSwap(
+      fromToken: string,
+      toToken: string,
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { pool: string; amountOut: BigNumber }>;
 
     reduceLong(
       params: BigNumberish,
@@ -608,25 +640,9 @@ export interface OptionMarketWrapper extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setCollateralWrapper(
-      market: BigNumberish,
-      positionId: BigNumberish,
-      setCollateralTo: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<[string]>;
 
     tradingRewards(overrides?: CallOverrides): Promise<[string]>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     updateContractParams(
       _curveSwap: string,
@@ -636,6 +652,10 @@ export interface OptionMarketWrapper extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
+
+  acceptOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   addCurveStable(
     token: string,
@@ -713,6 +733,13 @@ export interface OptionMarketWrapper extends BaseContract {
 
   minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
 
+  nominateNewOwner(
+    _owner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  nominatedOwner(overrides?: CallOverrides): Promise<string>;
+
   openLong(
     params: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -729,6 +756,13 @@ export interface OptionMarketWrapper extends BaseContract {
   ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
+
+  quoteCurveSwap(
+    fromToken: string,
+    toToken: string,
+    amountIn: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber] & { pool: string; amountOut: BigNumber }>;
 
   reduceLong(
     params: BigNumberish,
@@ -750,25 +784,9 @@ export interface OptionMarketWrapper extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  renounceOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setCollateralWrapper(
-    market: BigNumberish,
-    positionId: BigNumberish,
-    setCollateralTo: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   synthetixAdapter(overrides?: CallOverrides): Promise<string>;
 
   tradingRewards(overrides?: CallOverrides): Promise<string>;
-
-  transferOwnership(
-    newOwner: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   updateContractParams(
     _curveSwap: string,
@@ -779,6 +797,8 @@ export interface OptionMarketWrapper extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
+
     addCurveStable(
       token: string,
       id: BigNumberish,
@@ -855,6 +875,10 @@ export interface OptionMarketWrapper extends BaseContract {
 
     minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
 
+    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<string>;
+
     openLong(
       params: BigNumberish,
       overrides?: CallOverrides
@@ -871,6 +895,13 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
+
+    quoteCurveSwap(
+      fromToken: string,
+      toToken: string,
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { pool: string; amountOut: BigNumber }>;
 
     reduceLong(
       params: BigNumberish,
@@ -889,23 +920,9 @@ export interface OptionMarketWrapper extends BaseContract {
 
     removeMarket(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    setCollateralWrapper(
-      market: BigNumberish,
-      positionId: BigNumberish,
-      setCollateralTo: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<string>;
 
     tradingRewards(overrides?: CallOverrides): Promise<string>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     updateContractParams(
       _curveSwap: string,
@@ -917,14 +934,14 @@ export interface OptionMarketWrapper extends BaseContract {
   };
 
   filters: {
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
+    "OwnerChanged(address,address)"(
+      oldOwner?: null,
+      newOwner?: null
+    ): OwnerChangedEventFilter;
+    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter;
+
+    "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
+    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
 
     "PositionTraded(bool,bool,address,uint256,address,uint256,uint256,uint256,int256,address)"(
       isOpen?: null,
@@ -971,6 +988,10 @@ export interface OptionMarketWrapper extends BaseContract {
   };
 
   estimateGas: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     addCurveStable(
       token: string,
       id: BigNumberish,
@@ -1042,6 +1063,13 @@ export interface OptionMarketWrapper extends BaseContract {
 
     minReturnPercent(overrides?: CallOverrides): Promise<BigNumber>;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
     openLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1058,6 +1086,13 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    quoteCurveSwap(
+      fromToken: string,
+      toToken: string,
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     reduceLong(
       params: BigNumberish,
@@ -1079,25 +1114,9 @@ export interface OptionMarketWrapper extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setCollateralWrapper(
-      market: BigNumberish,
-      positionId: BigNumberish,
-      setCollateralTo: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<BigNumber>;
 
     tradingRewards(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     updateContractParams(
       _curveSwap: string,
@@ -1109,6 +1128,10 @@ export interface OptionMarketWrapper extends BaseContract {
   };
 
   populateTransaction: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     addCurveStable(
       token: string,
       id: BigNumberish,
@@ -1186,6 +1209,13 @@ export interface OptionMarketWrapper extends BaseContract {
 
     minReturnPercent(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     openLong(
       params: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1202,6 +1232,13 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    quoteCurveSwap(
+      fromToken: string,
+      toToken: string,
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     reduceLong(
       params: BigNumberish,
@@ -1223,25 +1260,9 @@ export interface OptionMarketWrapper extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setCollateralWrapper(
-      market: BigNumberish,
-      positionId: BigNumberish,
-      setCollateralTo: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     tradingRewards(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     updateContractParams(
       _curveSwap: string,

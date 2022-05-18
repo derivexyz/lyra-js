@@ -1,21 +1,33 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 import { Block } from '@ethersproject/providers'
 import { parseBytes32String } from '@ethersproject/strings'
 
 import { Board } from '../board'
 import { ZERO_BN } from '../constants/bn'
-import { DataSource } from '../constants/contracts'
-import { OptionMarketViewer } from '../contracts/typechain'
+import { DataSource, LyraMarketContractId } from '../constants/contracts'
+import {
+  OptionGreekCache,
+  OptionMarketPricer,
+  OptionMarketViewer,
+  OptionToken,
+  PoolHedger,
+} from '../contracts/typechain'
+import { LiquidityDeposit } from '../liquidity_deposit'
+import { LiquidityWithdrawal } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
 import { Trade, TradeOptions } from '../trade'
+import buildTx from '../utils/buildTx'
 import fetchLiquidityHistoryDataByMarket from '../utils/fetchLiquidityHistoryDataByMarket'
 import fetchNetDeltaHistoryDataByMarket from '../utils/fetchNetDeltaHistoryDataByMarket'
 import fetchTradingVolumeHistoryDataByMarket from '../utils/fetchTradingVolumeHistoryDataByMarket'
 import getBoardView from '../utils/getBoardView'
 import getBoardViewForStrikeId from '../utils/getBoardViewForStrikeId'
+import getLyraMarketContract from '../utils/getLyraMarketContract'
+import getMarketOwner from '../utils/getMaketOwner'
 import getMarketAddresses from '../utils/getMarketAddresses'
 import getMarketView from '../utils/getMarketView'
 import getMarketViews from '../utils/getMarketViews'
@@ -86,6 +98,95 @@ export type MarketTradingVolumeHistory = {
   timestamp: number
 }
 
+export type GreekCacheParams = {
+  [prop in keyof OptionGreekCache.GreekCacheParametersStruct]: BigNumber
+}
+
+export type SetMarketParamsReturn<T> = {
+  params: T
+  tx: PopulatedTransaction
+}
+
+export type ForceCloseParams = {
+  [prop in keyof OptionGreekCache.ForceCloseParametersStruct]: BigNumber
+}
+
+export type MinCollateralParams = {
+  [prop in keyof OptionGreekCache.MinCollateralParametersStruct]: BigNumber
+}
+
+export type LpParams = {
+  minDepositWithdraw: BigNumber
+  depositDelay: BigNumber
+  withdrawalDelay: BigNumber
+  withdrawalFee: BigNumber
+  liquidityCBThreshold: BigNumber
+  liquidityCBTimeout: BigNumber
+  ivVarianceCBThreshold: BigNumber
+  skewVarianceCBThreshold: BigNumber
+  ivVarianceCBTimeout: BigNumber
+  skewVarianceCBTimeout: BigNumber
+  guardianMultisig: string
+  guardianDelay: BigNumber
+  boardSettlementCBTimeout: BigNumber
+  maxFeePaid: BigNumber
+}
+
+export type PricingParams = {
+  [prop in keyof OptionMarketPricer.PricingParametersStruct]: BigNumber
+}
+
+export type TradeLimitParams = {
+  minDelta: BigNumber
+  minForceCloseDelta: BigNumber
+  tradingCutoff: BigNumber
+  minBaseIV: BigNumber
+  maxBaseIV: BigNumber
+  minSkew: BigNumber
+  maxSkew: BigNumber
+  minVol: BigNumber
+  maxVol: BigNumber
+  absMinSkew: BigNumber
+  absMaxSkew: BigNumber
+  capSkewsToAbs: boolean
+}
+
+export type VarianceFeeParams = {
+  [prop in keyof OptionMarketPricer.VarianceFeeParametersStruct]: BigNumber
+}
+
+export type PartialCollatParams = {
+  [prop in keyof OptionToken.PartialCollateralParametersStruct]: BigNumber
+}
+
+export type PoolHedgerParams = {
+  [prop in keyof PoolHedger.PoolHedgerParametersStruct]: BigNumber
+}
+
+export type BoardParams = {
+  expiry: BigNumber
+  baseIV: BigNumber
+  strikePrices: BigNumber[]
+  skews: BigNumber[]
+  frozen: boolean
+}
+
+export type AddBoardReturn = {
+  tx: PopulatedTransaction
+  board: BoardParams
+}
+
+export type StrikeParams = {
+  boardId: BigNumber
+  strikePrice: BigNumber
+  skew: BigNumber
+}
+
+export type AddStrikeReturn = {
+  tx: PopulatedTransaction
+  strike: StrikeParams
+}
+
 export type MarketTradeOptions = Omit<TradeOptions, 'minOrMaxPremium' | 'premiumSlippage'>
 
 export class Market {
@@ -105,12 +206,14 @@ export class Market {
   isPaused: boolean
   spotPrice: BigNumber
   contractAddresses: MarketContractAddresses
+  marketParameters: OptionMarketViewer.MarketParametersStructOutput
 
   constructor(lyra: Lyra, marketView: OptionMarketViewer.MarketViewWithBoardsStructOutput, block: Block) {
     this.lyra = lyra
     this.block = block
     this.__marketData = marketView
     this.__blockNumber = block.number
+    this.marketParameters = marketView.marketParameters
 
     const fields = Market.getFields(marketView)
     this.address = fields.address
@@ -141,7 +244,9 @@ export class Market {
     const freeLiquidity = marketView.liquidity.freeLiquidity
     const burnableLiquidity = marketView.liquidity.burnableLiquidity
     const totalQueuedDeposits = ZERO_BN // TODO: getting from next contract update
-    const utilization = marketView.liquidity.NAV.sub(marketView.liquidity.freeLiquidity).div(marketView.liquidity.NAV)
+    const utilization = marketView.liquidity.NAV.gt(0)
+      ? marketView.liquidity.NAV.sub(marketView.liquidity.freeLiquidity).div(marketView.liquidity.NAV)
+      : ZERO_BN
     const totalWithdrawingDeposits = ZERO_BN // TODO: getting from next contract update
     const usedCollatLiquidity = marketView.liquidity.usedCollatLiquidity
     const pendingDeltaLiquidity = marketView.liquidity.pendingDeltaLiquidity
@@ -349,5 +454,279 @@ export class Market {
     period?: number
   }): Promise<MarketTradingVolumeHistory[]> {
     return await fetchTradingVolumeHistoryDataByMarket(this.lyra, this, startTimestamp, period)
+  }
+
+  // LP
+
+  async deposit(
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountQuote: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityDeposit.deposit(this.lyra, marketAddressOrName, beneficiary, amountQuote)
+  }
+
+  async withdraw(
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountLiquidityTokens: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityWithdrawal.withdraw(this.lyra, marketAddressOrName, beneficiary, amountLiquidityTokens)
+  }
+
+  // Admin
+  async owner(): Promise<string> {
+    return await getMarketOwner(this.lyra, this.__marketData.marketAddresses)
+  }
+
+  addBoard(
+    account: string,
+    expiry: BigNumber,
+    baseIV: BigNumber,
+    strikePrices: BigNumber[],
+    skews: BigNumber[],
+    frozen: boolean = false
+  ): AddBoardReturn {
+    const optionMarket = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarket
+    )
+    const calldata = optionMarket.interface.encodeFunctionData('createOptionBoard', [
+      expiry,
+      baseIV,
+      strikePrices,
+      skews,
+      frozen,
+    ])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { tx, board: { expiry, baseIV, strikePrices, skews, frozen } }
+  }
+
+  addStrikeToBoard(account: string, boardId: BigNumber, strike: BigNumber, skew: BigNumber): AddStrikeReturn {
+    const optionMarket = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarket
+    )
+    const calldata = optionMarket.interface.encodeFunctionData('addStrikeToBoard', [boardId, strike, skew])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return {
+      tx,
+      strike: {
+        boardId,
+        strikePrice: strike,
+        skew,
+      },
+    }
+  }
+
+  setBoardPaused(account: string, boardId: BigNumber, isPaused: boolean): PopulatedTransaction {
+    const optionMarket = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarket
+    )
+    const calldata = optionMarket.interface.encodeFunctionData('setBoardFrozen', [boardId, isPaused])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
+  }
+
+  setBoardBaseIv(account: string, boardId: BigNumber, baseIv: BigNumber): PopulatedTransaction {
+    const optionMarket = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarket
+    )
+    const calldata = optionMarket.interface.encodeFunctionData('setBoardBaseIv', [boardId, baseIv])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
+  }
+
+  async setGreekCacheParams(
+    account: string,
+    greekCacheParams: Partial<GreekCacheParams>
+  ): Promise<SetMarketParamsReturn<GreekCacheParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toGreekCacheParams = {
+      ...currMarketView.marketParameters.greekCacheParams,
+      ...greekCacheParams,
+    }
+    const optionGreekCache = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionGreekCache
+    )
+    const calldata = optionGreekCache.interface.encodeFunctionData('setGreekCacheParameters', [toGreekCacheParams])
+    const tx = buildTx(this.lyra, optionGreekCache.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toGreekCacheParams, tx }
+  }
+
+  async setForceCloseParams(
+    account: string,
+    forceCloseParams: Partial<ForceCloseParams>
+  ): Promise<SetMarketParamsReturn<ForceCloseParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toForceCloseParams = {
+      ...currMarketView.marketParameters.forceCloseParams,
+      ...forceCloseParams,
+    }
+    const optionGreekCache = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionGreekCache
+    )
+    const calldata = optionGreekCache.interface.encodeFunctionData('setForceCloseParameters', [toForceCloseParams])
+    const tx = buildTx(this.lyra, optionGreekCache.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toForceCloseParams, tx }
+  }
+
+  async setMinCollateralParams(
+    account: string,
+    minCollateralParams: Partial<MinCollateralParams>
+  ): Promise<SetMarketParamsReturn<MinCollateralParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toMinCollateralParams = {
+      ...currMarketView.marketParameters.minCollatParams,
+      ...minCollateralParams,
+    }
+    const optionGreekCache = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionGreekCache
+    )
+    const calldata = optionGreekCache.interface.encodeFunctionData('setMinCollateralParameters', [
+      toMinCollateralParams,
+    ])
+    const tx = buildTx(this.lyra, optionGreekCache.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toMinCollateralParams, tx }
+  }
+
+  async setLpParams(account: string, lpParams: Partial<LpParams>): Promise<SetMarketParamsReturn<LpParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toLPParams = {
+      ...currMarketView.marketParameters.lpParams,
+      ...lpParams,
+    }
+
+    const liquidityPool = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.LiquidityPool
+    )
+    const calldata = liquidityPool.interface.encodeFunctionData('setLiquidityPoolParameters', [toLPParams])
+    const tx = buildTx(this.lyra, liquidityPool.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toLPParams, tx }
+  }
+
+  async setPricingParams(
+    account: string,
+    pricingParams: Partial<PricingParams>
+  ): Promise<SetMarketParamsReturn<PricingParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toPricingParams = {
+      ...currMarketView.marketParameters.pricingParams,
+      ...pricingParams,
+    }
+    const optionMarketPricer = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarketPricer
+    )
+    const calldata = optionMarketPricer.interface.encodeFunctionData('setPricingParams', [toPricingParams])
+    const tx = buildTx(this.lyra, optionMarketPricer.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toPricingParams, tx }
+  }
+
+  async setTradeLimitParams(
+    account: string,
+    tradeLimitParams: Partial<TradeLimitParams>
+  ): Promise<SetMarketParamsReturn<TradeLimitParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toTradeLimitParams = {
+      ...currMarketView.marketParameters.tradeLimitParams,
+      ...tradeLimitParams,
+    }
+    const optionMarketPricer = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarketPricer
+    )
+    const calldata = optionMarketPricer.interface.encodeFunctionData('setTradeLimitParams', [toTradeLimitParams])
+    const tx = buildTx(this.lyra, optionMarketPricer.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toTradeLimitParams, tx }
+  }
+
+  async setVarianceFeeParams(
+    account: string,
+    params: Partial<VarianceFeeParams>
+  ): Promise<SetMarketParamsReturn<VarianceFeeParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toParams = {
+      ...currMarketView.marketParameters.varianceFeeParams,
+      ...params,
+    }
+    const optionMarketPricer = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarketPricer
+    )
+    const calldata = optionMarketPricer.interface.encodeFunctionData('setVarianceFeeParams', [toParams])
+    const tx = buildTx(this.lyra, optionMarketPricer.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toParams, tx }
+  }
+  async setPartialCollatParams(
+    account: string,
+    params: Partial<PartialCollatParams>
+  ): Promise<SetMarketParamsReturn<PartialCollatParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toParams = {
+      ...currMarketView.marketParameters.partialCollatParams,
+      ...params,
+    }
+    const optionToken = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.OptionToken
+    )
+    const calldata = optionToken.interface.encodeFunctionData('setPartialCollateralParams', [toParams])
+    const tx = buildTx(this.lyra, optionToken.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toParams, tx }
+  }
+
+  async setPoolHedgerParams(
+    account: string,
+    params: Partial<PoolHedgerParams>
+  ): Promise<SetMarketParamsReturn<PoolHedgerParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toParams = {
+      ...currMarketView.marketParameters.poolHedgerParams,
+      ...params,
+    }
+    const poolHedger = getLyraMarketContract(
+      this.lyra,
+      this.__marketData.marketAddresses,
+      LyraMarketContractId.PoolHedger
+    )
+    const calldata = poolHedger.interface.encodeFunctionData('setPoolHedgerParams', [toParams])
+    const tx = buildTx(this.lyra, poolHedger.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toParams, tx }
   }
 }

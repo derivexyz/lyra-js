@@ -1,14 +1,17 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { Block } from '@ethersproject/providers'
+import { PopulatedTransaction } from 'ethers'
 
 import { ZERO_BN } from '../constants/bn'
-import { DataSource } from '../constants/contracts'
+import { DataSource, LyraMarketContractId } from '../constants/contracts'
 import { OptionMarketViewer } from '../contracts/typechain'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
+import buildTx from '../utils/buildTx'
+import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export class Board {
   // TODO: Use variables
@@ -108,5 +111,20 @@ export class Board {
     options?: QuoteOptions
   ): Promise<Quote> {
     return await this.market().quote(strikeId, isCall, isBuy, size, options)
+  }
+
+  // Admin
+  setStrikeSkew(account: string, strikeId: BigNumber, skew: BigNumber): PopulatedTransaction {
+    const optionMarket = getLyraMarketContract(
+      this.lyra,
+      this.__market.__marketData.marketAddresses,
+      LyraMarketContractId.OptionMarket
+    )
+    const calldata = optionMarket.interface.encodeFunctionData('setStrikeSkew', [strikeId, skew])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
   }
 }

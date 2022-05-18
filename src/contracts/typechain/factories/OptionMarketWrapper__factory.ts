@@ -96,6 +96,48 @@ const _abi = [
         type: "address",
       },
       {
+        internalType: "address",
+        name: "caller",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "nominatedOwner",
+        type: "address",
+      },
+    ],
+    name: "OnlyNominatedOwner",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "caller",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "OnlyOwner",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
         internalType: "enum OptionMarket.OptionType",
         name: "optionType",
         type: "uint8",
@@ -121,22 +163,46 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
+    name: "UnsupportedToken",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
-        indexed: true,
+        indexed: false,
         internalType: "address",
-        name: "previousOwner",
+        name: "oldOwner",
         type: "address",
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: "address",
         name: "newOwner",
         type: "address",
       },
     ],
-    name: "OwnershipTransferred",
+    name: "OwnerChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnerNominated",
     type: "event",
   },
   {
@@ -249,6 +315,13 @@ const _abi = [
     ],
     name: "WrapperParamsUpdated",
     type: "event",
+  },
+  {
+    inputs: [],
+    name: "acceptOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
@@ -865,6 +938,32 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_owner",
+        type: "address",
+      },
+    ],
+    name: "nominateNewOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "nominatedOwner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "params",
         type: "uint256",
@@ -1040,6 +1139,40 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "fromToken",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "toToken",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amountIn",
+        type: "uint256",
+      },
+    ],
+    name: "quoteCurveSwap",
+    outputs: [
+      {
+        internalType: "address",
+        name: "pool",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amountOut",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "params",
         type: "uint256",
@@ -1103,42 +1236,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint8",
-        name: "market",
-        type: "uint8",
-      },
-      {
-        internalType: "uint32",
-        name: "positionId",
-        type: "uint32",
-      },
-      {
-        internalType: "uint256",
-        name: "setCollateralTo",
-        type: "uint256",
-      },
-    ],
-    name: "setCollateralWrapper",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "newCollateral",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "synthetixAdapter",
     outputs: [
       {
@@ -1161,19 +1258,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
-    ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {

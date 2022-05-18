@@ -15,7 +15,7 @@ import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 const positionsQuery = gql`
   query positions($ids: [String]) {
     ${META_QUERY}
-    positions(first: 1000, orderBy: openTimestamp, orderDirection: desc, where: { id_in: $ids, state_gt: 1 }) {
+    positions(first: 1000, orderBy: openTimestamp, orderDirection: desc, where: { id_in: $ids }) {
       ${POSITION_QUERY_FRAGMENT}
     }
   }

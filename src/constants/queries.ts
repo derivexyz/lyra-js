@@ -86,6 +86,7 @@ strike {
 }
 board {
   expiryTimestamp
+  spotPriceAtExpiry
 }
 market {
   name
@@ -240,6 +241,7 @@ export type PositionQueryResult = {
   }
   board: {
     expiryTimestamp: number
+    priceAtExpiry: string | null
   }
   market: {
     name: string

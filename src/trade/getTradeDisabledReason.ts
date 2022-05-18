@@ -39,7 +39,12 @@ export default function getTradeDisabledReason(quote: Quote, trade: Trade): Trad
     return TradeDisabledReason.EmptyCollateral
   } else if (trade.newSize.gt(0) && trade.collateral && trade.collateral.amount.lt(trade.collateral.min)) {
     return TradeDisabledReason.NotEnoughCollateral
-  } else if (trade.newSize.gt(0) && trade.collateral && trade.collateral.amount.gt(trade.collateral.max)) {
+  } else if (
+    trade.newSize.gt(0) &&
+    trade.collateral &&
+    trade.collateral.max &&
+    trade.collateral.amount.gt(trade.collateral.max)
+  ) {
     return TradeDisabledReason.TooMuchCollateral
   }
 

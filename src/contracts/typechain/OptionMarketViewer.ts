@@ -700,6 +700,7 @@ export declare namespace SynthetixAdapter {
 export interface OptionMarketViewerInterface extends utils.Interface {
   contractName: "OptionMarketViewer";
   functions: {
+    "acceptOwnership()": FunctionFragment;
     "addMarket((address,address,address,address,address,address,address,address,address,address))": FunctionFragment;
     "getBoard(address,uint256)": FunctionFragment;
     "getBoardForBaseKey(bytes32,uint256)": FunctionFragment;
@@ -715,14 +716,18 @@ export interface OptionMarketViewerInterface extends utils.Interface {
     "init(address)": FunctionFragment;
     "initialized()": FunctionFragment;
     "marketAddresses(address)": FunctionFragment;
+    "nominateNewOwner(address)": FunctionFragment;
+    "nominatedOwner()": FunctionFragment;
     "optionMarkets(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "removeMarket(address)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "synthetixAdapter()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "addMarket",
     values: [OptionMarketViewer.OptionMarketAddressesStruct]
@@ -778,6 +783,14 @@ export interface OptionMarketViewerInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "nominateNewOwner",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominatedOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "optionMarkets",
     values: [BigNumberish]
   ): string;
@@ -787,18 +800,14 @@ export interface OptionMarketViewerInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "synthetixAdapter",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
-  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "addMarket", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getBoard", data: BytesLike): Result;
   decodeFunctionResult(
@@ -845,6 +854,14 @@ export interface OptionMarketViewerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "nominateNewOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominatedOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "optionMarkets",
     data: BytesLike
   ): Result;
@@ -854,27 +871,21 @@ export interface OptionMarketViewerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "synthetixAdapter",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
 
   events: {
     "MarketAdded(tuple)": EventFragment;
     "MarketRemoved(address)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
+    "OwnerChanged(address,address)": EventFragment;
+    "OwnerNominated(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "MarketAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MarketRemoved"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
 }
 
 export type MarketAddedEvent = TypedEvent<
@@ -888,13 +899,16 @@ export type MarketRemovedEvent = TypedEvent<[string], { market: string }>;
 
 export type MarketRemovedEventFilter = TypedEventFilter<MarketRemovedEvent>;
 
-export type OwnershipTransferredEvent = TypedEvent<
+export type OwnerChangedEvent = TypedEvent<
   [string, string],
-  { previousOwner: string; newOwner: string }
+  { oldOwner: string; newOwner: string }
 >;
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>;
+
+export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
+
+export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
 export interface OptionMarketViewer extends BaseContract {
   contractName: "OptionMarketViewer";
@@ -924,6 +938,10 @@ export interface OptionMarketViewer extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     addMarket(
       newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1034,6 +1052,13 @@ export interface OptionMarketViewer extends BaseContract {
       }
     >;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<[string]>;
+
     optionMarkets(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1046,17 +1071,12 @@ export interface OptionMarketViewer extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<[string]>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
   };
+
+  acceptOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   addMarket(
     newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct,
@@ -1160,6 +1180,13 @@ export interface OptionMarketViewer extends BaseContract {
     }
   >;
 
+  nominateNewOwner(
+    _owner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  nominatedOwner(overrides?: CallOverrides): Promise<string>;
+
   optionMarkets(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
@@ -1169,18 +1196,11 @@ export interface OptionMarketViewer extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  renounceOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   synthetixAdapter(overrides?: CallOverrides): Promise<string>;
 
-  transferOwnership(
-    newOwner: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
+
     addMarket(
       newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct,
       overrides?: CallOverrides
@@ -1280,6 +1300,10 @@ export interface OptionMarketViewer extends BaseContract {
       }
     >;
 
+    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<string>;
+
     optionMarkets(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1289,14 +1313,7 @@ export interface OptionMarketViewer extends BaseContract {
 
     removeMarket(market: string, overrides?: CallOverrides): Promise<void>;
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<string>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {
@@ -1306,17 +1323,21 @@ export interface OptionMarketViewer extends BaseContract {
     "MarketRemoved(address)"(market?: null): MarketRemovedEventFilter;
     MarketRemoved(market?: null): MarketRemovedEventFilter;
 
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): OwnershipTransferredEventFilter;
+    "OwnerChanged(address,address)"(
+      oldOwner?: null,
+      newOwner?: null
+    ): OwnerChangedEventFilter;
+    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter;
+
+    "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
+    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
   };
 
   estimateGas: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     addMarket(
       newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1390,6 +1411,13 @@ export interface OptionMarketViewer extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
     optionMarkets(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1402,19 +1430,14 @@ export interface OptionMarketViewer extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<BigNumber>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     addMarket(
       newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1493,6 +1516,13 @@ export interface OptionMarketViewer extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     optionMarkets(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1505,15 +1535,6 @@ export interface OptionMarketViewer extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     synthetixAdapter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    transferOwnership(
-      newOwner: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
   };
 }

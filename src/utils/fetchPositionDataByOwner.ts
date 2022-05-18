@@ -22,6 +22,6 @@ export default async function fetchPositionDataByOwner(
   const positions = openPositions
     .map(p => ({ ...p, source: DataSource.ContractCall }))
     .concat(closedPositions.map(p => ({ ...p, source: DataSource.Subgraph })))
-  // Remove duplicates
+  // Remove duplicates, prefer open positions
   return getUniqueBy(positions, p => p.position.id)
 }

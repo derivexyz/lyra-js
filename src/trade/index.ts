@@ -2,10 +2,18 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { TransactionReceipt } from '@ethersproject/providers'
 
+import { AccountStableBalance } from '..'
+import getAccountBalancesAndAllowances from '../account/getAccountBalancesAndAllowances'
 import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
-import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
-import { DataSource, DEFAULT_ITERATIONS, LyraContractId } from '../constants/contracts'
+import { MAX_BN, UNIT, ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
+import {
+  CURVE_POOL_FEE_RATE,
+  DataSource,
+  DEFAULT_ITERATIONS,
+  DEFAULT_SWAP_SLIPPAGE,
+  LyraContractId,
+} from '../constants/contracts'
 import { OptionMarketWrapperWithSwaps } from '../contracts/typechain/OptionMarketWrapper'
 import Lyra from '../lyra'
 import { Market } from '../market'
@@ -16,15 +24,18 @@ import { Strike } from '../strike'
 import { TradeEvent } from '../trade_event'
 import buildTx from '../utils/buildTx'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
+import { from18DecimalBN } from '../utils/convertBNDecimals'
 import fromBigNumber from '../utils/fromBigNumber'
 import getLyraContract from '../utils/getLyraContract'
+import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 import getOptionType from '../utils/getOptionType'
 import toBigNumber from '../utils/toBigNumber'
-import getTradeCollateral, { TradeCollateral } from './getTradeCollateral'
+import getTradeCollateral from './getTradeCollateral'
 import getTradeDisabledReason from './getTradeDisabledReason'
 
 export enum TradeDisabledReason {
   EmptySize = 'EmptySize',
+  EmptyPremium = 'EmptyPremium',
   Expired = 'Expired',
   TradingCutoff = 'TradingCutoff',
   InsufficientLiquidity = 'InsufficientLiquidity',
@@ -44,22 +55,36 @@ export enum TradeDisabledReason {
   PositionClosedLeftoverCollateral = 'PositionClosedLeftoverCollateral',
 }
 
+export type TradeCollateral = {
+  amount: BigNumber
+  min: BigNumber
+  max: BigNumber | null
+  isMin: boolean
+  isMax: boolean
+  isBase?: boolean
+  // If null, no liquidation price (fully collateralized)
+  liquidationPrice: BigNumber | null
+}
+
 export type TradeOptions = {
   positionId?: number
   premiumSlippage?: number
   minOrMaxPremium?: BigNumber
   setToCollateral?: BigNumber
+  setToFullCollateral?: boolean
   isBaseCollateral?: boolean
   iterations?: number
-  useFullCollateral?: boolean
-  usePositionCollateralRatio?: boolean
-  minCollateralBuffer?: number
-  maxCollateralBuffer?: number
+  inputAssetAddressOrName?: string
+  swapSlippage?: number
 }
 
 export type TradeOptionsSync = {
   position?: Position
-} & Omit<TradeOptions, 'positionId'>
+  inputAsset?: {
+    address: string
+    decimals: number
+  }
+} & Omit<TradeOptions, 'positionId' | 'inputAsset'>
 
 export type TradeToken = {
   address: string
@@ -84,6 +109,7 @@ export class Trade {
   quoted: BigNumber
   fee: BigNumber
   feeComponents: QuoteFeeComponents
+  externalSwapFee: BigNumber
   collateral?: TradeCollateral
   iv: BigNumber
   greeks: QuoteGreeks
@@ -116,13 +142,12 @@ export class Trade {
       position,
       premiumSlippage,
       setToCollateral = ZERO_BN,
+      setToFullCollateral = false,
       minOrMaxPremium: _minOrMaxPremium,
       iterations = DEFAULT_ITERATIONS,
       isBaseCollateral: _isBaseCollateral,
-      useFullCollateral,
-      usePositionCollateralRatio,
-      minCollateralBuffer,
-      maxCollateralBuffer,
+      swapSlippage = DEFAULT_SWAP_SLIPPAGE,
+      inputAsset,
     } = options ?? {}
 
     this.__option = option
@@ -164,11 +189,12 @@ export class Trade {
     this.forceClosePenalty = quote.forceClosePenalty
     this.breakEven = quote.breakEven
     this.iterations = quote.iterations
+    this.externalSwapFee = ZERO_BN
 
     // Initialize tokens
     this.quoteToken = {
       // TODO: @michaelxuwu Support multiple stables
-      address: market.quoteToken.address,
+      address: inputAsset ? inputAsset.address : market.quoteToken.address,
       transfer: ZERO_BN,
       receive: ZERO_BN,
     }
@@ -220,24 +246,16 @@ export class Trade {
 
     // If opening a short position or modifying an existing short position, check collateral
     if ((this.isOpen && !this.isBuy) || (position && !position.isLong)) {
-      // If proposed collateral is valid
-      const currentCollateral = position && position.collateral ? position.collateral.amount : ZERO_BN
-
       this.collateral = getTradeCollateral({
         option: option,
-        prevTradeSize: position?.size ?? ZERO_BN,
         postTradeSize: this.newSize,
-        currentCollateral,
         setToCollateral,
-        minCollateralBuffer,
-        maxCollateralBuffer,
+        setToFullCollateral,
         isBaseCollateral,
-        useFullCollateral,
-        usePositionCollateralRatio,
       })
 
       // Get collateral change
-      const collateralDiff = this.collateral.amount.sub(this.collateral.current)
+      const collateralDiff = this.collateral.amount.sub(position?.collateral?.amount ?? ZERO_BN)
 
       if (this.collateral.isBase) {
         netBaseTransfer = netBaseTransfer.add(collateralDiff)
@@ -246,11 +264,27 @@ export class Trade {
       }
     }
 
-    // TODO: @michaelxuwu Account for stablecoin slippage
+    // Get external swap fee
+    if (inputAsset && this.option().market().quoteToken.address !== inputAsset.address) {
+      // Set swap fee to an estimate of premium
+      // Based on curve pool fee and configured slippage
+      this.externalSwapFee = netQuoteTransfer
+        .abs()
+        .mul(toBigNumber(CURVE_POOL_FEE_RATE + swapSlippage))
+        .div(UNIT)
+
+      this.premium = this.premium
+        .mul(toBigNumber(isBuy ? 1 + CURVE_POOL_FEE_RATE + swapSlippage : 1 - CURVE_POOL_FEE_RATE + swapSlippage))
+        .div(UNIT)
+      this.pricePerOption = this.pricePerOption
+        .mul(toBigNumber(isBuy ? 1 + CURVE_POOL_FEE_RATE + swapSlippage : 1 - CURVE_POOL_FEE_RATE + swapSlippage))
+        .div(UNIT)
+    }
+
     if (netQuoteTransfer.gt(0)) {
-      this.quoteToken.transfer = netQuoteTransfer
+      this.quoteToken.transfer = netQuoteTransfer.add(this.externalSwapFee)
     } else {
-      this.quoteToken.receive = netQuoteTransfer.abs()
+      this.quoteToken.receive = netQuoteTransfer.abs().sub(this.externalSwapFee)
     }
 
     if (netBaseTransfer.gt(0)) {
@@ -265,21 +299,29 @@ export class Trade {
       positionId: position ? BigNumber.from(position.id) : ZERO_BN,
       iterations: BigNumber.from(iterations),
       setCollateralTo: this.collateral?.amount ?? ZERO_BN,
-      currentCollateral: this.collateral?.current ?? ZERO_BN,
+      currentCollateral: position?.collateral?.amount ?? ZERO_BN,
       optionType: getOptionType(option.isCall, isLong, !!isBaseCollateral),
       amount: size,
-      minCost: !isBuy ? minOrMaxPremium : ZERO_BN,
+      minCost: !isBuy && minOrMaxPremium.gt(ZERO_BN) ? minOrMaxPremium : ZERO_BN,
       maxCost: isBuy ? minOrMaxPremium : MAX_BN,
-      inputAmount: this.quoteToken.transfer,
+      inputAmount:
+        inputAsset && inputAsset.decimals !== 18
+          ? from18DecimalBN(this.quoteToken.transfer, inputAsset.decimals)
+          : this.quoteToken.transfer,
       inputAsset: this.quoteToken.address,
     }
 
     this.isCollateralUpdate = !!(this.collateral && this.size.isZero() && this.collateral.amount.gt(0))
 
     const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+
     this.__calldata = wrapper.interface.encodeFunctionData(
       // Type-hack since all args are the same
-      (this.isOpen ? 'openPosition' : !this.isForceClose ? 'closePosition' : 'forceClosePosition') as 'openPosition',
+      (this.isOpen || this.isCollateralUpdate
+        ? 'openPosition'
+        : !this.isForceClose
+        ? 'closePosition'
+        : 'forceClosePosition') as 'openPosition',
       [this.__params]
     )
 
@@ -307,9 +349,37 @@ export class Trade {
       }
       return
     }
-    const [market, position] = await Promise.all([Market.get(lyra, marketAddressOrName), maybeGetPosition()])
+    const [market, position, balances] = await Promise.all([
+      Market.get(lyra, marketAddressOrName),
+      maybeGetPosition(),
+      getAccountBalancesAndAllowances(lyra, ZERO_ADDRESS),
+    ])
+    let supportedInputAsset: AccountStableBalance | null = null
+    if (options?.inputAssetAddressOrName) {
+      const stable = balances.stables.find(
+        stable =>
+          stable.address === options.inputAssetAddressOrName ||
+          stable.symbol.toLowerCase() === options.inputAssetAddressOrName?.toLowerCase()
+      )
+      supportedInputAsset = stable ?? null
+    }
+
+    if (options?.inputAssetAddressOrName && !supportedInputAsset) {
+      throw new Error('Input asset not supported')
+    }
+
     const option = market.liveOption(strikeId, isCall)
-    const trade = Trade.getSync(lyra, owner, option, isBuy, size, { ...options, position })
+    const trade = Trade.getSync(lyra, owner, option, isBuy, size, {
+      ...options,
+      position,
+      inputAsset: supportedInputAsset
+        ? {
+            address: supportedInputAsset.address,
+            decimals: supportedInputAsset.decimals,
+          }
+        : undefined,
+    })
+
     trade.tx =
       trade.tx && trade.tx.to && trade.tx.from && trade.tx.data
         ? await buildTxWithGasEstimate(lyra, trade.tx.to, trade.tx.from, trade.tx.data)
@@ -343,6 +413,36 @@ export class Trade {
       return TradeEvent.getByLogsSync(lyra, option.market(), receipt.logs)[0]
     } catch (e) {
       return CollateralUpdateEvent.getByLogsSync(lyra, option, receipt.logs)[0]
+    }
+  }
+
+  static getMinCollateral(option: Option, size: BigNumber, isBaseCollateral: boolean): BigNumber {
+    return getMinCollateralForSpotPrice(option, size, option.market().spotPrice, isBaseCollateral)
+  }
+
+  pnl(): BigNumber {
+    const position = this.__position
+    if (position && position.isOpen && position.size.gt(0)) {
+      return position.isLong
+        ? position.currentPricePerOption.sub(position.averageCostPerOption()).mul(this.size).div(UNIT)
+        : position.averageCostPerOption().sub(position.currentPricePerOption).mul(this.size).div(UNIT)
+    } else {
+      return ZERO_BN
+    }
+  }
+
+  pnlPercent(): BigNumber {
+    const position = this.__position
+    if (position && position.isOpen && position.size.gt(0)) {
+      const totalCostOfPosition = position.averageCostPerOption().mul(this.size).div(UNIT)
+      const pnl = this.pnl()
+      if (totalCostOfPosition.eq(0)) {
+        return ZERO_BN
+      } else {
+        return pnl.mul(UNIT).div(totalCostOfPosition)
+      }
+    } else {
+      return ZERO_BN
     }
   }
 

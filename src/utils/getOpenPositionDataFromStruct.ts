@@ -43,5 +43,6 @@ export default function getOpenPositionDataFromStruct(
     isSettled,
     collateral,
     optionPrice: option.price,
+    priceAtExpiry: option.board().priceAtExpiry,
   }
 }

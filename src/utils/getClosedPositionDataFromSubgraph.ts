@@ -15,7 +15,8 @@ export default function getClosedPositionDataFromSubgraph(
   const isCall = position.option.isCall
   const isLong = position.isLong
   const state = position.state
-  const isOpen = state === PositionState.Active
+  // Hardcode isOpen to false (deals with closed position edge case)
+  const isOpen = false
   const isLiquidated = state === PositionState.Liquidated
   const isSettled = state === PositionState.Settled
   // We do not calculate realtime collateral data for closed positions
@@ -27,6 +28,7 @@ export default function getClosedPositionDataFromSubgraph(
         liquidationPrice: ZERO_BN,
       }
     : undefined
+  const priceAtExpiry = position.board.priceAtExpiry ? BigNumber.from(position.board.priceAtExpiry) : undefined
   return {
     blockNumber,
     owner: position.owner,
@@ -47,5 +49,6 @@ export default function getClosedPositionDataFromSubgraph(
     collateral,
     // HACK: Closed positions have $0 value
     optionPrice: ZERO_BN,
+    priceAtExpiry,
   }
 }

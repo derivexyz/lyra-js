@@ -1,11 +1,15 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from 'ethers'
 
-import Lyra from '..'
 import { ZERO_BN } from '../constants/bn'
+import { LyraMarketContractId } from '../constants/contracts'
 import { WithdrawProcessedEvent, WithdrawQueuedEvent } from '../contracts/typechain/LiquidityPool'
+import Lyra from '../lyra'
 import { Market } from '../market'
+import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import fetchLiquidityWithdrawalEventDataByID from '../utils/fetchLiquidityWithdrawalEventDataByID'
 import fetchLiquidityWithdrawalEventDataByOwner from '../utils/fetchLiquidityWithdrawalEventDataByOwner'
+import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export class LiquidityWithdrawal {
   lyra: Lyra
@@ -76,6 +80,28 @@ export class LiquidityWithdrawal {
     const market = await Market.get(lyra, marketAddress)
     const event = await fetchLiquidityWithdrawalEventDataByID(lyra, market, id)
     return new LiquidityWithdrawal(lyra, market, event)
+  }
+
+  // Initiate Withdraw
+
+  static async withdraw(
+    lyra: Lyra,
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountLiquidityTokens: BigNumber
+  ): Promise<PopulatedTransaction> {
+    const market = await Market.get(lyra, marketAddressOrName)
+    const liquidityPoolContract = getLyraMarketContract(
+      lyra,
+      market.contractAddresses,
+      LyraMarketContractId.LiquidityPool
+    )
+    const data = liquidityPoolContract.interface.encodeFunctionData('initiateWithdraw', [
+      beneficiary,
+      amountLiquidityTokens,
+    ])
+    const tx = await buildTxWithGasEstimate(lyra, liquidityPoolContract.address, beneficiary, data)
+    return tx
   }
 
   // Edges

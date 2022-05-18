@@ -16,6 +16,7 @@ import getQuoteIteration from './getQuoteIteration'
 
 export enum QuoteDisabledReason {
   EmptySize = 'EmptySize',
+  EmptyPremium = 'EmptyPremium',
   Expired = 'Expired',
   TradingCutoff = 'TradingCutoff',
   InsufficientLiquidity = 'InsufficientLiquidity',
@@ -211,20 +212,6 @@ export class Quote {
     const strikePrice = option.strike().strikePrice
     const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
 
-    const disabledReason = getQuoteDisabledReason(
-      option.strike(),
-      size,
-      ZERO_BN,
-      newIv,
-      skew,
-      baseIv,
-      isBuy,
-      isForceClose
-    )
-    if (disabledReason) {
-      return this.getDisabledFields(option, disabledReason)
-    }
-
     const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
 
     const delta = toBigNumber(
@@ -280,8 +267,23 @@ export class Quote {
       )
     )
 
-    // Pricing
     const premium = iterations.reduce((sum, quote) => sum.add(quote.premium), ZERO_BN)
+
+    const disabledReason = getQuoteDisabledReason(
+      option.strike(),
+      size,
+      premium,
+      newIv,
+      skew,
+      baseIv,
+      isBuy,
+      isForceClose
+    )
+    if (disabledReason) {
+      return this.getDisabledFields(option, disabledReason)
+    }
+
+    // Pricing
     const pricePerOption = premium.mul(UNIT).div(size)
     const breakEven = getBreakEvenPrice(option.isCall, strike.strikePrice, premium.mul(UNIT).div(size))
     const forceClosePenalty = iterations.reduce((sum, quote) => sum.add(quote.forceClosePenalty), ZERO_BN)

@@ -15,8 +15,7 @@ import fetchPositionDataByID from '../utils/fetchPositionDataByID'
 import fetchPositionDataByOwner from '../utils/fetchPositionDataByOwner'
 import getPositionAverageCost from './getPositionAverageCost'
 import { PositionCollateral } from './getPositionCollateral'
-
-export type PositionTradeOptions = Omit<TradeOptions, 'premiumSlippage' | 'minOrMaxPremium'>
+import getSettlePNL from './getSettlePNL'
 
 export type PositionData = {
   id: number
@@ -36,7 +35,10 @@ export type PositionData = {
   isLiquidated: boolean
   isSettled: boolean
   optionPrice: BigNumber
+  priceAtExpiry?: BigNumber
 }
+
+export type PositionTradeOptions = Omit<TradeOptions, 'positionId'>
 
 export class Position {
   private lyra: Lyra
@@ -61,7 +63,7 @@ export class Position {
   isLiquidated: boolean
   isSettled: boolean
   currentPricePerOption: BigNumber
-
+  priceAtExpiry?: BigNumber
   constructor(
     lyra: Lyra,
     source: DataSource,
@@ -94,6 +96,7 @@ export class Position {
     this.isSettled = position.isSettled
     this.collateral = position.collateral
     this.currentPricePerOption = position.optionPrice
+    this.priceAtExpiry = position.priceAtExpiry
   }
 
   // Getters
@@ -131,6 +134,19 @@ export class Position {
       return this.isLong
         ? this.currentPricePerOption.sub(this.averageCostPerOption()).mul(this.size).div(UNIT)
         : this.averageCostPerOption().sub(this.currentPricePerOption).mul(this.size).div(UNIT)
+    } else if (this.isSettled) {
+      if (this.priceAtExpiry) {
+        return getSettlePNL(
+          this.isLong,
+          this.isCall,
+          this.averageCostPerOption(),
+          this.priceAtExpiry,
+          this.strikePrice,
+          this.size
+        )
+      } else {
+        return ZERO_BN
+      }
     } else {
       return ZERO_BN
     }
@@ -139,7 +155,11 @@ export class Position {
   pnlPercent(): BigNumber {
     const totalCostOfPosition = this.averageCostPerOption().mul(this.size).div(UNIT)
     const pnl = this.pnl()
-    return pnl.mul(UNIT).div(totalCostOfPosition)
+    if (totalCostOfPosition.eq(0)) {
+      return ZERO_BN
+    } else {
+      return pnl.mul(UNIT).div(totalCostOfPosition)
+    }
   }
 
   // Edges
@@ -153,25 +173,29 @@ export class Position {
             // Positions from contract calls have Trades derived from logs
             this.__source === DataSource.ContractCall ? DataSource.Log : this.__source,
             trade,
-            this.__collateralUpdateData.find(c => c.transactionHash === trade.transactionHash)
+            !this.isLong
+              ? this.__collateralUpdateData.find(c => c.transactionHash === trade.transactionHash)
+              : undefined
           )
       )
       .sort((a, b) => a.blockNumber - b.blockNumber)
   }
 
   collateralUpdates(): CollateralUpdateEvent[] {
-    return this.__collateralUpdateData
-      .map(
-        collatUpdate =>
-          new CollateralUpdateEvent(
-            this.lyra,
-            // Positions from contract calls have CollateralUpdates derived from logs
-            this.__source === DataSource.ContractCall ? DataSource.Log : this.__source,
-            collatUpdate,
-            this.__tradeData.find(t => t.transactionHash === collatUpdate.transactionHash)
+    return !this.isLong
+      ? this.__collateralUpdateData
+          .map(
+            collatUpdate =>
+              new CollateralUpdateEvent(
+                this.lyra,
+                // Positions from contract calls have CollateralUpdates derived from logs
+                this.__source === DataSource.ContractCall ? DataSource.Log : this.__source,
+                collatUpdate,
+                this.__tradeData.find(t => t.transactionHash === collatUpdate.transactionHash)
+              )
           )
-      )
-      .sort((a, b) => a.blockNumber - b.blockNumber)
+          .sort((a, b) => a.blockNumber - b.blockNumber)
+      : []
   }
 
   async option(): Promise<Option> {
@@ -193,10 +217,9 @@ export class Position {
   // Trade
 
   async trade(isBuy: boolean, size: BigNumber, slippage: number, options?: PositionTradeOptions): Promise<Trade> {
-    const option = await this.option()
-    return Trade.getSync(this.lyra, this.owner, option, isBuy, size, {
+    return await Trade.get(this.lyra, this.owner, this.marketAddress, this.strikeId, this.isCall, isBuy, size, {
       premiumSlippage: slippage,
-      position: this,
+      positionId: this.id,
       ...options,
     })
   }

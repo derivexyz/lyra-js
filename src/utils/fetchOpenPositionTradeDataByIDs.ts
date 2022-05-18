@@ -1,5 +1,5 @@
 import { CollateralUpdateData } from '../collateral_update_event'
-import { LyraMarketContractId } from '../constants/contracts'
+import { LyraMarketContractId, PositionUpdatedType } from '../constants/contracts'
 import { TradeEvent } from '../contracts/typechain/OptionMarket'
 import { PositionUpdatedEvent } from '../contracts/typechain/OptionToken'
 import Lyra from '../lyra'
@@ -23,9 +23,22 @@ export default async function fetchOpenPositionTradeDataByIDs(
     return []
   }
 
+  // TODO: @earthtojake Batch event fetching across multiple markets
   const [tradeEvents, updateEvents] = await Promise.all([
     marketContract.queryFilter(marketContract.filters.Trade(null, null, positionIds)),
-    tokenContract.queryFilter(tokenContract.filters.PositionUpdated(positionIds)),
+    tokenContract.queryFilter(
+      tokenContract.filters.PositionUpdated(positionIds, null, [
+        PositionUpdatedType.Adjusted,
+        PositionUpdatedType.Closed,
+        PositionUpdatedType.Liquidated,
+        PositionUpdatedType.Opened,
+        PositionUpdatedType.Settled,
+        PositionUpdatedType.Merged,
+        PositionUpdatedType.MergedInto,
+        PositionUpdatedType.SplitFrom,
+        PositionUpdatedType.SplitInto,
+      ])
+    ),
   ])
 
   const positionEvents: Record<number, { trades: TradeEvent[]; updates: PositionUpdatedEvent[] }> = {}

@@ -18,8 +18,12 @@ export default function getQuoteDisabledReason(
   isBuy: boolean,
   isForceClose: boolean
 ): QuoteDisabledReason | null {
-  if (size.isZero()) {
+  if (size.lte(0)) {
     return QuoteDisabledReason.EmptySize
+  }
+
+  if (premium.lte(0)) {
+    return QuoteDisabledReason.EmptyPremium
   }
 
   const marketView = strike.market().__marketData

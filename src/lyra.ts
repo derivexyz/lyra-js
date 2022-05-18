@@ -4,6 +4,7 @@ import { JsonRpcProvider, StaticJsonRpcProvider } from '@ethersproject/providers
 import { GraphQLClient } from 'graphql-request'
 
 import { Account } from './account'
+import { Admin } from './admin'
 import { Board } from './board'
 import { CollateralUpdateEvent } from './collateral_update_event'
 import { Deployment } from './constants/contracts'
@@ -18,7 +19,10 @@ import getQuoteBoard from './quote/getQuoteBoard'
 import { Strike } from './strike'
 import { Trade } from './trade'
 import { TradeEvent, TradeEventListener, TradeEventListenerCallback, TradeEventListenerOptions } from './trade_event'
+import getLyraDeploymentChainId from './utils/getLyraDeploymentChainId'
 import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
+import getLyraDeploymentRPCURL from './utils/getLyraDeploymentRPCURL'
+import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
 
 export type LyraConfig = {
   rpcUrl: string
@@ -26,25 +30,51 @@ export type LyraConfig = {
   subgraphUri?: string
 }
 
+export { Deployment } from './constants/contracts'
+
 export default class Lyra {
-  provider: JsonRpcProvider
+  chainId: number
   deployment: Deployment
+  rpcUrl: string
+  provider: JsonRpcProvider
+  subgraphUri: string
   subgraphClient: GraphQLClient
 
-  constructor(config?: LyraConfig, disableCache?: boolean) {
-    // TODO: @earthtojake Configure + default to mainnet
-    const chainId = config?.chainId ?? 69 // Kovan
-    const rpcUrl = config?.rpcUrl ?? 'https://kovan.optimism.io'
-    const deployment = getLyraDeploymentForChainId(chainId)
+  constructor(config: LyraConfig | Deployment | number = Deployment.Kovan, disableCache?: boolean) {
+    if (typeof config === 'object') {
+      // LyraConfig
+      const configObj = config as LyraConfig
+      this.chainId = configObj.chainId
+      this.deployment = getLyraDeploymentForChainId(this.chainId)
+      this.rpcUrl = configObj?.rpcUrl ?? getLyraDeploymentRPCURL(this.deployment)
+      this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.deployment)
+    } else if (typeof config === 'number') {
+      // Chain ID
+      this.chainId = config
+      this.deployment = getLyraDeploymentForChainId(this.chainId)
+      this.rpcUrl = getLyraDeploymentRPCURL(this.deployment)
+      this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
+    } else {
+      // String
+      this.deployment = config
+      this.chainId = getLyraDeploymentChainId(this.deployment)
+      this.rpcUrl = getLyraDeploymentRPCURL(this.deployment)
+      this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
+    }
 
     this.provider =
-      deployment === Deployment.Local || disableCache
-        ? new StaticJsonRpcProvider({ url: rpcUrl, throttleLimit: 1 }, chainId)
-        : new LyraJsonRpcProvider({ url: rpcUrl, throttleLimit: 1 }, chainId)
-    this.deployment = deployment
+      this.deployment === Deployment.Local || disableCache
+        ? new StaticJsonRpcProvider({ url: this.rpcUrl, throttleLimit: 1 }, this.chainId)
+        : new LyraJsonRpcProvider({ url: this.rpcUrl, throttleLimit: 1 }, this.chainId)
 
-    const subgraphUri = config?.subgraphUri ?? 'https://api.thegraph.com/subgraphs/name/lyra-finance/kovan'
-    this.subgraphClient = new GraphQLClient(subgraphUri)
+    this.subgraphClient = new GraphQLClient(this.subgraphUri)
+
+    console.debug('Lyra', {
+      deployment: this.deployment,
+      chainId: this.chainId,
+      rpcUrl: this.rpcUrl,
+      subgraphUri: this.subgraphUri,
+    })
   }
 
   // Quote
@@ -172,6 +202,14 @@ export default class Lyra {
     return await LiquidityDeposit.getByQueueId(this, marketAddressOrName, id)
   }
 
+  async deposit(
+    beneficiary: string,
+    marketAddressOrName: string,
+    amountQuote: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityDeposit.deposit(this, marketAddressOrName, beneficiary, amountQuote)
+  }
+
   // Liquidity Withdrawals
 
   async liquidityWithdrawals(marketAddressOrName: string, owner: string): Promise<LiquidityWithdrawal[]> {
@@ -180,5 +218,18 @@ export default class Lyra {
 
   async liquidityWithdrawal(marketAddressOrName: string, id: string): Promise<LiquidityWithdrawal> {
     return await LiquidityWithdrawal.getByQueueId(this, marketAddressOrName, id)
+  }
+
+  async withdraw(
+    beneficiary: string,
+    marketAddressOrName: string,
+    amountLiquidityTokens: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityWithdrawal.withdraw(this, marketAddressOrName, beneficiary, amountLiquidityTokens)
+  }
+
+  // Admin
+  admin(): Admin {
+    return Admin.get(this)
   }
 }

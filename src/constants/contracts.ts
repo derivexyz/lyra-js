@@ -4,15 +4,18 @@ export enum LyraContractId {
   OptionMarketViewer = 'OptionMarketViewer',
   OptionMarketWrapper = 'OptionMarketWrapper',
   TestFaucet = 'TestFaucet',
+  SynthetixAdapter = 'SynthetixAdapter',
 }
 // Per-market contract name mappings
 export enum LyraMarketContractId {
   OptionMarket = 'OptionMarket',
+  OptionMarketPricer = 'OptionMarketPricer',
   OptionToken = 'OptionToken',
   ShortCollateral = 'ShortCollateral',
   OptionGreekCache = 'OptionGreekCache',
   LiquidityTokens = 'LiquidityTokens',
   LiquidityPool = 'LiquidityPool',
+  PoolHedger = 'PoolHedger',
 }
 // Ordered enum from contracts
 export enum OptionType {
@@ -22,15 +25,15 @@ export enum OptionType {
   ShortCall,
   ShortPut,
 }
+
 export enum Deployment {
   Local = 'local',
-  // LocalSNX
   Kovan = 'kovan',
-  // KovanSNX
-  // Mainnet
+  Mainnet = 'mainnet',
 }
 export const DEFAULT_ITERATIONS = 1
 export const DEFAULT_PREMIUM_SLIPPAGE = 0.1 / 100 // 0.1%
+export const DEFAULT_SWAP_SLIPPAGE = 0.1 / 100 // 0.1%
 export const CURVE_POOL_FEE_RATE = 0.4 / 100 // 0.4%
 export enum EventName {
   Trade = 'Trade',
@@ -67,3 +70,6 @@ export enum DataSource {
   Log = 'Log',
   Subgraph = 'Subgraph',
 }
+
+// DEBUG
+export const USDC_ADDRESS = '0x4e3e4889c08BFd2d202FACbae3978499B1E27366'

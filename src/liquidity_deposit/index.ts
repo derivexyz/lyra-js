@@ -1,10 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from 'ethers'
 
+import { LyraMarketContractId } from '../constants/contracts'
 import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'
 import Lyra from '../lyra'
 import { Market } from '../market'
+import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import fetchLiquidityDepositEventDataByID from '../utils/fetchLiquidityDepositEventDataByID'
 import fetchLiquidityDepositEventDataByOwner from '../utils/fetchLiquidityDepositEventDataByOwner'
+import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export class LiquidityDeposit {
   lyra: Lyra
@@ -69,6 +73,25 @@ export class LiquidityDeposit {
     const market = await Market.get(lyra, marketAddress)
     const event = await fetchLiquidityDepositEventDataByID(lyra, market, id)
     return new LiquidityDeposit(lyra, market, event)
+  }
+
+  // Initiate Deposit
+
+  static async deposit(
+    lyra: Lyra,
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountQuote: BigNumber
+  ): Promise<PopulatedTransaction> {
+    const market = await Market.get(lyra, marketAddressOrName)
+    const liquidityPoolContract = getLyraMarketContract(
+      lyra,
+      market.contractAddresses,
+      LyraMarketContractId.LiquidityPool
+    )
+    const data = liquidityPoolContract.interface.encodeFunctionData('initiateDeposit', [beneficiary, amountQuote])
+    const tx = await buildTxWithGasEstimate(lyra, liquidityPoolContract.address, beneficiary, data)
+    return tx
   }
 
   // Edges

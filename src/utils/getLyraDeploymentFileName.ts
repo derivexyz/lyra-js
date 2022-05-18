@@ -6,6 +6,8 @@ const getLyraDeploymentFileName = (deployment: Deployment): string => {
       return 'lyra.mockSnx.json'
     case Deployment.Kovan:
       return 'lyra.realPricing.json'
+    case Deployment.Mainnet:
+      return 'lyra.json'
   }
 }
 

@@ -421,6 +421,18 @@ const _abi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "settlementAmount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "insolventAmount",
+        type: "uint256",
+      },
     ],
     name: "PositionSettled",
     type: "event",
@@ -688,13 +700,7 @@ const _abi = [
       },
     ],
     name: "settleOptions",
-    outputs: [
-      {
-        internalType: "uint256[]",
-        name: "settlementAmounts",
-        type: "uint256[]",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

@@ -50,6 +50,8 @@ export class Strike {
     const id = strikeView.strikeId.toNumber()
     const strikePrice = strikeView.strikePrice
     const timeToExpiryAnnualized = getTimeToExpiryAnnualized(board)
+    const skew = strikeView.skew
+    const iv = board.baseIv.mul(strikeView.skew).div(UNIT)
     if (timeToExpiryAnnualized === 0) {
       return {
         id,
@@ -61,15 +63,18 @@ export class Strike {
         isDeltaInRange: false,
       }
     } else {
-      const skew = strikeView.skew
-      const iv = board.baseIv.mul(strikeView.skew).div(UNIT)
-      const ivNum = fromBigNumber(board.baseIv.mul(strikeView.skew).div(UNIT))
+      const ivNum = fromBigNumber(iv)
       const spotPrice = fromBigNumber(board.market().spotPrice)
       const strikePriceNum = fromBigNumber(strikePrice)
       const rate = fromBigNumber(board.market().__marketData.marketParameters.greekCacheParams.rateAndCarry)
-      const vega = toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
-      const gamma = toBigNumber(getGamma(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
-      const callDelta = toBigNumber(getDelta(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate, true))
+      const vega =
+        ivNum > 0 ? toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate)) : ZERO_BN
+      const gamma =
+        ivNum > 0 ? toBigNumber(getGamma(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate)) : ZERO_BN
+      const callDelta =
+        ivNum > 0
+          ? toBigNumber(getDelta(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate, true))
+          : ZERO_BN
       const minDelta = board.market().__marketData.marketParameters.tradeLimitParams.minDelta
       const isDeltaInRange = callDelta.gte(minDelta) && callDelta.lte(ONE_BN.sub(minDelta))
       return {

@@ -2,6 +2,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
+import { LiquidityDeposit } from '../liquidity_deposit'
+import { LiquidityWithdrawal } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
@@ -115,7 +117,7 @@ export class Account {
         )
       )
       if (!liquidityToken) {
-        throw new Error('Option token does not exist')
+        throw new Error('Liquidity token does not exist')
       }
       return liquidityToken
     }
@@ -178,5 +180,56 @@ export class Account {
       throw new Error('Failed to estimate gas for drip transaction')
     }
     return tx
+  }
+
+  // LP
+
+  async approveDeposit(marketAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
+    const balances = await this.balances()
+    const stable = balances.stable('sUSD')
+    const market = await Market.get(this.lyra, marketAddressOrName)
+    const liquidityPoolContract = getLyraMarketContract(
+      this.lyra,
+      market.contractAddresses,
+      LyraMarketContractId.LiquidityPool
+    )
+    const erc20 = getERC20Contract(this.lyra.provider, stable.address)
+    const data = erc20.interface.encodeFunctionData('approve', [liquidityPoolContract.address, amount])
+    const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
+    return tx
+  }
+
+  async deposit(
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountQuote: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityDeposit.deposit(this.lyra, marketAddressOrName, beneficiary, amountQuote)
+  }
+
+  async approveWithdraw(
+    spender: string,
+    tokenOrMarketAddress: string,
+    amount: BigNumber
+  ): Promise<PopulatedTransaction> {
+    const balances = await this.balances()
+    const liquidityToken = balances.liquidityToken(tokenOrMarketAddress)
+    const market = await Market.get(this.lyra, liquidityToken.address)
+    const liquidityTokensContract = getLyraMarketContract(
+      this.lyra,
+      market.contractAddresses,
+      LyraMarketContractId.LiquidityTokens
+    )
+    const data = liquidityTokensContract.interface.encodeFunctionData('approve', [spender, amount])
+    const tx = await buildTxWithGasEstimate(this.lyra, liquidityTokensContract.address, this.address, data)
+    return tx
+  }
+
+  async withdraw(
+    marketAddressOrName: string,
+    beneficiary: string,
+    amountLiquidityTokens: BigNumber
+  ): Promise<PopulatedTransaction | null> {
+    return await LiquidityWithdrawal.withdraw(this.lyra, marketAddressOrName, beneficiary, amountLiquidityTokens)
   }
 }

@@ -156,7 +156,7 @@ export interface ShortCollateralInterface extends utils.Interface {
     "BoardSettlementCollateralSent(uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "OwnerChanged(address,address)": EventFragment;
     "OwnerNominated(address)": EventFragment;
-    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256)": EventFragment;
+    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)": EventFragment;
     "QuoteSent(address,uint256)": EventFragment;
   };
 
@@ -213,7 +213,17 @@ export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
 export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
 export type PositionSettledEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber, BigNumber, number, BigNumber],
+  [
+    BigNumber,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   {
     positionId: BigNumber;
     settler: string;
@@ -222,6 +232,8 @@ export type PositionSettledEvent = TypedEvent<
     priceAtExpiry: BigNumber;
     optionType: number;
     amount: BigNumber;
+    settlementAmount: BigNumber;
+    insolventAmount: BigNumber;
   }
 >;
 
@@ -436,7 +448,7 @@ export interface ShortCollateral extends BaseContract {
     settleOptions(
       positionIds: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+    ): Promise<void>;
   };
 
   filters: {
@@ -483,14 +495,16 @@ export interface ShortCollateral extends BaseContract {
     "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
     OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
 
-    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256)"(
+    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)"(
       positionId?: BigNumberish | null,
       settler?: string | null,
       optionOwner?: string | null,
       strikePrice?: null,
       priceAtExpiry?: null,
       optionType?: null,
-      amount?: null
+      amount?: null,
+      settlementAmount?: null,
+      insolventAmount?: null
     ): PositionSettledEventFilter;
     PositionSettled(
       positionId?: BigNumberish | null,
@@ -499,7 +513,9 @@ export interface ShortCollateral extends BaseContract {
       strikePrice?: null,
       priceAtExpiry?: null,
       optionType?: null,
-      amount?: null
+      amount?: null,
+      settlementAmount?: null,
+      insolventAmount?: null
     ): PositionSettledEventFilter;
 
     "QuoteSent(address,uint256)"(

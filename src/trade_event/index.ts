@@ -45,6 +45,7 @@ export type TradeEventData = {
   premium: BigNumber
   fee: BigNumber
   feeComponents: QuoteFeeComponents
+  externalSwapFee: BigNumber
   iv: BigNumber
   skew: BigNumber
   baseIv: BigNumber
@@ -237,7 +238,7 @@ export class TradeEvent {
     ) as OptionMarket
 
     Promise.all([getMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
-      console.debug(`Polling from block ${block.number} every ${timeout}ms`)
+      console.debug(`Polling from block ${block.number} every ${ms}ms`)
       let prevBlock = block
 
       const poll = async () => {

@@ -19,7 +19,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.esm.json && tsc --project tsconfig.cjs.json",
     "dev": "concurrently \"tsc --project tsconfig.esm.json --watch\" \"tsc --project tsconfig.cjs.json --watch\"",
-    "script": "env-cmd -f .env.local ts-node src/scripts/index.ts",
+    "sync": "ts-node --project tsconfig.node.json src/contracts/sync.ts",
+    "example": "env-cmd -f src/examples/.env.local ts-node --project tsconfig.node.json src/examples/index.ts",
     "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint '**/*.ts'",

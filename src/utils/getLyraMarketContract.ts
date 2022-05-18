@@ -20,6 +20,10 @@ const getContractAddress = (marketAddresses: MarketContractAddresses, contractId
       return marketAddresses.liquidityTokens
     case LyraMarketContractId.LiquidityPool:
       return marketAddresses.liquidityPool
+    case LyraMarketContractId.OptionMarketPricer:
+      return marketAddresses.optionMarketPricer
+    case LyraMarketContractId.PoolHedger:
+      return marketAddresses.poolHedger
   }
 }
 
@@ -30,5 +34,6 @@ export default function getLyraMarketContract<T extends LyraMarketContractId>(
 ): LyraMarketContractReturnType[T] {
   const abi = getLyraContractABI(contractId)
   const address = getContractAddress(marketContractAddresses, contractId)
+
   return new Contract(address, abi, lyra.provider) as LyraMarketContractReturnType[T]
 }

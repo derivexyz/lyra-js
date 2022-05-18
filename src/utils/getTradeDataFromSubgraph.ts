@@ -54,5 +54,7 @@ export default function getTradeDataFromSubgraph(trade: TradeQueryResult): Trade
     isBaseCollateral,
     isForceClose: trade.isForceClose,
     isLiquidation: trade.isLiquidation,
+    // TODO(MICHAEL): Fix this
+    externalSwapFee: ZERO_BN,
   }
 }

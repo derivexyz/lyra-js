@@ -6,6 +6,8 @@ const getLyraDeploymentChainId = (deployment: Deployment): number => {
       return 31337
     case Deployment.Kovan:
       return 69
+    case Deployment.Mainnet:
+      return 10
   }
 }
 

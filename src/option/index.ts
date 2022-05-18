@@ -70,11 +70,20 @@ export class Option {
         getBlackScholesPrice(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall)
       )
 
-      const delta = toBigNumber(getDelta(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+      const delta =
+        strikeIV > 0
+          ? toBigNumber(getDelta(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+          : ZERO_BN
 
-      const theta = toBigNumber(getTheta(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+      const theta =
+        strikeIV > 0
+          ? toBigNumber(getTheta(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+          : ZERO_BN
 
-      const rho = toBigNumber(getRho(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+      const rho =
+        strikeIV > 0
+          ? toBigNumber(getRho(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
+          : ZERO_BN
 
       const breakEven = getBreakEvenPrice(isCall, strikePrice, price)
 

@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
+import { UNIT, ZERO_BN } from '../constants/bn'
 import { Option } from '../option'
 import fromBigNumber from './fromBigNumber'
 import getMaxCollateral from './getMaxCollateral'
@@ -16,7 +16,7 @@ export default function getLiquidationPrice(
   size: BigNumber,
   collateral: BigNumber,
   isBaseCollateral?: boolean
-) {
+): BigNumber | null {
   const board = option.board()
   const timeToExpiry = board.timeToExpiry
 
@@ -24,10 +24,11 @@ export default function getLiquidationPrice(
   const maxCollateral = getMaxCollateral(option, size, isBaseCollateral)
 
   if (timeToExpiry <= 0 || size.eq(0) || collateral.eq(0)) {
-    return ZERO_BN
-  } else if (collateral.gte(maxCollateral) && !(option.isCall && !isBaseCollateral)) {
+    // Closed or uncollateralized position
+    return null
+  } else if (maxCollateral && collateral.gte(maxCollateral) && !(option.isCall && !isBaseCollateral)) {
     // Fully collateralized cash secured puts and covered calls are not liquidatable
-    return MAX_BN
+    return null
   } else if (collateral.lt(minCollateral)) {
     // Position is immediately liquidatable
     return option.market().spotPrice
@@ -41,7 +42,7 @@ export default function getLiquidationPrice(
     const mid = low.add(high).div(2)
     // Get the largest min collateral value for a given spot price
     const currMinCollateral = getMinCollateralForSpotPrice(option, size, mid, isBaseCollateral, true)
-    if (closeToPercentage(currMinCollateral, collateral, 0.001)) {
+    if (closeToPercentage(currMinCollateral, collateral, 0.01)) {
       return mid
     }
     if (option.isCall) {

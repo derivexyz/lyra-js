@@ -8,7 +8,7 @@ export type PositionCollateral = {
   amount: BigNumber
   min: BigNumber
   isBase?: boolean
-  liquidationPrice: BigNumber
+  liquidationPrice: BigNumber | null
 }
 
 export default function getPositionCollateral(

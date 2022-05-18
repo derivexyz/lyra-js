@@ -16,6 +16,8 @@ export default async function fetchOpenPositionDataByID(
 ): Promise<{ position: PositionData; trades: TradeEventData[]; collateralUpdates: CollateralUpdateData[] }> {
   const optionToken = getLyraMarketContract(lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
   try {
+    // TODO: @earthtojake Change to getOptionPosition and remove "isOpen" requirement
+    // Use transfer event data to determine the last owner of a position
     const positionStruct = await optionToken.getPositionWithOwner(positionId)
     // Throws if option is not live (e.g. position is expired but not settled by a bot)
     const option = market.liveOption(positionStruct.strikeId.toNumber(), getIsCall(positionStruct.optionType))

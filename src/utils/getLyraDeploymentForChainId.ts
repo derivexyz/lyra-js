@@ -6,6 +6,8 @@ const getLyraDeploymentForChainId = (chainId: number): Deployment => {
       return Deployment.Local
     case 69:
       return Deployment.Kovan
+    case 10:
+      return Deployment.Mainnet
     default:
       throw new Error('Chain ID is not supported by Lyra')
   }
