@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from 'ethers'
 
+import { UNIT } from '../constants/bn'
 import { LyraMarketContractId } from '../constants/contracts'
 import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'
 import Lyra from '../lyra'
@@ -49,7 +50,7 @@ export class LiquidityDeposit {
     this.beneficiary = queuedOrProcessed.args.beneficiary
     this.amount = queuedOrProcessed.args.amountDeposited
     this.tokenPriceAtDeposit = processed?.args.tokenPrice
-    this.tokenValueAtDeposit = processed?.args.tokenPrice.mul(processed?.args.amountDeposited)
+    this.tokenValueAtDeposit = processed?.args.tokenPrice.mul(processed?.args.amountDeposited).div(UNIT)
     this.isPending = !!(queued && processed)
     this.depositRequestedTimestamp = queuedOrProcessed.args.timestamp.toNumber()
     this.depositTimestamp = processed
@@ -99,4 +100,6 @@ export class LiquidityDeposit {
   market(): Market {
     return this.__market
   }
+
+  // TODO: @dillonlin add a way to retrieve multiple liquidity deposits from multiple markets
 }

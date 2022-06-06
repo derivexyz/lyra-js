@@ -1,19 +1,19 @@
-import { UNIT, ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
+import { UNIT, ZERO_BN } from '../constants/bn'
 import { TradeDirection } from '../constants/contracts'
+import { PartialTradeEvent } from '../constants/events'
 import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
+import { TransferEventData } from '../transfer_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsBuy from './getIsBuy'
 import getIsCall from './getIsCall'
 import getIsLong from './getIsLong'
-import { PartialPositionUpdatedEvent } from './parsePartialPositionUpdatedEventsFromLogs'
-import { PartialTradeEvent } from './parsePartialTradeEventsFromLogs'
-import sortEvents from './sortEvents'
+import getOwner from './getOwner'
 
 export default function getTradeDataFromEvent(
   market: Market,
   trade: PartialTradeEvent,
-  updates: PartialPositionUpdatedEvent[]
+  transfers: TransferEventData[]
 ): TradeEventData {
   const marketName = market.name
   const marketAddress = market.address
@@ -52,16 +52,7 @@ export default function getTradeDataFromEvent(
 
   const timestamp = trade.args.timestamp.toNumber()
 
-  let trader = trade.args.trader
-  // Reverse chronological (most to least recent)
-  const latestUpdate = sortEvents(
-    // Match trade transaction, filter out burns to 0x0
-    updates.filter(t => t.transactionHash === trade.transactionHash && t.args.owner !== ZERO_ADDRESS)
-  ).reverse()[0]
-  if (latestUpdate) {
-    // Select last trade (transfer) event
-    trader = latestUpdate.args.owner
-  }
+  const trader = getOwner(transfers, blockNumber)
 
   return {
     timestamp,

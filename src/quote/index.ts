@@ -80,6 +80,7 @@ export type QuoteGreeks = {
 export type QuoteOptions = {
   isForceClose?: boolean
   iterations?: number
+  isBaseCollateral?: boolean
 }
 
 export class Quote {
@@ -175,6 +176,7 @@ export class Quote {
     }
 
     const isForceClose = options?.isForceClose ?? false
+    const isBaseCollateral = options?.isBaseCollateral ?? false
 
     const board = option.board()
     const strike = option.strike()
@@ -184,6 +186,13 @@ export class Quote {
     let baseIv = board.baseIv
     let skew = strike.skew
     let preTradeAmmNetStdVega = marketView.globalNetGreeks.netStdVega.mul(-1)
+
+    const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
+
+    if (timeToExpiryAnnualized === 0) {
+      // Early catch for expired positions
+      return this.getDisabledFields(option, QuoteDisabledReason.Expired)
+    }
 
     const iterationSize = size.div(numIterations)
     const iterations = []
@@ -211,8 +220,6 @@ export class Quote {
     const spotPrice = option.market().spotPrice
     const strikePrice = option.strike().strikePrice
     const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
-
-    const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
 
     const delta = toBigNumber(
       getDelta(
@@ -285,7 +292,12 @@ export class Quote {
 
     // Pricing
     const pricePerOption = premium.mul(UNIT).div(size)
-    const breakEven = getBreakEvenPrice(option.isCall, strike.strikePrice, premium.mul(UNIT).div(size))
+    const breakEven = getBreakEvenPrice(
+      option.isCall,
+      strike.strikePrice,
+      premium.mul(UNIT).div(size),
+      isBaseCollateral
+    )
     const forceClosePenalty = iterations.reduce((sum, quote) => sum.add(quote.forceClosePenalty), ZERO_BN)
 
     // Fees

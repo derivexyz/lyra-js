@@ -7,10 +7,10 @@ import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsCall from './getIsCall'
 import getIsLong from './getIsLong'
 
-export default function getOpenPositionDataFromStruct(
+export default function getPositionDataFromStruct(
   owner: string,
   option: Option,
-  positionStruct: OptionToken.OptionPositionStructOutput | OptionToken.PositionWithOwnerStructOutput
+  positionStruct: OptionToken.OptionPositionStructOutput
 ): PositionData {
   const id = positionStruct.positionId.toNumber()
   const size = positionStruct.amount
@@ -25,6 +25,10 @@ export default function getOpenPositionDataFromStruct(
   const collateral = !isLong
     ? getPositionCollateral(option, size, positionStruct.collateral, isBaseCollateral)
     : undefined
+  const spotPriceAtExpiry = option.board().spotPriceAtExpiry
+  const spotPrice = spotPriceAtExpiry ?? option.market().spotPrice
+  const strikePrice = option.strike().strikePrice
+  const isInTheMoney = isCall ? spotPrice.gt(strikePrice) : spotPrice.lt(strikePrice)
   return {
     blockNumber: option.board().__blockNumber,
     owner,
@@ -42,7 +46,8 @@ export default function getOpenPositionDataFromStruct(
     isLiquidated,
     isSettled,
     collateral,
-    optionPrice: option.price,
-    priceAtExpiry: option.board().priceAtExpiry,
+    pricePerOption: option.price,
+    spotPriceAtExpiry,
+    isInTheMoney,
   }
 }

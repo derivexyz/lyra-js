@@ -41,6 +41,7 @@ export type AccountLPTokenBalance = {
   balance: BigNumber
   symbol: string
   decimals: number
+  allowance: BigNumber
 }
 
 export type AccountBalances = {

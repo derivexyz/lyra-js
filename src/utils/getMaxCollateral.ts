@@ -1,14 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT } from '../constants/bn'
-import { Option } from '../option'
 
 export default function getMaxCollateral(
-  option: Option,
+  isCall: boolean,
+  strikePrice: BigNumber,
   postTradeSize: BigNumber,
   isBaseCollateral?: boolean
 ): BigNumber | null {
-  if (option.isCall) {
+  if (isCall) {
     if (isBaseCollateral) {
       // size
       return postTradeSize
@@ -18,6 +18,6 @@ export default function getMaxCollateral(
     }
   } else {
     // size * strike
-    return postTradeSize.mul(option.strike().strikePrice).div(UNIT)
+    return postTradeSize.mul(strikePrice).div(UNIT)
   }
 }

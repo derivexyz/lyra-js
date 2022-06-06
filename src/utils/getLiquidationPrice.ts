@@ -21,7 +21,7 @@ export default function getLiquidationPrice(
   const timeToExpiry = board.timeToExpiry
 
   const minCollateral = getMinCollateralForSpotPrice(option, size, option.market().spotPrice, isBaseCollateral, true)
-  const maxCollateral = getMaxCollateral(option, size, isBaseCollateral)
+  const maxCollateral = getMaxCollateral(option.isCall, option.strike().strikePrice, size, isBaseCollateral)
 
   if (timeToExpiry <= 0 || size.eq(0) || collateral.eq(0)) {
     // Closed or uncollateralized position

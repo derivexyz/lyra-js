@@ -39,9 +39,10 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
     startTimestamp,
     period,
   })
-
-  const tradingVolume: MarketTradingVolumeHistory[] = res.marketVolumeAndFeesSnapshots.map(
-    (marketVolumeAndFeesSnapshot: MarketVolumeAndFeesSnapshotQueryResult) => {
+  const currentDate = Math.floor(new Date().getTime() / 1000)
+  const tradingVolume: MarketTradingVolumeHistory[] = res.marketVolumeAndFeesSnapshots
+    .filter(snapshot => snapshot.timestamp <= currentDate)
+    .map((marketVolumeAndFeesSnapshot: MarketVolumeAndFeesSnapshotQueryResult) => {
       return {
         premiumVolume: BigNumber.from(marketVolumeAndFeesSnapshot.premiumVolume),
         notionalVolume: BigNumber.from(marketVolumeAndFeesSnapshot.notionalVolume),
@@ -56,8 +57,7 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
         lpLiquidationFees: BigNumber.from(marketVolumeAndFeesSnapshot.lpLiquidationFees),
         timestamp: marketVolumeAndFeesSnapshot.timestamp,
       }
-    }
-  )
+    })
 
   return tradingVolume
 }

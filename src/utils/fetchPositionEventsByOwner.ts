@@ -12,6 +12,7 @@ import {
 } from '../constants/queries'
 import Lyra from '../lyra'
 import { TradeEventData } from '../trade_event'
+import { TransferEvent } from '../transfer_event'
 import getCollateralUpdateDataFromSubgraph from './getCollateralUpdateDataFromSubgraph'
 import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 
@@ -32,12 +33,13 @@ type TradeVariables = {
   trader: string
 }
 
-export default async function fetchPositionTradeDataByOwner(
+export default async function fetchPositionEventsByOwner(
   lyra: Lyra,
   owner: string
 ): Promise<{
   trades: TradeEventData[]
   collateralUpdates: CollateralUpdateData[]
+  transfers: TransferEvent[]
 }> {
   const res = await lyra.subgraphClient.request<
     {
@@ -52,5 +54,6 @@ export default async function fetchPositionTradeDataByOwner(
   return {
     trades: res.trades.filter(t => BigNumber.from(t.size).gt(0)).map(getTradeDataFromSubgraph),
     collateralUpdates: res.collateralUpdates.map(getCollateralUpdateDataFromSubgraph),
+    transfers: [], // TODO: @earthtojake Account for transfers in subgraph
   }
 }

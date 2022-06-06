@@ -1,37 +1,27 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { CollateralUpdateData } from '../collateral_update_event'
-import { ZERO_ADDRESS } from '../constants/bn'
+import { PartialPositionUpdatedEvent } from '../constants/events'
 import { Option } from '../option'
 import { TradeEventData } from '../trade_event'
+import { TransferEventData } from '../transfer_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsCall from './getIsCall'
-import { PartialPositionUpdatedEvent } from './parsePartialPositionUpdatedEventsFromLogs'
-import sortEvents from './sortEvents'
+import getOwner from './getOwner'
 
 // A collateral update is any event which adjusts collateral
 export default function getCollateralUpdateDataFromEvent(
   // TODO: @earthtojake Remove Option / TradeEvent dependency on PositionUpdatedEvent
+  update: PartialPositionUpdatedEvent,
   optionOrTradeEventData: Option | TradeEventData,
-  updates: PartialPositionUpdatedEvent[]
+  transfers: TransferEventData[]
 ): CollateralUpdateData {
-  if (new Set(updates.map(t => t.transactionHash)).size > 1) {
-    throw new Error('PositionUpdated events have non-unique transaction hashes')
-  }
-  const latestUpdate = sortEvents(
-    // Match trade transaction, remove burns to 0x0
-    updates.filter(t => t.args.owner !== ZERO_ADDRESS)
-  )[0]
-  if (!latestUpdate) {
-    throw new Error('No PositionUpdated events for collateral update')
-  }
-
-  const positionId = latestUpdate.args.positionId.toNumber()
-  const blockNumber = latestUpdate.blockNumber
-  const setCollateralTo = latestUpdate.args.position.collateral
-  const transactionHash = latestUpdate.transactionHash
-  const strikeId = latestUpdate.args.position.strikeId.toNumber()
-  const isCall = getIsCall(latestUpdate.args.position.optionType)
+  const positionId = update.args.positionId.toNumber()
+  const blockNumber = update.blockNumber
+  const setCollateralTo = update.args.position.collateral
+  const transactionHash = update.transactionHash
+  const strikeId = update.args.position.strikeId.toNumber()
+  const isCall = getIsCall(update.args.position.optionType)
 
   let marketName: string
   let marketAddress: string
@@ -50,13 +40,13 @@ export default function getCollateralUpdateDataFromEvent(
     strikePrice = trade.strikePrice
     expiryTimestamp = trade.expiryTimestamp
   }
-  const timestamp = latestUpdate.args.timestamp.toNumber()
-  const owner = latestUpdate.args.owner
+  const timestamp = update.args.timestamp.toNumber()
+  const owner = getOwner(transfers, blockNumber)
 
-  if (getIsCall(latestUpdate.args.position.optionType) !== isCall) {
-    throw new Error('Option and PositionUpdateEvent mismatch')
+  if (optionOrTradeEventData.isCall !== isCall) {
+    throw new Error('Option / TradeEvent and PositionUpdateEvent mismatch')
   }
-  const isBaseCollateral = getIsBaseCollateral(latestUpdate.args.position.optionType)
+  const isBaseCollateral = getIsBaseCollateral(update.args.position.optionType)
   return {
     owner,
     timestamp,

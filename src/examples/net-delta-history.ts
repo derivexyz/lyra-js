@@ -8,6 +8,6 @@ export default async function netDeltaHistory(argv: string[]) {
     market: { type: 'string', alias: 'm', require: true },
   }).argv
   const market = await lyra.market(args.market)
-  const netDeltaHistory = await market.netDeltaHistory({})
+  const netDeltaHistory = await market.netDeltaHistory()
   console.log(netDeltaHistory)
 }

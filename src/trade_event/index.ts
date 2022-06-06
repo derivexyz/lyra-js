@@ -6,6 +6,7 @@ import { Board } from '../board'
 import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
 import { ZERO_ADDRESS } from '../constants/bn'
 import { DataSource, LyraMarketContractId } from '../constants/contracts'
+import { PartialTradeEventGroup } from '../constants/events'
 import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/typechain/OptionMarket'
 import Lyra from '../lyra'
 import { Market } from '../market'
@@ -13,14 +14,22 @@ import { Option } from '../option'
 import { Position } from '../position'
 import { QuoteFeeComponents } from '../quote'
 import { Strike } from '../strike'
-import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
+import fetchPositionEventsByOwner from '../utils/fetchPositionEventsByOwner'
+import getAverageCostPerOption from '../utils/getAverageCostPerOption'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
-import getIsLong from '../utils/getIsLong'
 import getLyraContractABI from '../utils/getLyraContractABI'
 import getMarketAddresses from '../utils/getMarketAddresses'
+import getPositionPreviousTrades from '../utils/getPositionPreviousTrades'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
+import getTradeRealizedPnl from '../utils/getTradeRealizedPnl'
+import getTradeRealizedPnlPercent from '../utils/getTradeRealizedPnlPercent'
+import getTransferDataFromEvents from '../utils/getTransferDataFromEvents'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventsFromLogs from '../utils/parsePartialTradeEventsFromLogs'
+import parsePartialTransferEventsFromLogs from '../utils/parsePartialTransferEventsFromLogs'
+import sortEvents, { SortEventOptions } from '../utils/sortEvents'
+import getTradeEventNewSize from './getTradeEventNewSize'
+import getTradeEventPreviousSize from './getTradeEventPreviousSize'
 
 export type TradeLiquidation = ContractTradeEvent['args']['liquidation']
 
@@ -104,15 +113,12 @@ export class TradeEvent {
   liquidation?: TradeLiquidation
 
   constructor(lyra: Lyra, source: DataSource, trade: TradeEventData, collateralUpdate?: CollateralUpdateData) {
-    if (trade.size.isZero()) {
-      throw new Error('Attempted to initialize a trade with no size')
-    }
-    if (trade.isLong && collateralUpdate) {
-      throw new Error('Attempted to initialize a long Trade with a CollateralUpdate event')
-    }
     this.lyra = lyra
     this.__tradeData = trade
-    this.__collateralUpdateData = collateralUpdate
+    if (!trade.isLong && collateralUpdate) {
+      // Only set collateral update data for shorts
+      this.__collateralUpdateData = collateralUpdate
+    }
     this.__source = source
     this.positionId = trade.positionId
     this.marketName = trade.marketName
@@ -159,35 +165,116 @@ export class TradeEvent {
   }
 
   static getByLogsSync(lyra: Lyra, market: Market, logs: Log[]): TradeEvent[] {
-    // NOTE: Liquidations can have multiple trade events per receipt
-    // And should be broken up into multiple getByLogsSync functions
-    const tradeEvents = parsePartialTradeEventsFromLogs(logs)
-    if (tradeEvents.length === 0) {
+    const trades = parsePartialTradeEventsFromLogs(logs)
+    if (trades.length === 0) {
       throw new Error('No Trade events in logs')
     }
     const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
-    return tradeEvents.map(tradeEvent => {
-      const isLong = getIsLong(tradeEvent.args.trade.optionType)
-      const updatesForTrade = updates.filter(
-        u => u.args.positionId.toNumber() === tradeEvent.args.positionId.toNumber()
-      )
-      const trade = getTradeDataFromEvent(market, tradeEvent, updatesForTrade)
-      const collateralUpdate = !isLong ? getCollateralUpdateDataFromEvent(trade, updatesForTrade) : undefined
-      return new TradeEvent(lyra, DataSource.Log, trade, collateralUpdate)
+    const transfers = parsePartialTransferEventsFromLogs(logs)
+
+    const eventsByPositionID: Record<number, PartialTradeEventGroup> = {}
+
+    trades.forEach(trade => {
+      eventsByPositionID[trade.args.positionId.toNumber()] = {
+        trade,
+        transfers: [],
+      }
     })
+    updates.forEach(collateralUpdate => {
+      const id = collateralUpdate.args.positionId.toNumber()
+      if (eventsByPositionID[id]) {
+        eventsByPositionID[id].collateralUpdate = collateralUpdate
+      }
+    })
+    transfers.forEach(transfer => {
+      const id = transfer.args.tokenId.toNumber()
+      if (eventsByPositionID[id]) {
+        eventsByPositionID[id].transfers.push(transfer)
+      }
+    })
+
+    return Object.values(eventsByPositionID).map(
+      ({ trade: tradeEvent, collateralUpdate: collateralUpdateEvent, transfers: transferEvents }) => {
+        const transfers = getTransferDataFromEvents(transferEvents)
+        const trade = getTradeDataFromEvent(market, tradeEvent, transfers)
+        const update = collateralUpdateEvent
+          ? getCollateralUpdateDataFromEvent(collateralUpdateEvent, trade, transfers)
+          : undefined
+        return new TradeEvent(lyra, DataSource.Log, trade, update)
+      }
+    )
   }
 
-  static async getByOwner(lyra: Lyra, owner: string): Promise<TradeEvent[]> {
-    const events = await fetchEventDataByOwner(lyra, owner)
-    return events.trades.map(
-      trade =>
-        new TradeEvent(
-          lyra,
-          DataSource.Subgraph,
-          trade,
-          events.collateralUpdates.find(c => c.transactionHash === trade.transactionHash)
-        )
+  static async getByOwner(lyra: Lyra, owner: string, options?: SortEventOptions): Promise<TradeEvent[]> {
+    const events = await fetchPositionEventsByOwner(lyra, owner)
+    return sortEvents(
+      events.trades.map(
+        trade =>
+          new TradeEvent(
+            lyra,
+            DataSource.Subgraph,
+            trade,
+            events.collateralUpdates.find(c => c.transactionHash === trade.transactionHash)
+          )
+      ),
+      options
     )
+  }
+
+  // Dynamic fields
+
+  async realizedPnl(): Promise<BigNumber> {
+    const position = await this.position()
+    return getTradeRealizedPnl(position, this)
+  }
+
+  async realizedPnlPercent(): Promise<BigNumber> {
+    const position = await this.position()
+    return getTradeRealizedPnlPercent(position, this)
+  }
+
+  async newAvgCostPerOption(): Promise<BigNumber> {
+    const position = await this.position()
+    return this.newAvgCostPerOptionSync(position)
+  }
+
+  async prevAvgCostPerOption(): Promise<BigNumber> {
+    const position = await this.position()
+    return this.prevAvgCostPerOptionSync(position)
+  }
+
+  async newSize(): Promise<BigNumber> {
+    const position = await this.position()
+    return getTradeEventNewSize(position, this)
+  }
+
+  async prevSize(): Promise<BigNumber> {
+    const position = await this.position()
+    return getTradeEventPreviousSize(position, this)
+  }
+
+  realizedPnlSync(position: Position): BigNumber {
+    return getTradeRealizedPnl(position, this)
+  }
+
+  realizedPnlPercentSync(position: Position): BigNumber {
+    return getTradeRealizedPnlPercent(position, this)
+  }
+
+  newAvgCostPerOptionSync(position: Position): BigNumber {
+    return getAverageCostPerOption(getPositionPreviousTrades(position, this).concat([this]))
+  }
+
+  prevAvgCostPerOptionSync(position: Position): BigNumber {
+    return getAverageCostPerOption(getPositionPreviousTrades(position, this))
+  }
+
+  newSizeSync(position: Position): BigNumber {
+    return getTradeEventNewSize(position, this)
+  }
+
+  prevSizeSync(position: Position): BigNumber {
+    return getTradeEventPreviousSize(position, this)
   }
 
   // Edges

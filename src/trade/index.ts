@@ -26,9 +26,12 @@ import buildTx from '../utils/buildTx'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import { from18DecimalBN } from '../utils/convertBNDecimals'
 import fromBigNumber from '../utils/fromBigNumber'
+import getAverageCostPerOption from '../utils/getAverageCostPerOption'
 import getLyraContract from '../utils/getLyraContract'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 import getOptionType from '../utils/getOptionType'
+import getTradeRealizedPnl from '../utils/getTradeRealizedPnl'
+import getTradeRealizedPnlPercent from '../utils/getTradeRealizedPnlPercent'
 import toBigNumber from '../utils/toBigNumber'
 import getTradeCollateral from './getTradeCollateral'
 import getTradeDisabledReason from './getTradeDisabledReason'
@@ -61,7 +64,7 @@ export type TradeCollateral = {
   max: BigNumber | null
   isMin: boolean
   isMax: boolean
-  isBase?: boolean
+  isBase: boolean
   // If null, no liquidation price (fully collateralized)
   liquidationPrice: BigNumber | null
 }
@@ -101,9 +104,11 @@ export class Trade {
 
   isBuy: boolean
   isOpen: boolean
+  isLong: boolean
   owner: string
   size: BigNumber
   newSize: BigNumber
+  prevSize: BigNumber
   pricePerOption: BigNumber
   premium: BigNumber
   quoted: BigNumber
@@ -162,12 +167,13 @@ export class Trade {
     this.isBuy = isBuy
     this.isOpen = position ? (isBuy && position.isLong) || (!isBuy && !position.isLong) : true
     this.owner = owner
-    const isLong = position ? position.isLong : isBuy
+    this.isLong = position ? position.isLong : isBuy
     const isBaseCollateral = position ? position.collateral?.isBase : _isBaseCollateral
     this.size = size
 
     let quote = Quote.get(option, this.isBuy, this.size, {
       iterations,
+      isBaseCollateral,
     })
     if (
       !this.isOpen &&
@@ -178,6 +184,7 @@ export class Trade {
       quote = Quote.get(option, this.isBuy, this.size, {
         iterations,
         isForceClose: true,
+        isBaseCollateral,
       })
     }
 
@@ -212,6 +219,7 @@ export class Trade {
     if (this.newSize.lt(0)) {
       this.newSize = ZERO_BN
     }
+    this.prevSize = position?.size ?? ZERO_BN
 
     const minOrMaxPremium = _minOrMaxPremium
       ? _minOrMaxPremium
@@ -300,7 +308,7 @@ export class Trade {
       iterations: BigNumber.from(iterations),
       setCollateralTo: this.collateral?.amount ?? ZERO_BN,
       currentCollateral: position?.collateral?.amount ?? ZERO_BN,
-      optionType: getOptionType(option.isCall, isLong, !!isBaseCollateral),
+      optionType: getOptionType(option.isCall, this.isLong, !!isBaseCollateral),
       amount: size,
       minCost: !isBuy && minOrMaxPremium.gt(ZERO_BN) ? minOrMaxPremium : ZERO_BN,
       maxCost: isBuy ? minOrMaxPremium : MAX_BN,
@@ -420,30 +428,27 @@ export class Trade {
     return getMinCollateralForSpotPrice(option, size, option.market().spotPrice, isBaseCollateral)
   }
 
-  pnl(): BigNumber {
+  // Dynamic fields
+
+  realizedPnl(): BigNumber {
     const position = this.__position
-    if (position && position.isOpen && position.size.gt(0)) {
-      return position.isLong
-        ? position.currentPricePerOption.sub(position.averageCostPerOption()).mul(this.size).div(UNIT)
-        : position.averageCostPerOption().sub(position.currentPricePerOption).mul(this.size).div(UNIT)
-    } else {
-      return ZERO_BN
-    }
+    return position ? getTradeRealizedPnl(position, this) : ZERO_BN
   }
 
-  pnlPercent(): BigNumber {
+  realizedPnlPercent(): BigNumber {
     const position = this.__position
-    if (position && position.isOpen && position.size.gt(0)) {
-      const totalCostOfPosition = position.averageCostPerOption().mul(this.size).div(UNIT)
-      const pnl = this.pnl()
-      if (totalCostOfPosition.eq(0)) {
-        return ZERO_BN
-      } else {
-        return pnl.mul(UNIT).div(totalCostOfPosition)
-      }
-    } else {
-      return ZERO_BN
-    }
+    return position ? getTradeRealizedPnlPercent(position, this) : ZERO_BN
+  }
+
+  newAvgCostPerOption(): BigNumber {
+    const position = this.__position
+    const trades = position ? (position.trades() as (TradeEvent | Trade)[]).concat([this]) : [this]
+    return getAverageCostPerOption(trades)
+  }
+
+  prevAvgCostPerOption(): BigNumber {
+    const position = this.__position
+    return position ? getAverageCostPerOption(position.trades()) : ZERO_BN
   }
 
   // Edges

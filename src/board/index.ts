@@ -26,7 +26,7 @@ export class Board {
   expiryTimestamp: number
   isExpired: boolean
   timeToExpiry: number
-  priceAtExpiry?: BigNumber
+  spotPriceAtExpiry?: BigNumber
   baseIv: BigNumber
   isPaused: boolean
 
@@ -44,7 +44,7 @@ export class Board {
     this.timeToExpiry = fields.timeToExpiry
     this.isExpired = fields.isExpired
     this.baseIv = fields.baseIv
-    this.priceAtExpiry = fields.priceAtExpiry
+    this.spotPriceAtExpiry = fields.spotPriceAtExpiry
     this.isPaused = fields.isPaused
   }
 
@@ -53,9 +53,9 @@ export class Board {
     const id = boardView.boardId.toNumber()
     const expiryTimestamp = boardView.expiry.toNumber()
     const timeToExpiry = Math.max(0, expiryTimestamp - block.timestamp)
-    const priceAtExpiry = !boardView.priceAtExpiry.isZero() ? boardView.priceAtExpiry : undefined
+    const spotPriceAtExpiry = !boardView.priceAtExpiry.isZero() ? boardView.priceAtExpiry : undefined
     // Expired flag is determined by priceAtExpiry state being set
-    const isExpired = !!priceAtExpiry
+    const isExpired = !!spotPriceAtExpiry
     const baseIv = !isExpired ? boardView.baseIv : ZERO_BN
     const isPaused = boardView.isPaused
     return {
@@ -63,7 +63,7 @@ export class Board {
       expiryTimestamp,
       timeToExpiry,
       isExpired,
-      priceAtExpiry,
+      spotPriceAtExpiry,
       baseIv,
       isPaused,
     }

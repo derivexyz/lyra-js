@@ -14,24 +14,35 @@ export default async function position(argv: string[]) {
     __source: position.__source,
     owner: position.owner,
     isOpen: position.isOpen,
+    isCall: position.isCall,
     isLong: position.isLong,
-    size: position.size,
+    isSettled: position.isSettled,
+    isLiquidated: position.isLiquidated,
+    size: position.sizeBeforeClose(),
+    strikePrice: position.strikePrice,
+    breakEven: position.breakEven(),
+    avgCost: position.avgCostPerOption(),
+    pricePerOption: position.pricePerOption,
+    realizedPnl: position.realizedPnl(),
+    realizedPnlPercent: position.realizedPnlPercent(),
+    unrealizedPnl: position.unrealizedPnl(),
+    unrealizedPnlPercent: position.unrealizedPnlPercent(),
+    isInTheMoney: position.isInTheMoney,
     trades: position.trades().map(trade => ({
+      hash: trade.transactionHash,
       size: trade.size,
-      pricePerOption: trade.pricePerOption,
-      premium: trade.premium,
+      cost: trade.premium,
       isBuy: trade.isBuy,
       isOpen: trade.isOpen,
-      isLiquidation: trade.isLiquidation,
+      newAvgCostPerOption: trade.newAvgCostPerOptionSync(position),
+      realizedPnl: trade.realizedPnlSync(position),
+      realizedPnlPercent: trade.realizedPnlPercentSync(position),
       setCollateralTo: trade.setCollateralTo,
     })),
-    collateralUpdates: position
-      .collateralUpdates()
-      .filter(c => c.isAdjustment)
-      .map(collatUpdates => ({
-        setCollateralTo: collatUpdates.setCollateralTo,
-      })),
-    avgCost: position.averageCostPerOption(),
+    transfers: position.transfers().map(t => ({
+      from: t.from,
+      to: t.to,
+    })),
     collateral: position.collateral,
   })
 }

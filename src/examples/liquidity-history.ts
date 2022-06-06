@@ -8,6 +8,6 @@ export default async function liquidityHistory(argv: string[]) {
     market: { type: 'string', alias: 'm', require: true },
   }).argv
   const market = await lyra.market(args.market)
-  const liquidityHistory = await market.liquidityHistory({})
+  const liquidityHistory = await market.liquidityHistory()
   console.log(liquidityHistory)
 }

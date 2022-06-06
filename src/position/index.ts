@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { Board } from '../board'
 import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
-import { UNIT, ZERO_BN } from '../constants/bn'
+import { UNIT } from '../constants/bn'
 import { DataSource, PositionState } from '../constants/contracts'
 import Lyra from '../lyra'
 import { Market } from '../market'
@@ -10,12 +10,17 @@ import { Option } from '../option'
 import { Strike } from '../strike'
 import { Trade, TradeOptions } from '../trade'
 import { TradeEvent, TradeEventData } from '../trade_event'
+import { TransferEvent, TransferEventData } from '../transfer_event'
 import fetchOpenPositionDataByOwner from '../utils/fetchOpenPositionDataByOwner'
 import fetchPositionDataByID from '../utils/fetchPositionDataByID'
 import fetchPositionDataByOwner from '../utils/fetchPositionDataByOwner'
-import getPositionAverageCost from './getPositionAverageCost'
+import getAverageCostPerOption from '../utils/getAverageCostPerOption'
+import getBreakEvenPrice from '../utils/getBreakEvenPrice'
 import { PositionCollateral } from './getPositionCollateral'
-import getSettlePNL from './getSettlePNL'
+import getPositionRealizedPnl from './getPositionRealizedPnl'
+import getPositionRealizedPnlPercent from './getPositionRealizedPnlPercent'
+import getPositionUnrealizedPnl from './getPositionUnrealizedPnl'
+import getPositionUnrealizedPnlPercent from './getPositionUnrealizedPnlPercent'
 
 export type PositionData = {
   id: number
@@ -34,8 +39,9 @@ export type PositionData = {
   isOpen: boolean
   isLiquidated: boolean
   isSettled: boolean
-  optionPrice: BigNumber
-  priceAtExpiry?: BigNumber
+  pricePerOption: BigNumber
+  spotPriceAtExpiry?: BigNumber
+  isInTheMoney: boolean
 }
 
 export type PositionTradeOptions = Omit<TradeOptions, 'positionId'>
@@ -46,6 +52,7 @@ export class Position {
   __positionData: PositionData
   private __tradeData: TradeEventData[]
   private __collateralUpdateData: CollateralUpdateData[]
+  private __transferData: TransferEventData[]
   __source: DataSource
   id: number
   marketName: string
@@ -62,20 +69,24 @@ export class Position {
   isOpen: boolean
   isLiquidated: boolean
   isSettled: boolean
-  currentPricePerOption: BigNumber
-  priceAtExpiry?: BigNumber
+  pricePerOption: BigNumber
+  spotPriceAtExpiry?: BigNumber
+  isInTheMoney: boolean
+
   constructor(
     lyra: Lyra,
     source: DataSource,
     position: PositionData,
     trades: TradeEventData[],
-    collateralUpdates: CollateralUpdateData[]
+    collateralUpdates: CollateralUpdateData[],
+    transfers: TransferEventData[]
   ) {
     // Data
     this.lyra = lyra
     this.__positionData = position
     this.__tradeData = trades
     this.__collateralUpdateData = collateralUpdates
+    this.__transferData = transfers
     this.__source = source
 
     // Fields
@@ -95,71 +106,75 @@ export class Position {
     this.isLiquidated = position.isLiquidated
     this.isSettled = position.isSettled
     this.collateral = position.collateral
-    this.currentPricePerOption = position.optionPrice
-    this.priceAtExpiry = position.priceAtExpiry
+    this.pricePerOption = position.pricePerOption
+    this.spotPriceAtExpiry = position.spotPriceAtExpiry
+    this.isInTheMoney = position.isInTheMoney
   }
 
   // Getters
 
   static async get(lyra: Lyra, marketAddressOrName: string, positionId: number): Promise<Position> {
     const market = await Market.get(lyra, marketAddressOrName)
-    const { position, trades, collateralUpdates, source } = await fetchPositionDataByID(lyra, market, positionId)
-    return new Position(lyra, source, position, trades, collateralUpdates)
+    const { position, trades, collateralUpdates, transfers } = await fetchPositionDataByID(lyra, market, positionId)
+    return new Position(lyra, DataSource.ContractCall, position, trades, collateralUpdates, transfers)
   }
 
   static async getOpenByOwner(lyra: Lyra, owner: string): Promise<Position[]> {
     const positions = await fetchOpenPositionDataByOwner(lyra, owner)
     return positions.map(
-      ({ position, trades, collateralUpdates }) =>
-        new Position(lyra, DataSource.ContractCall, position, trades, collateralUpdates)
+      ({ position, trades, collateralUpdates, transfers }) =>
+        new Position(lyra, DataSource.ContractCall, position, trades, collateralUpdates, transfers)
     )
   }
 
   static async getByOwner(lyra: Lyra, owner: string): Promise<Position[]> {
     const positions = await fetchPositionDataByOwner(lyra, owner)
     return positions.map(
-      ({ position, trades, collateralUpdates, source }) =>
-        new Position(lyra, source, position, trades, collateralUpdates)
+      ({ position, trades, collateralUpdates, transfers, source }) =>
+        new Position(lyra, source, position, trades, collateralUpdates, transfers)
     )
   }
 
   // Dynamic Fields
 
-  averageCostPerOption(): BigNumber {
-    return getPositionAverageCost(this.trades())
-  }
-
-  pnl(): BigNumber {
-    if (this.isOpen && this.size.gt(0)) {
-      return this.isLong
-        ? this.currentPricePerOption.sub(this.averageCostPerOption()).mul(this.size).div(UNIT)
-        : this.averageCostPerOption().sub(this.currentPricePerOption).mul(this.size).div(UNIT)
-    } else if (this.isSettled) {
-      if (this.priceAtExpiry) {
-        return getSettlePNL(
-          this.isLong,
-          this.isCall,
-          this.averageCostPerOption(),
-          this.priceAtExpiry,
-          this.strikePrice,
-          this.size
-        )
-      } else {
-        return ZERO_BN
-      }
+  sizeBeforeClose(): BigNumber {
+    if (!this.isOpen && this.size.isZero()) {
+      // Position manually closed, use size before last trade
+      const trades = this.trades()
+      const lastTrade = trades[trades.length - 1]
+      return lastTrade.prevSizeSync(this)
     } else {
-      return ZERO_BN
+      // Position may be settled or still open
+      return this.size
     }
   }
 
-  pnlPercent(): BigNumber {
-    const totalCostOfPosition = this.averageCostPerOption().mul(this.size).div(UNIT)
-    const pnl = this.pnl()
-    if (totalCostOfPosition.eq(0)) {
-      return ZERO_BN
-    } else {
-      return pnl.mul(UNIT).div(totalCostOfPosition)
-    }
+  avgCostPerOption(): BigNumber {
+    return getAverageCostPerOption(this.trades())
+  }
+
+  realizedPnl(): BigNumber {
+    return getPositionRealizedPnl(this)
+  }
+
+  realizedPnlPercent(): BigNumber {
+    return getPositionRealizedPnlPercent(this)
+  }
+
+  unrealizedPnl(): BigNumber {
+    return getPositionUnrealizedPnl(this)
+  }
+
+  unrealizedPnlPercent(): BigNumber {
+    return getPositionUnrealizedPnlPercent(this)
+  }
+
+  breakEven(): BigNumber {
+    return getBreakEvenPrice(
+      this.isCall,
+      this.strikePrice,
+      this.avgCostPerOption().mul(this.sizeBeforeClose()).div(UNIT)
+    )
   }
 
   // Edges
@@ -196,6 +211,17 @@ export class Position {
           )
           .sort((a, b) => a.blockNumber - b.blockNumber)
       : []
+  }
+
+  transfers(): TransferEvent[] {
+    return this.__transferData.map(
+      transferData =>
+        new TransferEvent(
+          this.lyra,
+          this.__source === DataSource.ContractCall ? DataSource.Log : this.__source,
+          transferData
+        )
+    )
   }
 
   async option(): Promise<Option> {

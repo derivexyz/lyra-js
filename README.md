@@ -124,20 +124,4 @@ lyra.onTrade(trade => {
 
 ## Examples
 
-You can find example Lyra.js usage in the `src/examples` directory.
-
-To run examples, first setup the project locally:
-
-```
-git clone https://github.com/lyra-finance/lyra-js.git
-cd lyra-js
-yarn install
-```
-
-Then run an example script:
-
-```
-yarn example <script> -d <network> <options>
-```
-
-If you want to run scripts that transacts, create a `.env.local` with a `PRIVATE_KEY` environment variable.
+See the `src/scripts` directory for more examples of SDK interactions.

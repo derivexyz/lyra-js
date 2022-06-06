@@ -1,6 +1,6 @@
 import yargs from 'yargs'
 
-import { ZERO_BN } from '../constants/bn'
+import { UNIT, ZERO_BN } from '../constants/bn'
 import { TradeEvent } from '../trade_event'
 import fromBigNumber from '../utils/fromBigNumber'
 import printObject from '../utils/printObject'
@@ -73,7 +73,7 @@ export default async function positionTrade(argv: string[]) {
   // console.log({ contractMinCollat: fromBigNumber(shortCollat), newSize: fromBigNumber(trade.newSize) })
 
   printObject('Quote', {
-    premium: trade.premium,
+    premium: trade.quoted,
     fee: trade.fee,
     feeComponents: trade.feeComponents,
     forceClosePenalty: trade.forceClosePenalty,
@@ -113,6 +113,9 @@ export default async function positionTrade(argv: string[]) {
     trader: tradeEvent.trader,
     premium: tradeEvent.premium,
     fee: tradeEvent.fee,
+    feeComponents: tradeEvent.feeComponents,
     setCollateralTo: tradeEvent.setCollateralTo,
   })
+
+  console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')
 }

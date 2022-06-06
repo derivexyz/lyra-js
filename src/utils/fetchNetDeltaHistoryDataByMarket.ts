@@ -38,14 +38,15 @@ export default async function fetchNetDeltaHistoryDataByMarket(
     startTimestamp,
     period,
   })
-  const marketNetDelta: MarketNetDelta[] = res.marketGreeksSnapshots.map(
-    (marketGreeksSnapshot: MarketGreeksSnapshotQueryResult) => {
+  const currentDate = Math.floor(new Date().getTime() / 1000)
+  const marketNetDelta: MarketNetDelta[] = res.marketGreeksSnapshots
+    .filter(snapshot => snapshot.timestamp <= currentDate)
+    .map((marketGreeksSnapshot: MarketGreeksSnapshotQueryResult) => {
       return {
         netDelta: BigNumber.from(marketGreeksSnapshot.netDelta),
         timestamp: marketGreeksSnapshot.timestamp,
         // TODO: Add whether snapshot included deltaHedging - isDeltaHedge
       }
-    }
-  )
+    })
   return marketNetDelta
 }

@@ -14,7 +14,7 @@ export default async function board(argv: string[]) {
     id: board.id,
     expiryTimestamp: board.expiryTimestamp,
     isExpired: board.isExpired,
-    priceAtExpiry: board.priceAtExpiry ? fromBigNumber(board.priceAtExpiry) : null,
+    spotPriceAtExpiry: board.spotPriceAtExpiry ? fromBigNumber(board.spotPriceAtExpiry) : null,
     strikes: board.strikes().map(s => ({
       id: s.id,
       strike: fromBigNumber(s.strikePrice),

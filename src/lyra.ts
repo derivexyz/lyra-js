@@ -23,6 +23,7 @@ import getLyraDeploymentChainId from './utils/getLyraDeploymentChainId'
 import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
 import getLyraDeploymentRPCURL from './utils/getLyraDeploymentRPCURL'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
+import { SortEventOptions } from './utils/sortEvents'
 
 export type LyraConfig = {
   rpcUrl: string
@@ -152,12 +153,12 @@ export default class Lyra {
     return await Position.getByOwner(this, owner)
   }
 
-  async trades(owner: string): Promise<TradeEvent[]> {
-    return await TradeEvent.getByOwner(this, owner)
+  async trades(owner: string, options?: SortEventOptions): Promise<TradeEvent[]> {
+    return await TradeEvent.getByOwner(this, owner, options)
   }
 
-  async collateralUpdates(owner: string): Promise<CollateralUpdateEvent[]> {
-    return await CollateralUpdateEvent.getByOwner(this, owner)
+  async collateralUpdates(owner: string, options?: SortEventOptions): Promise<CollateralUpdateEvent[]> {
+    return await CollateralUpdateEvent.getByOwner(this, owner, options)
   }
 
   async position(marketAddressOrName: string, positionId: number): Promise<Position> {

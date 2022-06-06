@@ -2,12 +2,14 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { Option } from '../option'
 import getLiquidationPrice from '../utils/getLiquidationPrice'
+import getMaxCollateral from '../utils/getMaxCollateral'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 
 export type PositionCollateral = {
   amount: BigNumber
   min: BigNumber
-  isBase?: boolean
+  max: BigNumber | null
+  isBase: boolean
   liquidationPrice: BigNumber | null
 }
 
@@ -20,7 +22,8 @@ export default function getPositionCollateral(
   return {
     amount: collateral,
     min: getMinCollateralForSpotPrice(option, size, option.market().spotPrice, isBaseCollateral),
-    isBase: isBaseCollateral,
+    max: getMaxCollateral(option.isCall, option.strike().strikePrice, size, isBaseCollateral),
+    isBase: option.isCall ? !!isBaseCollateral : false,
     liquidationPrice: getLiquidationPrice(option, size, collateral, isBaseCollateral),
   }
 }

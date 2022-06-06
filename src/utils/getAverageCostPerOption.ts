@@ -1,9 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
+import { Trade } from '../trade'
 import { TradeEvent } from '../trade_event'
 
-export default function getPositionAverageCost(trades: TradeEvent[]): BigNumber {
+export default function getAverageCostPerOption(trades: (Trade | TradeEvent)[]): BigNumber {
   if (trades.length === 0) {
     return ZERO_BN
   }
@@ -13,6 +14,10 @@ export default function getPositionAverageCost(trades: TradeEvent[]): BigNumber 
   }
   let currOpenSize = ZERO_BN
   let averageCostPerOption = ZERO_BN
+
+  // When opening, keep tally of open size + total cost
+  // When closing,
+
   for (const trade of trades) {
     const prevOpenSize = currOpenSize
     const { size, premium, isOpen } = trade

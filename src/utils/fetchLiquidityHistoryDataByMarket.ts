@@ -46,8 +46,10 @@ export default async function fetchLiquidityHistoryDataByMarket(
     startTimestamp,
     period,
   })
-  const marketLiquidity = res.marketTotalValueSnapshots.map(
-    (marketTotalValueSnapshot: MarketTotalValueSnapshotQueryResult) => {
+  const currentDate = Math.floor(new Date().getTime() / 1000)
+  const marketLiquidity = res.marketTotalValueSnapshots
+    .filter(snapshot => snapshot.timestamp <= currentDate)
+    .map((marketTotalValueSnapshot: MarketTotalValueSnapshotQueryResult) => {
       const freeLiquidityBN = BigNumber.from(marketTotalValueSnapshot.freeLiquidity)
       const burnableLiquidityBN = BigNumber.from(marketTotalValueSnapshot.burnableLiquidity)
       const NAVBN = BigNumber.from(marketTotalValueSnapshot.NAV)
@@ -59,6 +61,7 @@ export default async function fetchLiquidityHistoryDataByMarket(
         freeLiquidity: freeLiquidityBN,
         burnableLiquidity: burnableLiquidityBN,
         totalQueuedDeposits: ZERO_BN, // TODO: paul said he will add
+        nav: NAVBN,
         utilization: NAVBN.gt(0) ? NAVBN.sub(freeLiquidityBN).mul(UNIT).div(NAVBN) : ZERO_BN,
         totalWithdrawingDeposits: ZERO_BN, // TODO: paul said he will add
         usedCollatLiquidity: usedCollatLiquidityBN,
@@ -67,8 +70,7 @@ export default async function fetchLiquidityHistoryDataByMarket(
         tokenPrice: tokenPriceBN,
         timestamp: marketTotalValueSnapshot.timestamp,
       }
-    }
-  )
+    })
   return {
     liquidity: marketLiquidity,
   }

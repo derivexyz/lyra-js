@@ -2,21 +2,25 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Log } from '@ethersproject/providers'
 
 import { Board } from '../board'
-import { DataSource, PositionUpdatedType } from '../constants/contracts'
+import { DataSource, POSITION_UPDATED_TYPES, PositionUpdatedType } from '../constants/contracts'
+import { PartialCollateralUpdateEventGroup } from '../constants/events'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Position } from '../position'
 import { Strike } from '../strike'
 import { TradeEvent, TradeEventData } from '../trade_event'
-import fetchEventDataByOwner from '../utils/fetchPositionTradeDataByOwner'
+import fetchPositionEventsByOwner from '../utils/fetchPositionEventsByOwner'
 import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
 import getIsCall from '../utils/getIsCall'
 import getIsLong from '../utils/getIsLong'
 import getMarketAddresses from '../utils/getMarketAddresses'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
+import getTransferDataFromEvents from '../utils/getTransferDataFromEvents'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventFromLogs from '../utils/parsePartialTradeEventsFromLogs'
+import parsePartialTransferEventsFromLogs from '../utils/parsePartialTransferEventsFromLogs'
+import sortEvents, { SortEventOptions } from '../utils/sortEvents'
 
 export type CollateralUpdateData = {
   owner: string
@@ -102,35 +106,59 @@ export class CollateralUpdateEvent {
   }
 
   static getByLogsSync(lyra: Lyra, option: Option, logs: Log[]): CollateralUpdateEvent[] {
-    // Filter out long position updates
-    const updates = parsePartialPositionUpdatedEventsFromLogs(logs).filter(u => !getIsLong(u.args.position.optionType))
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs).filter(
+      u => !getIsLong(u.args.position.optionType) && POSITION_UPDATED_TYPES.includes(u.args.updatedType)
+    )
 
     if (updates.length === 0) {
       throw new Error('No PositionUpdated events in logs')
     }
 
-    const positionIds = Array.from(new Set(updates.map(u => u.args.positionId.toNumber())))
-    const trades = parsePartialTradeEventFromLogs(logs)
+    const eventsByPositionID: Record<number, PartialCollateralUpdateEventGroup> = {}
 
-    return positionIds.map(positionId => {
-      const updatesForPosition = updates.filter(u => u.args.positionId.toNumber() === positionId)
-      const collateralUpdate = getCollateralUpdateDataFromEvent(option, updatesForPosition)
-      const tradeEvent = trades.find(t => t.args.positionId.toNumber() === positionId)
-      const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, updates) : undefined
-      return new CollateralUpdateEvent(lyra, DataSource.Log, collateralUpdate, trade)
+    const trades = parsePartialTradeEventFromLogs(logs)
+    const transfers = parsePartialTransferEventsFromLogs(logs)
+
+    updates.forEach(collateralUpdate => {
+      const id = collateralUpdate.args.positionId.toNumber()
+      eventsByPositionID[id] = { collateralUpdate, transfers: [] }
     })
+    transfers.forEach(transfer => {
+      const id = transfer.args.tokenId.toNumber()
+      if (eventsByPositionID[id]) {
+        eventsByPositionID[id].transfers.push(transfer)
+      }
+    })
+    trades.forEach(trade => {
+      const id = trade.args.positionId.toNumber()
+      if (eventsByPositionID[id]) {
+        eventsByPositionID[id].trade = trade
+      }
+    })
+
+    return Object.values(eventsByPositionID).map(
+      ({ collateralUpdate: collateralUpdateEvent, trade: tradeEvent, transfers: transferEvents }) => {
+        const transfers = getTransferDataFromEvents(transferEvents)
+        const update = getCollateralUpdateDataFromEvent(collateralUpdateEvent, option, transfers)
+        const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, transfers) : undefined
+        return new CollateralUpdateEvent(lyra, DataSource.Log, update, trade)
+      }
+    )
   }
 
-  static async getByOwner(lyra: Lyra, owner: string): Promise<CollateralUpdateEvent[]> {
-    const events = await fetchEventDataByOwner(lyra, owner)
-    return events.collateralUpdates.map(
-      collateralUpdate =>
-        new CollateralUpdateEvent(
-          lyra,
-          DataSource.Subgraph,
-          collateralUpdate,
-          events.trades.find(t => t.transactionHash === collateralUpdate.transactionHash)
-        )
+  static async getByOwner(lyra: Lyra, owner: string, options?: SortEventOptions): Promise<CollateralUpdateEvent[]> {
+    const events = await fetchPositionEventsByOwner(lyra, owner)
+    return sortEvents(
+      events.collateralUpdates.map(
+        collateralUpdate =>
+          new CollateralUpdateEvent(
+            lyra,
+            DataSource.Subgraph,
+            collateralUpdate,
+            events.trades.find(t => t.transactionHash === collateralUpdate.transactionHash)
+          )
+      ),
+      options
     )
   }
 

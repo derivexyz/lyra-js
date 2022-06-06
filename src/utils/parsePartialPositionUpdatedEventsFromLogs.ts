@@ -3,18 +3,11 @@ import { Log } from '@ethersproject/providers'
 
 import { ZERO_ADDRESS } from '../constants/bn'
 import { EventName, LyraMarketContractId } from '../constants/contracts'
+import { PartialPositionUpdatedEvent } from '../constants/events'
 import { OptionToken } from '../contracts/typechain'
 import { PositionUpdatedEvent } from '../contracts/typechain/OptionToken'
 import filterNulls from './filterNulls'
 import getLyraContractABI from './getLyraContractABI'
-
-export type PartialPositionUpdatedEvent = {
-  address: string
-  blockNumber: number
-  transactionHash: string
-  logIndex: number
-  args: PositionUpdatedEvent['args']
-}
 
 export default function parsePartialPositionUpdatedEventsFromLogs(logs: Log[]): PartialPositionUpdatedEvent[] {
   const optionToken = new Contract(ZERO_ADDRESS, getLyraContractABI(LyraMarketContractId.OptionToken)) as OptionToken

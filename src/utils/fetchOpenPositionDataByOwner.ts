@@ -4,16 +4,24 @@ import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
 import { TradeEventData } from '../trade_event'
-import fetchOpenPositionTradeData from './fetchOpenPositionTradeData'
+import { TransferEventData } from '../transfer_event'
+import fetchPositionEventsByIDs from './fetchPositionEventsByIDs'
 import filterNulls from './filterNulls'
 import getIsCall from './getIsCall'
 import getLyraContract from './getLyraContract'
-import getPositionDataFromStruct from './getOpenPositionDataFromStruct'
+import getPositionDataFromStruct from './getPositionDataFromStruct'
 
 export default async function fetchOpenPositionDataByOwner(
   lyra: Lyra,
   owner: string
-): Promise<{ position: PositionData; trades: TradeEventData[]; collateralUpdates: CollateralUpdateData[] }[]> {
+): Promise<
+  {
+    position: PositionData
+    trades: TradeEventData[]
+    collateralUpdates: CollateralUpdateData[]
+    transfers: TransferEventData[]
+  }[]
+> {
   // Fetch all owner positions across all markets
   const positionsByMarketAddress = await getLyraContract(
     lyra.provider,
@@ -45,8 +53,24 @@ export default async function fetchOpenPositionDataByOwner(
             }
           })
         )
+        const positionIds = Array.from(new Set(positionDatas.map(p => p.id)))
         // TODO: @earthtojake Parallelize trade fetching across markets
-        return await fetchOpenPositionTradeData(lyra, market, positionDatas)
+        const positionTradeData = await fetchPositionEventsByIDs(lyra, market, positionIds)
+
+        // Map of position IDs to position datas
+        const positionMap: Record<number, PositionData> = {}
+        positionDatas.forEach(position => {
+          positionMap[position.id] = position
+        })
+
+        return positionTradeData.map(({ positionId, trades, collateralUpdates, transfers }) => {
+          return {
+            position: positionMap[positionId],
+            trades,
+            collateralUpdates,
+            transfers,
+          }
+        })
       })
     )
   ).flat()

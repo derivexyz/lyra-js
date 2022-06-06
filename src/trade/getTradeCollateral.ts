@@ -20,6 +20,8 @@ export default function getTradeCollateral({
   setToFullCollateral?: boolean
   isBaseCollateral?: boolean
 }): TradeCollateral {
+  const isBase = option.isCall ? !!isBaseCollateral : false
+
   if (postTradeSize.isZero()) {
     // Position is being closed
     return {
@@ -29,6 +31,7 @@ export default function getTradeCollateral({
       isMin: false,
       isMax: false,
       liquidationPrice: null,
+      isBase,
     }
   }
 
@@ -36,7 +39,7 @@ export default function getTradeCollateral({
 
   const spotPrice = market.spotPrice
   const minCollateral = getMinCollateralForSpotPrice(option, postTradeSize, spotPrice, isBaseCollateral)
-  let maxCollateral = getMaxCollateral(option, postTradeSize, isBaseCollateral)
+  let maxCollateral = getMaxCollateral(option.isCall, option.strike().strikePrice, postTradeSize, isBaseCollateral)
   if (maxCollateral && minCollateral.gt(maxCollateral)) {
     // Account for case where min collateral is greater than max
     maxCollateral = minCollateral
@@ -61,7 +64,7 @@ export default function getTradeCollateral({
 
   return {
     amount: setToCollateral,
-    isBase: option.isCall ? isBaseCollateral : undefined,
+    isBase,
     max: maxCollateral,
     min: minCollateral,
     isMin,

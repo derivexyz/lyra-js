@@ -34,6 +34,5 @@ export default function getLyraMarketContract<T extends LyraMarketContractId>(
 ): LyraMarketContractReturnType[T] {
   const abi = getLyraContractABI(contractId)
   const address = getContractAddress(marketContractAddresses, contractId)
-
   return new Contract(address, abi, lyra.provider) as LyraMarketContractReturnType[T]
 }

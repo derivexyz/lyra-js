@@ -73,3 +73,15 @@ export enum DataSource {
 
 // DEBUG
 export const USDC_ADDRESS = '0x4e3e4889c08BFd2d202FACbae3978499B1E27366'
+
+export const POSITION_UPDATED_TYPES = [
+  PositionUpdatedType.Adjusted,
+  PositionUpdatedType.Closed,
+  PositionUpdatedType.Liquidated,
+  PositionUpdatedType.Opened,
+  PositionUpdatedType.Settled,
+  PositionUpdatedType.Merged,
+  PositionUpdatedType.MergedInto,
+  PositionUpdatedType.SplitFrom,
+  PositionUpdatedType.SplitInto,
+]

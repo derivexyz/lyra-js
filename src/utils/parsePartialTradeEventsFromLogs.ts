@@ -3,18 +3,11 @@ import { Log } from '@ethersproject/providers'
 
 import { ZERO_ADDRESS } from '../constants/bn'
 import { EventName, LyraMarketContractId } from '../constants/contracts'
+import { PartialTradeEvent } from '../constants/events'
 import { OptionMarket } from '../contracts/typechain'
 import { TradeEvent } from '../contracts/typechain/OptionMarket'
 import filterNulls from './filterNulls'
 import getLyraContractABI from './getLyraContractABI'
-
-export type PartialTradeEvent = {
-  address: string // OptionMarket
-  blockNumber: number
-  transactionHash: string
-  logIndex: number
-  args: TradeEvent['args']
-}
 
 // Some transactions, e.g. liquidations, can have multiple Trade events
 export default function parsePartialTradeEventsFromLogs(logs: Log[]): PartialTradeEvent[] {

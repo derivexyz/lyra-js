@@ -91,9 +91,13 @@ board {
 market {
   name
   id
+  latestSpotPrice
 }
 option {
   isCall
+  latestOptionPriceAndGreeks {
+    optionPrice
+  }
 }
 trades {
   ${TRADE_QUERY_FRAGMENT}
@@ -147,6 +151,24 @@ export const MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT = `
   liquidatorFees
   smLiquidationFees
   lpLiquidationFees
+`
+
+export const MARKET_PENDING_LIQUIDITY_SNAPSHOT_FRAGMENT = `
+  id
+  period
+  timestamp
+  pendingDepositAmount
+  pendingWithdrawalAmount
+`
+
+export const MARKET_SPOT_PRICE_SNAPSHOT_FRAGMENT = `
+  spotPrice
+  timestamp
+`
+
+export const POOL_HEDGER_EXPOSURE_SNAPSHOT_FRAGMENT = `
+  timestamp
+  currentNetDelta
 `
 
 export type MetaQueryResult = {
@@ -232,7 +254,7 @@ export type PositionQueryResult = {
   owner: string
   size: string
   isLong: boolean
-  collateral: string
+  collateral: string | null
   isBaseCollateral: boolean
   state: PositionState
   strike: {
@@ -241,14 +263,18 @@ export type PositionQueryResult = {
   }
   board: {
     expiryTimestamp: number
-    priceAtExpiry: string | null
+    spotPriceAtExpiry: string | null
   }
   market: {
     name: string
     id: string
+    latestSpotPrice: string
   }
   option: {
     isCall: boolean
+    latestOptionPriceAndGreeks: {
+      optionPrice: string
+    }
   }
   position: {
     positionId: string
@@ -293,4 +319,22 @@ export type MarketVolumeAndFeesSnapshotQueryResult = {
   liquidatorFees: string
   smLiquidationFees: string
   lpLiquidationFees: string
+}
+
+export type MarketPendingLiquiditySnapshotQueryResult = {
+  id: string
+  period: number
+  timestamp: number
+  pendingDepositAmount: string
+  pendingWithdrawalAmount: string
+}
+
+export type MarketSpotPriceSnapshotQueryResult = {
+  spotPrice: string
+  timestamp: number
+}
+
+export type PoolHedgerExposureSnapshotQueryResult = {
+  timestamp: number
+  currentNetDelta: string
 }

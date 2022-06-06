@@ -9,7 +9,6 @@ import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
 import { getBlackScholesPrice, getDelta, getRho, getTheta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
-import getBreakEvenPrice from '../utils/getBreakEvenPrice'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
 
@@ -23,7 +22,7 @@ export class Option {
   delta: BigNumber
   theta: BigNumber
   rho: BigNumber
-  breakEven: BigNumber
+  isInTheMoney: boolean
 
   constructor(strike: Strike, isCall: boolean) {
     this.__strike = strike
@@ -35,15 +34,29 @@ export class Option {
     this.delta = fields.delta
     this.rho = fields.rho
     this.theta = fields.theta
-    this.breakEven = fields.breakEven
+    this.isInTheMoney = fields.isInTheMoney
   }
 
   // TODO: @earthtojake Remove getFields
-  static getFields(strike: Strike, isCall: boolean) {
+  static getFields(
+    strike: Strike,
+    isCall: boolean
+  ): {
+    longOpenInterest: BigNumber
+    shortOpenInterest: BigNumber
+    price: BigNumber
+    delta: BigNumber
+    theta: BigNumber
+    rho: BigNumber
+    isInTheMoney: boolean
+  } {
     const strikeView = strike.__strikeData
     const marketView = strike.market().__marketData
 
     const timeToExpiryAnnualized = getTimeToExpiryAnnualized(strike.board())
+    const spotPrice = strike.board().spotPriceAtExpiry ?? strike.market().spotPrice
+    const isInTheMoney = isCall ? spotPrice.gt(strike.strikePrice) : spotPrice.lt(strike.strikePrice)
+
     if (timeToExpiryAnnualized === 0) {
       return {
         longOpenInterest: ZERO_BN,
@@ -52,7 +65,7 @@ export class Option {
         delta: ZERO_BN,
         theta: ZERO_BN,
         rho: ZERO_BN,
-        breakEven: ZERO_BN,
+        isInTheMoney,
       }
     } else {
       const longOpenInterest = isCall ? strikeView.longCallOpenInterest : strikeView.longPutOpenInterest
@@ -61,7 +74,6 @@ export class Option {
         : strikeView.shortPutOpenInterest
 
       const spotPrice = fromBigNumber(marketView.exchangeParams.spotPrice)
-      const strikePrice = strikeView.strikePrice
       const strikePriceNum = fromBigNumber(strikeView.strikePrice)
       const rate = fromBigNumber(marketView.marketParameters.greekCacheParams.rateAndCarry)
       const strikeIV = fromBigNumber(strike.iv)
@@ -85,8 +97,6 @@ export class Option {
           ? toBigNumber(getRho(timeToExpiryAnnualized, strikeIV, spotPrice, strikePriceNum, rate, isCall))
           : ZERO_BN
 
-      const breakEven = getBreakEvenPrice(isCall, strikePrice, price)
-
       return {
         longOpenInterest,
         shortOpenInterest,
@@ -94,7 +104,7 @@ export class Option {
         delta,
         theta,
         rho,
-        breakEven,
+        isInTheMoney,
       }
     }
   }

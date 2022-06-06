@@ -8,6 +8,6 @@ export default async function tradingVolumeHistory(argv: string[]) {
     market: { type: 'string', alias: 'm', require: true },
   }).argv
   const market = await lyra.market(args.market)
-  const tradingVolumeHistory = await market.tradingVolumeHistory({})
+  const tradingVolumeHistory = await market.tradingVolumeHistory()
   console.log(tradingVolumeHistory)
 }

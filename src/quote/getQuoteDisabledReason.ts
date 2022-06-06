@@ -18,18 +18,18 @@ export default function getQuoteDisabledReason(
   isBuy: boolean,
   isForceClose: boolean
 ): QuoteDisabledReason | null {
+  const marketView = strike.market().__marketData
+  const timeToExpiryAnnualized = getTimeToExpiryAnnualized(strike.board())
+  if (timeToExpiryAnnualized == 0) {
+    return QuoteDisabledReason.Expired
+  }
+
   if (size.lte(0)) {
     return QuoteDisabledReason.EmptySize
   }
 
   if (premium.lte(0)) {
     return QuoteDisabledReason.EmptyPremium
-  }
-
-  const marketView = strike.market().__marketData
-  const timeToExpiryAnnualized = getTimeToExpiryAnnualized(strike.board())
-  if (timeToExpiryAnnualized == 0) {
-    return QuoteDisabledReason.Expired
   }
 
   // Check trading cutoff
