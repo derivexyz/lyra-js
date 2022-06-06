@@ -1,9 +1,8 @@
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { TradeDirection } from '../constants/contracts'
-import { PartialTradeEvent } from '../constants/events'
+import { PartialTradeEvent, PartialTransferEvent } from '../constants/events'
 import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
-import { TransferEventData } from '../transfer_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsBuy from './getIsBuy'
 import getIsCall from './getIsCall'
@@ -13,7 +12,7 @@ import getOwner from './getOwner'
 export default function getTradeDataFromEvent(
   market: Market,
   trade: PartialTradeEvent,
-  transfers: TransferEventData[]
+  transfers: PartialTransferEvent[]
 ): TradeEventData {
   const marketName = market.name
   const marketAddress = market.address

@@ -16,7 +16,6 @@ import getIsCall from '../utils/getIsCall'
 import getIsLong from '../utils/getIsLong'
 import getMarketAddresses from '../utils/getMarketAddresses'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
-import getTransferDataFromEvents from '../utils/getTransferDataFromEvents'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventFromLogs from '../utils/parsePartialTradeEventsFromLogs'
 import parsePartialTransferEventsFromLogs from '../utils/parsePartialTransferEventsFromLogs'
@@ -138,9 +137,8 @@ export class CollateralUpdateEvent {
 
     return Object.values(eventsByPositionID).map(
       ({ collateralUpdate: collateralUpdateEvent, trade: tradeEvent, transfers: transferEvents }) => {
-        const transfers = getTransferDataFromEvents(transferEvents)
-        const update = getCollateralUpdateDataFromEvent(collateralUpdateEvent, option, transfers)
-        const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, transfers) : undefined
+        const update = getCollateralUpdateDataFromEvent(collateralUpdateEvent, option, transferEvents)
+        const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, transferEvents) : undefined
         return new CollateralUpdateEvent(lyra, DataSource.Log, update, trade)
       }
     )

@@ -23,7 +23,6 @@ import getPositionPreviousTrades from '../utils/getPositionPreviousTrades'
 import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
 import getTradeRealizedPnl from '../utils/getTradeRealizedPnl'
 import getTradeRealizedPnlPercent from '../utils/getTradeRealizedPnlPercent'
-import getTransferDataFromEvents from '../utils/getTransferDataFromEvents'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventsFromLogs from '../utils/parsePartialTradeEventsFromLogs'
 import parsePartialTransferEventsFromLogs from '../utils/parsePartialTransferEventsFromLogs'
@@ -195,10 +194,9 @@ export class TradeEvent {
 
     return Object.values(eventsByPositionID).map(
       ({ trade: tradeEvent, collateralUpdate: collateralUpdateEvent, transfers: transferEvents }) => {
-        const transfers = getTransferDataFromEvents(transferEvents)
-        const trade = getTradeDataFromEvent(market, tradeEvent, transfers)
+        const trade = getTradeDataFromEvent(market, tradeEvent, transferEvents)
         const update = collateralUpdateEvent
-          ? getCollateralUpdateDataFromEvent(collateralUpdateEvent, trade, transfers)
+          ? getCollateralUpdateDataFromEvent(collateralUpdateEvent, trade, transferEvents)
           : undefined
         return new TradeEvent(lyra, DataSource.Log, trade, update)
       }

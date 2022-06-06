@@ -72,21 +72,19 @@ export default async function fetchPositionEventsByIDs(
       )
       const isLong = getIsLong(firstTrade.args.trade.optionType)
 
-      const transfers = getTransferDataFromEvents(transferEvents)
-
       const trades = tradeEvents
         // Filter out trades that are pure collateral adjustments
         .filter(t => t.args.tradeResults.length > 0)
-        .map(tradeEvent => {
-          return getTradeDataFromEvent(market, tradeEvent, transfers)
-        })
+        .map(tradeEvent => getTradeDataFromEvent(market, tradeEvent, transferEvents))
 
       const collateralUpdates = !isLong
         ? // Get collateral updates for all short positions
           updateEvents.map(updateEvent => {
-            return getCollateralUpdateDataFromEvent(updateEvent, option, transfers)
+            return getCollateralUpdateDataFromEvent(updateEvent, option, transferEvents)
           })
         : []
+
+      const transfers = getTransferDataFromEvents(transferEvents)
 
       return {
         positionId,

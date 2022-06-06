@@ -1,10 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { CollateralUpdateData } from '../collateral_update_event'
-import { PartialPositionUpdatedEvent } from '../constants/events'
+import { PartialPositionUpdatedEvent, PartialTransferEvent } from '../constants/events'
 import { Option } from '../option'
 import { TradeEventData } from '../trade_event'
-import { TransferEventData } from '../transfer_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
 import getIsCall from './getIsCall'
 import getOwner from './getOwner'
@@ -14,7 +13,7 @@ export default function getCollateralUpdateDataFromEvent(
   // TODO: @earthtojake Remove Option / TradeEvent dependency on PositionUpdatedEvent
   update: PartialPositionUpdatedEvent,
   optionOrTradeEventData: Option | TradeEventData,
-  transfers: TransferEventData[]
+  transfers: PartialTransferEvent[]
 ): CollateralUpdateData {
   const positionId = update.args.positionId.toNumber()
   const blockNumber = update.blockNumber

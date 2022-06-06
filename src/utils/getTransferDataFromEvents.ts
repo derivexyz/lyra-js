@@ -15,8 +15,7 @@ export default function getTransferDataFromEvents(transferEvents: PartialTransfe
     const firstTransfer = transferEvents[0]
     const lastTransfer = transferEvents[transferEvents.length - 1]
     if (firstTransfer.args.from === lastTransfer.args.to) {
-      // Remove any transfer groups that are mints / burns
-      // Also remove any transfer groups that are transferred back to the original owner in the same tx
+      // Remove any transfer groups that are transferred back to the original owner in the same tx
       // This is typically a transfer to an internal contract that returns the position to a user
       delete transfersByHash[transactionHash]
     }
