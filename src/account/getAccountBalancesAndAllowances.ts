@@ -2,7 +2,7 @@ import { LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'
 import getLyraContract from '../utils/getLyraContract'
 import getMarketAddresses from '../utils/getMarketAddresses'
-import { AccountBaseBalance, AccountLPTokenBalance, AccountOptionTokenBalance, AccountStableBalance } from '.'
+import { AccountBaseBalance, AccountOptionTokenBalance, AccountStableBalance } from '.'
 
 export default async function getAccountBalancesAndAllowances(
   lyra: Lyra,
@@ -11,31 +11,11 @@ export default async function getAccountBalancesAndAllowances(
   stables: AccountStableBalance[]
   bases: AccountBaseBalance[]
   optionTokens: AccountOptionTokenBalance[]
-  liquidityTokens: AccountLPTokenBalance[]
 }> {
   const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
-  const optionMarketViewer = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketViewer)
   const marketAddresses = (await getMarketAddresses(lyra)).map(m => m.optionMarket)
 
-  const [[stableBalances, marketBalances], liquidityTokenBalances] = await Promise.all([
-    wrapper.getBalancesAndAllowances(owner),
-    // TODO: @earthtojake Remove markets parameter from getLiquidityBalancesAndAllowances
-    optionMarketViewer.getLiquidityBalancesAndAllowances(marketAddresses, owner),
-  ])
-
-  const liquidityTokens = await Promise.all(
-    liquidityTokenBalances.map(async (liquidityTokenBalance, idx) => {
-      return {
-        marketAddress: marketAddresses[idx],
-        address: liquidityTokenBalance.token,
-        balance: liquidityTokenBalance.balance,
-        allowance: liquidityTokenBalance.allowance,
-        // TODO: @earthtojake Add symbol and decimals to getLiquidityBalancesAndAllowances
-        symbol: 'LyLP',
-        decimals: 18,
-      }
-    })
-  )
+  const [stableBalances, marketBalances] = await wrapper.getBalancesAndAllowances(owner)
 
   const stables: AccountStableBalance[] = await Promise.all(
     stableBalances.map(async ({ token: address, balance, allowance, symbol, decimals }) => {
@@ -73,6 +53,5 @@ export default async function getAccountBalancesAndAllowances(
     stables,
     bases,
     optionTokens,
-    liquidityTokens,
   }
 }

@@ -697,7 +697,7 @@
           }
         ],
         "internalType": "struct OptionMarketPricer.PricingParameters",
-        "name": "",
+        "name": "pricingParameters",
         "type": "tuple"
       }
     ],
@@ -806,7 +806,7 @@
           }
         ],
         "internalType": "struct OptionMarketPricer.TradeLimitParameters",
-        "name": "",
+        "name": "tradeLimitParameters",
         "type": "tuple"
       }
     ],
@@ -905,11 +905,6 @@
                 "internalType": "bytes32",
                 "name": "baseKey",
                 "type": "bytes32"
-              },
-              {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
               },
               {
                 "internalType": "uint256",
@@ -1119,7 +1114,7 @@
           }
         ],
         "internalType": "struct OptionMarketPricer.TradeResult",
-        "name": "",
+        "name": "tradeResult",
         "type": "tuple"
       }
     ],
@@ -1218,11 +1213,6 @@
                 "internalType": "bytes32",
                 "name": "baseKey",
                 "type": "bytes32"
-              },
-              {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
               },
               {
                 "internalType": "uint256",
@@ -1398,7 +1388,7 @@
           }
         ],
         "internalType": "struct OptionMarketPricer.VarianceFeeParameters",
-        "name": "",
+        "name": "varianceFeeParameters",
         "type": "tuple"
       }
     ],
@@ -1497,11 +1487,6 @@
                 "internalType": "bytes32",
                 "name": "baseKey",
                 "type": "bytes32"
-              },
-              {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
               },
               {
                 "internalType": "uint256",
@@ -1721,11 +1706,6 @@
                 "type": "bytes32"
               },
               {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
-              },
-              {
                 "internalType": "uint256",
                 "name": "quoteBaseFeeRate",
                 "type": "uint256"
@@ -1760,12 +1740,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "newBaseIv",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "newSkew",
         "type": "uint256"
       }
     ],
@@ -2273,11 +2253,6 @@
                 "type": "bytes32"
               },
               {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
-              },
-              {
                 "internalType": "uint256",
                 "name": "quoteBaseFeeRate",
                 "type": "uint256"
@@ -2443,7 +2418,7 @@
           }
         ],
         "internalType": "struct OptionMarketPricer.TradeResult",
-        "name": "",
+        "name": "tradeResult",
         "type": "tuple"
       }
     ],

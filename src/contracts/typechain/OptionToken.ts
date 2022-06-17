@@ -18,6 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace OptionToken {
+  export type PartialCollateralParametersStruct = {
+    penaltyRatio: BigNumberish;
+    liquidatorFeeRatio: BigNumberish;
+    smFeeRatio: BigNumberish;
+    minLiquidationFee: BigNumberish;
+  };
+
+  export type PartialCollateralParametersStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    penaltyRatio: BigNumber;
+    liquidatorFeeRatio: BigNumber;
+    smFeeRatio: BigNumber;
+    minLiquidationFee: BigNumber;
+  };
+
   export type OptionPositionStruct = {
     positionId: BigNumberish;
     strikeId: BigNumberish;
@@ -66,25 +85,6 @@ export declare namespace OptionToken {
     liquidatorFee: BigNumber;
     smFee: BigNumber;
     insolventAmount: BigNumber;
-  };
-
-  export type PartialCollateralParametersStruct = {
-    penaltyRatio: BigNumberish;
-    liquidatorFeeRatio: BigNumberish;
-    smFeeRatio: BigNumberish;
-    minLiquidationFee: BigNumberish;
-  };
-
-  export type PartialCollateralParametersStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    penaltyRatio: BigNumber;
-    liquidatorFeeRatio: BigNumber;
-    smFeeRatio: BigNumber;
-    minLiquidationFee: BigNumber;
   };
 
   export type PositionWithOwnerStruct = {
@@ -148,7 +148,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -157,14 +156,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -211,7 +208,7 @@ export interface OptionTokenInterface extends utils.Interface {
   functions: {
     "acceptOwnership()": FunctionFragment;
     "addCollateral(uint256,uint256)": FunctionFragment;
-    "adjustPosition((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,address,uint256,uint256,uint256,bool)": FunctionFragment;
+    "adjustPosition((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),uint256,address,uint256,uint256,uint256,bool)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
@@ -227,7 +224,7 @@ export interface OptionTokenInterface extends utils.Interface {
     "getPositionsWithOwner(uint256[])": FunctionFragment;
     "init(address,address,address,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "liquidate(uint256,(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256)": FunctionFragment;
+    "liquidate(uint256,(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),uint256)": FunctionFragment;
     "merge(uint256[])": FunctionFragment;
     "name()": FunctionFragment;
     "nextId()": FunctionFragment;
@@ -534,16 +531,20 @@ export interface OptionTokenInterface extends utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "OwnerChanged(address,address)": EventFragment;
     "OwnerNominated(address)": EventFragment;
+    "PartialCollateralParamsSet(tuple)": EventFragment;
     "PositionUpdated(uint256,address,uint8,tuple,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
+    "URISet(string)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PartialCollateralParamsSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PositionUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "URISet"): EventFragment;
 }
 
 export type ApprovalEvent = TypedEvent<
@@ -571,6 +572,16 @@ export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
 
 export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
+export type PartialCollateralParamsSetEvent = TypedEvent<
+  [OptionToken.PartialCollateralParametersStructOutput],
+  {
+    partialCollateralParams: OptionToken.PartialCollateralParametersStructOutput;
+  }
+>;
+
+export type PartialCollateralParamsSetEventFilter =
+  TypedEventFilter<PartialCollateralParamsSetEvent>;
+
 export type PositionUpdatedEvent = TypedEvent<
   [
     BigNumber,
@@ -596,6 +607,10 @@ export type TransferEvent = TypedEvent<
 >;
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
+
+export type URISetEvent = TypedEvent<[string], { URI: string }>;
+
+export type URISetEventFilter = TypedEventFilter<URISetEvent>;
 
 export interface OptionToken extends BaseContract {
   contractName: "OptionToken";
@@ -1337,6 +1352,13 @@ export interface OptionToken extends BaseContract {
     "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
     OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
 
+    "PartialCollateralParamsSet(tuple)"(
+      partialCollateralParams?: null
+    ): PartialCollateralParamsSetEventFilter;
+    PartialCollateralParamsSet(
+      partialCollateralParams?: null
+    ): PartialCollateralParamsSetEventFilter;
+
     "PositionUpdated(uint256,address,uint8,tuple,uint256)"(
       positionId?: BigNumberish | null,
       owner?: string | null,
@@ -1362,6 +1384,9 @@ export interface OptionToken extends BaseContract {
       to?: string | null,
       tokenId?: BigNumberish | null
     ): TransferEventFilter;
+
+    "URISet(string)"(URI?: null): URISetEventFilter;
+    URISet(URI?: null): URISetEventFilter;
   };
 
   estimateGas: {

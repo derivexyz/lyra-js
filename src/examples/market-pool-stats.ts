@@ -26,16 +26,10 @@ export default async function marketPoolStats(argv: string[]) {
         .add(tradingVolume.vegaFees),
     ZERO_BN
   )
-  const queuedWithdraws = await market.pendingWithdrawals()
   const openInterest = market.openInterest
-  const netDelta = market.netDelta
-  const netStdVega = market.netStdVega
   console.log({
     tradingVolume,
     totalFees,
-    queuedWithdraws,
     openInterest,
-    netDelta,
-    netStdVega,
   })
 }

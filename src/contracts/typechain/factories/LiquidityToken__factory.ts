@@ -5,21 +5,21 @@
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
 import type {
-  LiquidityTokens,
-  LiquidityTokensInterface,
-} from "../LiquidityTokens";
+  LiquidityToken,
+  LiquidityTokenInterface,
+} from "../LiquidityToken";
 
 const _abi = [
   {
     inputs: [
       {
         internalType: "string",
-        name: "_name",
+        name: "name_",
         type: "string",
       },
       {
         internalType: "string",
-        name: "_symbol",
+        name: "symbol_",
         type: "string",
       },
     ],
@@ -123,6 +123,19 @@ const _abi = [
       },
     ],
     name: "Approval",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "contract ILiquidityTracker",
+        name: "liquidityTracker",
+        type: "address",
+      },
+    ],
+    name: "LiquidityTrackerSet",
     type: "event",
   },
   {
@@ -260,7 +273,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "owner",
+        name: "account",
         type: "address",
       },
       {
@@ -378,7 +391,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "owner",
+        name: "account",
         type: "address",
       },
       {
@@ -538,15 +551,15 @@ const _abi = [
   },
 ];
 
-export class LiquidityTokens__factory {
+export class LiquidityToken__factory {
   static readonly abi = _abi;
-  static createInterface(): LiquidityTokensInterface {
-    return new utils.Interface(_abi) as LiquidityTokensInterface;
+  static createInterface(): LiquidityTokenInterface {
+    return new utils.Interface(_abi) as LiquidityTokenInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): LiquidityTokens {
-    return new Contract(address, _abi, signerOrProvider) as LiquidityTokens;
+  ): LiquidityToken {
+    return new Contract(address, _abi, signerOrProvider) as LiquidityToken;
   }
 }

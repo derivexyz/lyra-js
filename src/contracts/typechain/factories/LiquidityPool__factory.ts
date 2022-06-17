@@ -58,22 +58,6 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "currentValue",
-        type: "uint256",
-      },
-    ],
-    name: "HedgerIsNotEmpty",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "thrower",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
         name: "pendingBase",
         type: "uint256",
       },
@@ -263,7 +247,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "amountLiquidityTokens",
+        name: "amountLiquidityToken",
         type: "uint256",
       },
       {
@@ -1267,19 +1251,8 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "basePrice",
-        type: "uint256",
-      },
-      {
-        internalType: "contract ICollateralShort",
-        name: "short",
-        type: "address",
-      },
-    ],
-    name: "getLiquidity",
+    inputs: [],
+    name: "getCurrentLiquidity",
     outputs: [
       {
         components: [
@@ -1323,8 +1296,14 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "getLiquidityParams",
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "spotPrice",
+        type: "uint256",
+      },
+    ],
+    name: "getLiquidity",
     outputs: [
       {
         components: [
@@ -1504,8 +1483,8 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "contract LiquidityTokens",
-        name: "_liquidityTokens",
+        internalType: "contract LiquidityToken",
+        name: "_liquidityToken",
         type: "address",
       },
       {
@@ -1566,7 +1545,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "amountLiquidityTokens",
+        name: "amountLiquidityToken",
         type: "uint256",
       },
     ],
@@ -1652,11 +1631,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -2026,11 +2000,6 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
-          },
-          {
             internalType: "uint256",
             name: "quoteBaseFeeRate",
             type: "uint256",
@@ -2059,41 +2028,9 @@ const _abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "spotPrice",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "quoteKey",
-            type: "bytes32",
-          },
-          {
-            internalType: "bytes32",
-            name: "baseKey",
-            type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "quoteBaseFeeRate",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "baseQuoteFeeRate",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct SynthetixAdapter.ExchangeParams",
-        name: "exchangeParams",
-        type: "tuple",
+        internalType: "uint256",
+        name: "spotPrice",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -2292,41 +2229,9 @@ const _abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "spotPrice",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "quoteKey",
-            type: "bytes32",
-          },
-          {
-            internalType: "bytes32",
-            name: "baseKey",
-            type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "quoteBaseFeeRate",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "baseQuoteFeeRate",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct SynthetixAdapter.ExchangeParams",
-        name: "exchangeParams",
-        type: "tuple",
+        internalType: "uint256",
+        name: "spotPrice",
+        type: "uint256",
       },
       {
         internalType: "uint256",
@@ -2348,6 +2253,13 @@ const _abi = [
   {
     inputs: [],
     name: "updateCBs",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "updateDelegateApproval",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

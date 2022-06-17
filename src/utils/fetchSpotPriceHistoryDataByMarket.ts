@@ -4,6 +4,7 @@ import { gql } from 'graphql-request'
 import Lyra from '..'
 import { MARKET_SPOT_PRICE_SNAPSHOT_FRAGMENT, MarketSpotPriceSnapshotQueryResult } from '../constants/queries'
 import { Market, MarketSpotPrice } from '../market'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 const spotPriceSnapshotsQuery = gql`
   query spotPriceSnapshots(
@@ -28,7 +29,7 @@ export default async function fetchSpotPriceHistoryDataByMarket(
   lyra: Lyra,
   market: Market,
   startTimestamp: number,
-  period: number
+  endTimestamp: number
 ): Promise<MarketSpotPrice[]> {
   const res = await lyra.subgraphClient.request<
     { spotPriceSnapshots: MarketSpotPriceSnapshotQueryResult[] },
@@ -36,7 +37,7 @@ export default async function fetchSpotPriceHistoryDataByMarket(
   >(spotPriceSnapshotsQuery, {
     market: market.address.toLowerCase(),
     startTimestamp,
-    period,
+    period: getSnapshotPeriod(startTimestamp, endTimestamp, true),
   })
   const marketSpotPrice: MarketSpotPrice[] = res.spotPriceSnapshots.map(
     (spotPriceSnapshot: MarketSpotPriceSnapshotQueryResult) => {

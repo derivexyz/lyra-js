@@ -22,16 +22,19 @@ export declare namespace OptionMarket {
     maxBoardExpiry: BigNumberish;
     securityModule: string;
     feePortionReserved: BigNumberish;
+    staticBaseSettlementFee: BigNumberish;
   };
 
   export type OptionMarketParametersStructOutput = [
     BigNumber,
     string,
+    BigNumber,
     BigNumber
   ] & {
     maxBoardExpiry: BigNumber;
     securityModule: string;
     feePortionReserved: BigNumber;
+    staticBaseSettlementFee: BigNumber;
   };
 
   export type TradeEventDataStruct = {
@@ -316,6 +319,7 @@ export interface OptionMarketInterface extends utils.Interface {
     "getLiveBoards()": FunctionFragment;
     "getNumLiveBoards()": FunctionFragment;
     "getOptionBoard(uint256)": FunctionFragment;
+    "getOptionMarketParams()": FunctionFragment;
     "getSettlementParameters(uint256)": FunctionFragment;
     "getStrike(uint256)": FunctionFragment;
     "getStrikeAndBoard(uint256)": FunctionFragment;
@@ -325,15 +329,13 @@ export interface OptionMarketInterface extends utils.Interface {
     "nominateNewOwner(address)": FunctionFragment;
     "nominatedOwner()": FunctionFragment;
     "openPosition((uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256))": FunctionFragment;
-    "optionMarketParams()": FunctionFragment;
     "owner()": FunctionFragment;
     "setBoardBaseIv(uint256,uint256)": FunctionFragment;
     "setBoardFrozen(uint256,bool)": FunctionFragment;
-    "setOptionMarketParams((uint256,address,uint256))": FunctionFragment;
+    "setOptionMarketParams((uint256,address,uint256,uint256))": FunctionFragment;
     "setStrikeSkew(uint256,uint256)": FunctionFragment;
     "settleExpiredBoard(uint256)": FunctionFragment;
     "smClaim()": FunctionFragment;
-    "strikeToBaseReturnedRatio(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -395,6 +397,10 @@ export interface OptionMarketInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getOptionMarketParams",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getSettlementParameters",
     values: [BigNumberish]
   ): string;
@@ -430,10 +436,6 @@ export interface OptionMarketInterface extends utils.Interface {
     functionFragment: "openPosition",
     values: [OptionMarket.TradeInputParametersStruct]
   ): string;
-  encodeFunctionData(
-    functionFragment: "optionMarketParams",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "setBoardBaseIv",
@@ -456,10 +458,6 @@ export interface OptionMarketInterface extends utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "smClaim", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "strikeToBaseReturnedRatio",
-    values: [BigNumberish]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "acceptOwnership",
@@ -514,6 +512,10 @@ export interface OptionMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getOptionMarketParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getSettlementParameters",
     data: BytesLike
   ): Result;
@@ -543,10 +545,6 @@ export interface OptionMarketInterface extends utils.Interface {
     functionFragment: "openPosition",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "optionMarketParams",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setBoardBaseIv",
@@ -569,10 +567,6 @@ export interface OptionMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "smClaim", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "strikeToBaseReturnedRatio",
-    data: BytesLike
-  ): Result;
 
   events: {
     "BoardBaseIvSet(uint256,uint256)": EventFragment;
@@ -804,7 +798,7 @@ export interface OptionMarket extends BaseContract {
     getBoardStrikes(
       boardId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
+    ): Promise<[BigNumber[]] & { strikeIds: BigNumber[] }>;
 
     getLiveBoards(
       overrides?: CallOverrides
@@ -818,6 +812,10 @@ export interface OptionMarket extends BaseContract {
       boardId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[OptionMarket.OptionBoardStructOutput]>;
+
+    getOptionMarketParams(
+      overrides?: CallOverrides
+    ): Promise<[OptionMarket.OptionMarketParametersStructOutput]>;
 
     getSettlementParameters(
       strikeId: BigNumberish,
@@ -879,16 +877,6 @@ export interface OptionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    optionMarketParams(
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber] & {
-        maxBoardExpiry: BigNumber;
-        securityModule: string;
-        feePortionReserved: BigNumber;
-      }
-    >;
-
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     setBoardBaseIv(
@@ -922,11 +910,6 @@ export interface OptionMarket extends BaseContract {
     smClaim(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    strikeToBaseReturnedRatio(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
   };
 
   acceptOwnership(
@@ -1001,6 +984,10 @@ export interface OptionMarket extends BaseContract {
     overrides?: CallOverrides
   ): Promise<OptionMarket.OptionBoardStructOutput>;
 
+  getOptionMarketParams(
+    overrides?: CallOverrides
+  ): Promise<OptionMarket.OptionMarketParametersStructOutput>;
+
   getSettlementParameters(
     strikeId: BigNumberish,
     overrides?: CallOverrides
@@ -1061,16 +1048,6 @@ export interface OptionMarket extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  optionMarketParams(
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, BigNumber] & {
-      maxBoardExpiry: BigNumber;
-      securityModule: string;
-      feePortionReserved: BigNumber;
-    }
-  >;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   setBoardBaseIv(
@@ -1104,11 +1081,6 @@ export interface OptionMarket extends BaseContract {
   smClaim(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  strikeToBaseReturnedRatio(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   callStatic: {
     acceptOwnership(overrides?: CallOverrides): Promise<void>;
@@ -1181,6 +1153,10 @@ export interface OptionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<OptionMarket.OptionBoardStructOutput>;
 
+    getOptionMarketParams(
+      overrides?: CallOverrides
+    ): Promise<OptionMarket.OptionMarketParametersStructOutput>;
+
     getSettlementParameters(
       strikeId: BigNumberish,
       overrides?: CallOverrides
@@ -1238,16 +1214,6 @@ export interface OptionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<OptionMarket.ResultStructOutput>;
 
-    optionMarketParams(
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, BigNumber] & {
-        maxBoardExpiry: BigNumber;
-        securityModule: string;
-        feePortionReserved: BigNumber;
-      }
-    >;
-
     owner(overrides?: CallOverrides): Promise<string>;
 
     setBoardBaseIv(
@@ -1279,11 +1245,6 @@ export interface OptionMarket extends BaseContract {
     ): Promise<void>;
 
     smClaim(overrides?: CallOverrides): Promise<void>;
-
-    strikeToBaseReturnedRatio(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
   };
 
   filters: {
@@ -1474,6 +1435,8 @@ export interface OptionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOptionMarketParams(overrides?: CallOverrides): Promise<BigNumber>;
+
     getSettlementParameters(
       strikeId: BigNumberish,
       overrides?: CallOverrides
@@ -1524,8 +1487,6 @@ export interface OptionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    optionMarketParams(overrides?: CallOverrides): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     setBoardBaseIv(
@@ -1558,11 +1519,6 @@ export interface OptionMarket extends BaseContract {
 
     smClaim(
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    strikeToBaseReturnedRatio(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -1632,6 +1588,10 @@ export interface OptionMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getOptionMarketParams(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getSettlementParameters(
       strikeId: BigNumberish,
       overrides?: CallOverrides
@@ -1682,10 +1642,6 @@ export interface OptionMarket extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    optionMarketParams(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     setBoardBaseIv(
@@ -1718,11 +1674,6 @@ export interface OptionMarket extends BaseContract {
 
     smClaim(
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    strikeToBaseReturnedRatio(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -1,16 +1,57 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
+import { ZERO_BN } from '../constants/bn'
 import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
 import { LiquidityDeposit } from '../liquidity_deposit'
 import { LiquidityWithdrawal } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
 import { Market } from '../market'
+import { RewardEpoch } from '../reward_epoch'
+import { Stake } from '../stake'
+import { Unstake } from '../unstake'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 import getAccountBalancesAndAllowances from './getAccountBalancesAndAllowances'
+import getLiquidityDepositBalance from './getLiquidityDepositBalance'
+import getLiquidityTokenBalance from './getLiquidityTokenBalance'
+import getPortfolioBalance from './getPortfolioBalance'
+import getPortfolioHistory from './getPortfolioHistory'
+
+export type AccountPortfolioHistorySnapshot = {
+  timestamp: number
+  longOptionValue: number
+  shortOptionValue: number
+  balance: number
+  total: number
+}
+
+export type AccountPortfolioBalance = {
+  longOptionValue: number
+  shortOptionValue: number
+  balance: number
+  total: number
+}
+
+export type AccountBalanceHistory = {
+  timestamp: number
+  balance: BigNumber
+}
+
+export type AccountShortOptionHistory = {
+  timestamp: number
+  optionValue: BigNumber
+  collateralValue: BigNumber
+}
+
+export type AccountLongOptionHistory = {
+  timestamp: number
+  optionValue: BigNumber
+}
+
+export type AccountPortfolioHistory = AccountPortfolioHistorySnapshot[]
 
 export type AccountStableBalance = {
   address: string
@@ -35,10 +76,11 @@ export type AccountOptionTokenBalance = {
   isApprovedForAll: boolean
 }
 
-export type AccountLPTokenBalance = {
-  marketAddress: string
+export type AccountLiquidityTokenBalance = {
+  market: Market
   address: string
   balance: BigNumber
+  value: BigNumber
   symbol: string
   decimals: number
   allowance: BigNumber
@@ -51,8 +93,13 @@ export type AccountBalances = {
   base: (tokenOrMarketAddressOrName: string) => AccountBaseBalance
   optionTokens: AccountOptionTokenBalance[]
   optionToken: (tokenOrMarketAddress: string) => AccountOptionTokenBalance
-  liquidityTokens: AccountLPTokenBalance[]
-  liquidityToken: (tokenOrMarketAddress: string) => AccountLPTokenBalance
+}
+
+export type AccountStaking = {
+  balance: BigNumber
+  isUnstaking: boolean
+  unstakeWindowStartTimestamp: number
+  unstakeWindowEndTimestamp: number
 }
 
 export class Account {
@@ -73,10 +120,7 @@ export class Account {
   // Dynamic Fields
 
   async balances(): Promise<AccountBalances> {
-    const { stables, bases, optionTokens, liquidityTokens } = await getAccountBalancesAndAllowances(
-      this.lyra,
-      this.address
-    )
+    const { stables, bases, optionTokens } = await getAccountBalancesAndAllowances(this.lyra, this.address)
     const stable = (tokenAddressOrName: string): AccountStableBalance => {
       const stable = stables.find(
         stable =>
@@ -111,17 +155,6 @@ export class Account {
       }
       return optionToken
     }
-    const liquidityToken = (tokenOrMarketAddress: string): AccountLPTokenBalance => {
-      const liquidityToken = liquidityTokens.find(liquidityToken =>
-        [liquidityToken.marketAddress.toLowerCase(), liquidityToken.address.toLocaleLowerCase()].includes(
-          tokenOrMarketAddress.toLowerCase()
-        )
-      )
-      if (!liquidityToken) {
-        throw new Error('Liquidity token does not exist')
-      }
-      return liquidityToken
-    }
     return {
       stables,
       stable,
@@ -129,9 +162,17 @@ export class Account {
       base,
       optionTokens,
       optionToken,
-      liquidityTokens,
-      liquidityToken,
     }
+  }
+
+  async liquidityDepositBalance(marketAddressOrName: string): Promise<AccountStableBalance> {
+    const market = await this.lyra.market(marketAddressOrName)
+    return await getLiquidityDepositBalance(this.lyra, this.address, market)
+  }
+
+  async liquidityTokenBalance(marketAddressOrName: string): Promise<AccountLiquidityTokenBalance> {
+    const market = await this.lyra.market(marketAddressOrName)
+    return await getLiquidityTokenBalance(this.lyra, this.address, market)
   }
 
   // Approval
@@ -168,8 +209,6 @@ export class Account {
     return tx
   }
 
-  // Faucet (Local, Kovan)
-
   async drip(): Promise<PopulatedTransaction> {
     if (![Deployment.Kovan, Deployment.Local].includes(this.lyra.deployment)) {
       throw new Error('Faucet is only supported on local and kovan contracts')
@@ -183,18 +222,15 @@ export class Account {
     return tx
   }
 
-  // LP
-
   async approveDeposit(marketAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    const balances = await this.balances()
-    const stable = balances.stable('sUSD')
+    const susd = await this.liquidityDepositBalance(marketAddressOrName)
     const market = await Market.get(this.lyra, marketAddressOrName)
     const liquidityPoolContract = getLyraMarketContract(
       this.lyra,
       market.contractAddresses,
       LyraMarketContractId.LiquidityPool
     )
-    const erc20 = getERC20Contract(this.lyra.provider, stable.address)
+    const erc20 = getERC20Contract(this.lyra.provider, susd.address)
     const data = erc20.interface.encodeFunctionData('approve', [liquidityPoolContract.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
     return tx
@@ -208,29 +244,61 @@ export class Account {
     return await LiquidityDeposit.deposit(this.lyra, marketAddressOrName, beneficiary, amountQuote)
   }
 
-  async approveWithdraw(
-    spender: string,
-    tokenOrMarketAddress: string,
-    amount: BigNumber
-  ): Promise<PopulatedTransaction> {
-    const balances = await this.balances()
-    const liquidityToken = balances.liquidityToken(tokenOrMarketAddress)
-    const market = await Market.get(this.lyra, liquidityToken.address)
-    const liquidityTokensContract = getLyraMarketContract(
-      this.lyra,
-      market.contractAddresses,
-      LyraMarketContractId.LiquidityTokens
-    )
-    const data = liquidityTokensContract.interface.encodeFunctionData('approve', [spender, amount])
-    const tx = await buildTxWithGasEstimate(this.lyra, liquidityTokensContract.address, this.address, data)
-    return tx
-  }
-
   async withdraw(
     marketAddressOrName: string,
     beneficiary: string,
     amountLiquidityTokens: BigNumber
   ): Promise<PopulatedTransaction | null> {
     return await LiquidityWithdrawal.withdraw(this.lyra, marketAddressOrName, beneficiary, amountLiquidityTokens)
+  }
+
+  async rewardEpochs(): Promise<RewardEpoch[]> {
+    return await RewardEpoch.getByOwner(this.lyra, this.address)
+  }
+
+  async staking(): Promise<AccountStaking> {
+    const balance = ZERO_BN // TODO: @dillonlin fetch from contracts
+    const unstakeWindowStartTimestamp = 0 // TODO: @dillonlin fetch from contracts
+    const unstakeWindowEndTimestamp = 0 // TODO: @dillonlin fetch from contracts
+    const isUnstaking =
+      unstakeWindowEndTimestamp - unstakeWindowStartTimestamp > 0 &&
+      unstakeWindowEndTimestamp - unstakeWindowStartTimestamp <= 60 * 60 * 24 * 2
+    return {
+      balance,
+      isUnstaking,
+      unstakeWindowStartTimestamp,
+      unstakeWindowEndTimestamp,
+    }
+  }
+
+  async stake(amount: BigNumber): Promise<Stake> {
+    return await Stake.get(this.lyra, this.address, amount)
+  }
+
+  async initiateUnstake(amount: BigNumber): Promise<Stake> {
+    return await Unstake.get(this.lyra, this.address, amount)
+  }
+
+  async unstake(): Promise<PopulatedTransaction | null> {
+    return await Unstake.unstake(this.lyra, this.address)
+  }
+
+  // Edges
+
+  async liquidityDeposits(marketAddressOrName: string): Promise<LiquidityDeposit[]> {
+    return await this.lyra.liquidityDeposits(marketAddressOrName, this.address)
+  }
+
+  async liquidityWithdrawals(marketAddressOrName: string): Promise<LiquidityWithdrawal[]> {
+    return await this.lyra.liquidityWithdrawals(marketAddressOrName, this.address)
+  }
+
+  async portfolioHistory(startTimestamp: number): Promise<AccountPortfolioHistory> {
+    const endTimestamp = (await this.lyra.provider.getBlock('latest')).timestamp
+    return await getPortfolioHistory(this.lyra, this.address, startTimestamp, endTimestamp)
+  }
+
+  async portfolioBalance(): Promise<AccountPortfolioBalance> {
+    return await getPortfolioBalance(this.lyra, this.address)
   }
 }

@@ -21,7 +21,6 @@ export default function getOwner(transfers: PartialTransferEvent[], toBlockNumbe
     return firstLastTransfer.args.from
   } else {
     // Mint or transfer event, use last transfer "to" address
-    console.log({ sortedEvents: sortedEvents.map(t => t.args) })
     return lastTransfer.args.to
   }
 }

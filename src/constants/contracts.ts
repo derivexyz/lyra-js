@@ -1,11 +1,15 @@
 // NOTE: Do not import typechain types in this file
 // Contract name mappings
+
 export enum LyraContractId {
   OptionMarketViewer = 'OptionMarketViewer',
   OptionMarketWrapper = 'OptionMarketWrapper',
   TestFaucet = 'TestFaucet',
   SynthetixAdapter = 'SynthetixAdapter',
+  LyraStakingModule = 'LyraStakingModule',
+  LyraStakingModuleProxy = 'LyraStakingModuleProxy',
 }
+
 // Per-market contract name mappings
 export enum LyraMarketContractId {
   OptionMarket = 'OptionMarket',
@@ -13,9 +17,9 @@ export enum LyraMarketContractId {
   OptionToken = 'OptionToken',
   ShortCollateral = 'ShortCollateral',
   OptionGreekCache = 'OptionGreekCache',
-  LiquidityTokens = 'LiquidityTokens',
+  LiquidityToken = 'LiquidityToken',
   LiquidityPool = 'LiquidityPool',
-  PoolHedger = 'PoolHedger',
+  ShortPoolHedger = 'ShortPoolHedger',
 }
 // Ordered enum from contracts
 export enum OptionType {
@@ -70,9 +74,6 @@ export enum DataSource {
   Log = 'Log',
   Subgraph = 'Subgraph',
 }
-
-// DEBUG
-export const USDC_ADDRESS = '0x4e3e4889c08BFd2d202FACbae3978499B1E27366'
 
 export const POSITION_UPDATED_TYPES = [
   PositionUpdatedType.Adjusted,

@@ -1,13 +1,13 @@
 import {
   LiquidityPool,
-  LiquidityTokens,
+  LiquidityToken,
   OptionGreekCache,
   OptionMarketPricer,
   OptionMarketViewer,
   OptionMarketWrapper,
   OptionToken,
-  PoolHedger,
   ShortCollateral,
+  ShortPoolHedger,
   SynthetixAdapter,
   TestFaucet,
 } from '../contracts/typechain'
@@ -19,6 +19,8 @@ export type LyraContractReturnType = {
   [LyraContractId.OptionMarketWrapper]: OptionMarketWrapper
   [LyraContractId.TestFaucet]: TestFaucet
   [LyraContractId.SynthetixAdapter]: SynthetixAdapter
+  [LyraContractId.LyraStakingModule]: SynthetixAdapter
+  [LyraContractId.LyraStakingModuleProxy]: SynthetixAdapter
 }
 
 export type LyraMarketContractReturnType = {
@@ -27,7 +29,7 @@ export type LyraMarketContractReturnType = {
   [LyraMarketContractId.OptionToken]: OptionToken
   [LyraMarketContractId.ShortCollateral]: ShortCollateral
   [LyraMarketContractId.OptionGreekCache]: OptionGreekCache
-  [LyraMarketContractId.LiquidityTokens]: LiquidityTokens
+  [LyraMarketContractId.LiquidityToken]: LiquidityToken
   [LyraMarketContractId.LiquidityPool]: LiquidityPool
-  [LyraMarketContractId.PoolHedger]: PoolHedger
+  [LyraMarketContractId.ShortPoolHedger]: ShortPoolHedger
 }

@@ -708,7 +708,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketPricer.PricingParameters",
-        name: "",
+        name: "pricingParameters",
         type: "tuple",
       },
     ],
@@ -817,7 +817,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketPricer.TradeLimitParameters",
-        name: "",
+        name: "tradeLimitParameters",
         type: "tuple",
       },
     ],
@@ -916,11 +916,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",
@@ -1130,7 +1125,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketPricer.TradeResult",
-        name: "",
+        name: "tradeResult",
         type: "tuple",
       },
     ],
@@ -1229,11 +1224,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",
@@ -1409,7 +1399,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketPricer.VarianceFeeParameters",
-        name: "",
+        name: "varianceFeeParameters",
         type: "tuple",
       },
     ],
@@ -1508,11 +1498,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",
@@ -1732,11 +1717,6 @@ const _abi = [
                 type: "bytes32",
               },
               {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
-              },
-              {
                 internalType: "uint256",
                 name: "quoteBaseFeeRate",
                 type: "uint256",
@@ -1771,12 +1751,12 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "newBaseIv",
         type: "uint256",
       },
       {
         internalType: "uint256",
-        name: "",
+        name: "newSkew",
         type: "uint256",
       },
     ],
@@ -2284,11 +2264,6 @@ const _abi = [
                 type: "bytes32",
               },
               {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
-              },
-              {
                 internalType: "uint256",
                 name: "quoteBaseFeeRate",
                 type: "uint256",
@@ -2454,7 +2429,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketPricer.TradeResult",
-        name: "",
+        name: "tradeResult",
         type: "tuple",
       },
     ],

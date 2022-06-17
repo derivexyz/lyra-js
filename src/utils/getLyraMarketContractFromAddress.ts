@@ -24,7 +24,7 @@ export default function getLyraMarketContractFromAddress<T extends LyraMarketCon
       contractId = LyraMarketContractId.LiquidityPool
       break
     case 'liquidityTokens':
-      contractId = LyraMarketContractId.LiquidityTokens
+      contractId = LyraMarketContractId.LiquidityToken
       break
     case 'greekCache':
       contractId = LyraMarketContractId.OptionGreekCache

@@ -19,7 +19,7 @@ export default async function initiateWithdraw(argv: string[]) {
   const amountLiquidityTokens = toBigNumber(args.amountLiquidityTokens)
   // no approval is needed
   const market = await lyra.market(marketAddressOrName)
-  const withdraw = await market.withdraw(beneficiary, marketAddressOrName, amountLiquidityTokens)
+  const withdraw = await market.withdraw(beneficiary, amountLiquidityTokens)
   if (withdraw) {
     const response = await signer.sendTransaction(withdraw)
     const receipt = await response.wait()

@@ -1,12 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { gql } from 'graphql-request'
 
-import Lyra, { MarketHistoryPeriodEnum } from '..'
+import Lyra from '..'
 import {
   MARKET_PENDING_LIQUIDITY_SNAPSHOT_FRAGMENT,
   MarketPendingLiquiditySnapshotQueryResult,
+  SnapshotPeriod,
 } from '../constants/queries'
 import { Market, MarketPendingLiquidityHistory } from '../market'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketPendingLiquiditySnapshotsQuery = gql`
   query marketPendingLiquiditySnapshots(
@@ -25,14 +27,14 @@ const marketPendingLiquiditySnapshotsQuery = gql`
 type MarketPendingLiquiditySnapshotVariables = {
   market: string
   startTimestamp: number
-  period: MarketHistoryPeriodEnum
+  period: SnapshotPeriod
 }
 
 export default async function fetchPendingLiquidityHistoryDataByMarket(
   lyra: Lyra,
   market: Market,
   startTimestamp: number,
-  period: MarketHistoryPeriodEnum
+  endTimestamp: number
 ): Promise<MarketPendingLiquidityHistory[]> {
   const res = await lyra.subgraphClient.request<
     { marketPendingLiquiditySnapshots: MarketPendingLiquiditySnapshotQueryResult[] },
@@ -40,7 +42,7 @@ export default async function fetchPendingLiquidityHistoryDataByMarket(
   >(marketPendingLiquiditySnapshotsQuery, {
     market: market.address.toLowerCase(),
     startTimestamp,
-    period,
+    period: getSnapshotPeriod(startTimestamp, endTimestamp),
   })
 
   const pendingLiquidity: MarketPendingLiquidityHistory[] = res.marketPendingLiquiditySnapshots.map(

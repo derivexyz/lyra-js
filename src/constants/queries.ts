@@ -127,6 +127,8 @@ export const MARKET_TOTAL_VALUE_SNAPSHOT_FRAGMENT = `
   usedDeltaLiquidity
   NAV
   netOptionValue
+  pendingDeposits
+  pendingWithdrawals
 `
 
 export const MARKET_GREEKS_SNAPSHOT_FRAGMENT = `
@@ -134,6 +136,9 @@ export const MARKET_GREEKS_SNAPSHOT_FRAGMENT = `
   period
   timestamp
   netDelta
+  poolNetDelta
+  hedgerNetDelta
+  netStdVega
 `
 
 export const MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT = `
@@ -161,14 +166,56 @@ export const MARKET_PENDING_LIQUIDITY_SNAPSHOT_FRAGMENT = `
   pendingWithdrawalAmount
 `
 
+export const SPOT_PRICE_SNAPSHOT_FRAGMENT = `
+  timestamp
+  spotPrice
+`
+
+export const POSITIONS_FRAGMENT = `
+  option {
+    id
+    isCall
+    optionPriceAndGreeksHistory(
+      first: 1000,
+      orderBy: timestamp,
+      orderDirection: asc,
+      where: {
+        timestamp_gte: $startTimestamp,
+        period_gte: $period
+      }
+    ) {
+      id
+      timestamp
+      optionPrice
+    }
+  }
+  id
+  openTimestamp
+  closeTimestamp
+  size
+  collateral
+  trades {
+    timestamp
+    isBuy
+    size
+    premium
+    blockNumber
+  }
+`
+
+export const OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT = `
+  timestamp
+  optionPrice
+`
+
+export const STRIKE_IV_AND_GREEKS_SNAPSHOT_FRAGMENT = `
+  timestamp
+  iv
+`
+
 export const MARKET_SPOT_PRICE_SNAPSHOT_FRAGMENT = `
   spotPrice
   timestamp
-`
-
-export const POOL_HEDGER_EXPOSURE_SNAPSHOT_FRAGMENT = `
-  timestamp
-  currentNetDelta
 `
 
 export type MetaQueryResult = {
@@ -295,6 +342,8 @@ export type MarketTotalValueSnapshotQueryResult = {
   usedDeltaLiquidity: string
   NAV: string
   netOptionValue: string
+  pendingDeposits: string
+  pendingWithdrawals: string
 }
 
 export type MarketGreeksSnapshotQueryResult = {
@@ -302,6 +351,9 @@ export type MarketGreeksSnapshotQueryResult = {
   period: number
   timestamp: number
   netDelta: string
+  poolNetDelta: string
+  hedgerNetDelta: string
+  netStdVega: string
 }
 
 export type MarketVolumeAndFeesSnapshotQueryResult = {
@@ -329,12 +381,28 @@ export type MarketPendingLiquiditySnapshotQueryResult = {
   pendingWithdrawalAmount: string
 }
 
+export type SpotPriceSnapshotQueryResult = {
+  timestamp: number
+  spotPrice: string
+}
+
+export type OptionPriceAndGreeksSnapshotQueryResult = {
+  timestamp: number
+  optionPrice: string
+}
+
+export type StrikeIVAndGreeksSnapshotQueryResult = {
+  timestamp: number
+  iv: string
+}
+
 export type MarketSpotPriceSnapshotQueryResult = {
   spotPrice: string
   timestamp: number
 }
 
-export type PoolHedgerExposureSnapshotQueryResult = {
-  timestamp: number
-  currentNetDelta: string
+export enum SnapshotPeriod {
+  FifteenMinutes = 900,
+  OneHour = 3600,
+  OneDay = 86400,
 }

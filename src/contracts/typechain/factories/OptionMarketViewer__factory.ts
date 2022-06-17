@@ -58,6 +58,22 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "market",
+        type: "address",
+      },
+    ],
+    name: "RemovingInvalidMarket",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -68,8 +84,8 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "contract LiquidityTokens",
-            name: "liquidityTokens",
+            internalType: "contract LiquidityToken",
+            name: "liquidityToken",
             type: "address",
           },
           {
@@ -184,8 +200,8 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "contract LiquidityTokens",
-            name: "liquidityTokens",
+            internalType: "contract LiquidityToken",
+            name: "liquidityToken",
             type: "address",
           },
           {
@@ -779,7 +795,7 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "owner",
+        name: "account",
         type: "address",
       },
     ],
@@ -1024,8 +1040,8 @@ const _abi = [
                 type: "address",
               },
               {
-                internalType: "contract LiquidityTokens",
-                name: "liquidityTokens",
+                internalType: "contract LiquidityToken",
+                name: "liquidityToken",
                 type: "address",
               },
               {
@@ -1075,6 +1091,33 @@ const _abi = [
           },
           {
             components: [
+              {
+                components: [
+                  {
+                    internalType: "uint256",
+                    name: "maxBoardExpiry",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "address",
+                    name: "securityModule",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "feePortionReserved",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "staticBaseSettlementFee",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct OptionMarket.OptionMarketParameters",
+                name: "optionMarketParams",
+                type: "tuple",
+              },
               {
                 components: [
                   {
@@ -1515,11 +1558,6 @@ const _abi = [
                 components: [
                   {
                     internalType: "uint256",
-                    name: "shortBuffer",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
                     name: "interactionDelay",
                     type: "uint256",
                   },
@@ -1773,11 +1811,6 @@ const _abi = [
                 type: "bytes32",
               },
               {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
-              },
-              {
                 internalType: "uint256",
                 name: "quoteBaseFeeRate",
                 type: "uint256",
@@ -1813,8 +1846,8 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "contract LiquidityTokens",
-            name: "liquidityTokens",
+            internalType: "contract LiquidityToken",
+            name: "liquidityToken",
             type: "address",
           },
           {
@@ -1906,8 +1939,8 @@ const _abi = [
                 type: "address",
               },
               {
-                internalType: "contract LiquidityTokens",
-                name: "liquidityTokens",
+                internalType: "contract LiquidityToken",
+                name: "liquidityToken",
                 type: "address",
               },
               {
@@ -1957,6 +1990,33 @@ const _abi = [
           },
           {
             components: [
+              {
+                components: [
+                  {
+                    internalType: "uint256",
+                    name: "maxBoardExpiry",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "address",
+                    name: "securityModule",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "feePortionReserved",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "staticBaseSettlementFee",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct OptionMarket.OptionMarketParameters",
+                name: "optionMarketParams",
+                type: "tuple",
+              },
               {
                 components: [
                   {
@@ -2397,11 +2457,6 @@ const _abi = [
                 components: [
                   {
                     internalType: "uint256",
-                    name: "shortBuffer",
-                    type: "uint256",
-                  },
-                  {
-                    internalType: "uint256",
                     name: "interactionDelay",
                     type: "uint256",
                   },
@@ -2655,11 +2710,6 @@ const _abi = [
                 type: "bytes32",
               },
               {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
-              },
-              {
                 internalType: "uint256",
                 name: "quoteBaseFeeRate",
                 type: "uint256",
@@ -2735,8 +2785,8 @@ const _abi = [
                     type: "address",
                   },
                   {
-                    internalType: "contract LiquidityTokens",
-                    name: "liquidityTokens",
+                    internalType: "contract LiquidityToken",
+                    name: "liquidityToken",
                     type: "address",
                   },
                   {
@@ -2786,6 +2836,33 @@ const _abi = [
               },
               {
                 components: [
+                  {
+                    components: [
+                      {
+                        internalType: "uint256",
+                        name: "maxBoardExpiry",
+                        type: "uint256",
+                      },
+                      {
+                        internalType: "address",
+                        name: "securityModule",
+                        type: "address",
+                      },
+                      {
+                        internalType: "uint256",
+                        name: "feePortionReserved",
+                        type: "uint256",
+                      },
+                      {
+                        internalType: "uint256",
+                        name: "staticBaseSettlementFee",
+                        type: "uint256",
+                      },
+                    ],
+                    internalType: "struct OptionMarket.OptionMarketParameters",
+                    name: "optionMarketParams",
+                    type: "tuple",
+                  },
                   {
                     components: [
                       {
@@ -3233,11 +3310,6 @@ const _abi = [
                     components: [
                       {
                         internalType: "uint256",
-                        name: "shortBuffer",
-                        type: "uint256",
-                      },
-                      {
-                        internalType: "uint256",
                         name: "interactionDelay",
                         type: "uint256",
                       },
@@ -3333,11 +3405,6 @@ const _abi = [
                     type: "bytes32",
                   },
                   {
-                    internalType: "contract ICollateralShort",
-                    name: "short",
-                    type: "address",
-                  },
-                  {
                     internalType: "uint256",
                     name: "quoteBaseFeeRate",
                     type: "uint256",
@@ -3359,7 +3426,7 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarketViewer.MarketsView",
-        name: "",
+        name: "marketsView",
         type: "tuple",
       },
     ],
@@ -3370,7 +3437,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "owner",
+        name: "account",
         type: "address",
       },
     ],
@@ -3438,7 +3505,7 @@ const _abi = [
       },
       {
         internalType: "address",
-        name: "owner",
+        name: "account",
         type: "address",
       },
       {
@@ -3537,8 +3604,8 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "contract LiquidityTokens",
-        name: "liquidityTokens",
+        internalType: "contract LiquidityToken",
+        name: "liquidityToken",
         type: "address",
       },
       {

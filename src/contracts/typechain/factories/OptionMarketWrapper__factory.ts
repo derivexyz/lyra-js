@@ -389,6 +389,16 @@ const _abi = [
             name: "optionToken",
             type: "address",
           },
+          {
+            internalType: "contract LiquidityPool",
+            name: "liquidityPool",
+            type: "address",
+          },
+          {
+            internalType: "contract LiquidityToken",
+            name: "liquidityToken",
+            type: "address",
+          },
         ],
         internalType:
           "struct OptionMarketWrapperWithSwaps.OptionMarketContracts",
@@ -832,6 +842,47 @@ const _abi = [
         name: "",
         type: "tuple[]",
       },
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "balance",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "allowance",
+            type: "uint256",
+          },
+        ],
+        internalType:
+          "struct OptionMarketWrapperWithSwaps.LiquidityBalanceAndAllowance[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getMarketAndErcIds",
+    outputs: [
+      {
+        internalType: "uint8[]",
+        name: "",
+        type: "uint8[]",
+      },
+      {
+        internalType: "uint8[]",
+        name: "",
+        type: "uint8[]",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -897,6 +948,16 @@ const _abi = [
       {
         internalType: "contract OptionToken",
         name: "optionToken",
+        type: "address",
+      },
+      {
+        internalType: "contract LiquidityPool",
+        name: "liquidityPool",
+        type: "address",
+      },
+      {
+        internalType: "contract LiquidityToken",
+        name: "liquidityToken",
         type: "address",
       },
     ],

@@ -1,16 +1,39 @@
 import { Deployment, LyraContractId } from '../constants/contracts'
 import KOVAN_ADDRESS_MAP from '../contracts/addresses/kovan.addresses.json'
-// TODO: @earthtojake Use @lyrafinance/protocol to get addresses
-import LOCAL_ADDRESS_MAP from '../contracts/addresses/local.addresses.json'
+import KOVAN_MISC_ADDRESS_MAP from '../contracts/addresses/kovan-misc.addresses.json'
 import MAINNET_ADDRESS_MAP from '../contracts/addresses/mainnet.addresses.json'
+import MAINNET_MISC_ADDRESS_MAP from '../contracts/addresses/mainnet-misc.addresses.json'
+
+const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Record<string, string> => {
+  const kovanAddressMap = KOVAN_ADDRESS_MAP
+  const kovanMiscAddressMap = KOVAN_MISC_ADDRESS_MAP
+  const mainnetAddressMap = MAINNET_ADDRESS_MAP
+  const mainnetMiscAddressMap = MAINNET_MISC_ADDRESS_MAP
+  switch (contractId) {
+    case LyraContractId.OptionMarketViewer:
+    case LyraContractId.OptionMarketWrapper:
+    case LyraContractId.SynthetixAdapter:
+    case LyraContractId.TestFaucet:
+      return deployment === Deployment.Kovan
+        ? kovanAddressMap
+        : deployment === Deployment.Mainnet
+        ? mainnetAddressMap
+        : {}
+    case LyraContractId.LyraStakingModule:
+    case LyraContractId.LyraStakingModuleProxy:
+      return deployment === Deployment.Kovan
+        ? kovanMiscAddressMap
+        : deployment === Deployment.Mainnet
+        ? mainnetMiscAddressMap
+        : {}
+  }
+}
 
 export default function getLyraContractAddress(deployment: Deployment, contractId: LyraContractId): string {
-  switch (deployment) {
-    case Deployment.Kovan:
-      return (KOVAN_ADDRESS_MAP as Record<LyraContractId, string>)[contractId]
-    case Deployment.Mainnet:
-      return (MAINNET_ADDRESS_MAP as Record<LyraContractId, string>)[contractId]
-    case Deployment.Local:
-      return (LOCAL_ADDRESS_MAP as Record<LyraContractId, string>)[contractId]
+  const addressMap = getAddressMap(deployment, contractId)
+  const address = addressMap[contractId]
+  if (!address) {
+    throw new Error('Global contract address not found')
   }
+  return address
 }

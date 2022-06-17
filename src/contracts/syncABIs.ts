@@ -17,9 +17,9 @@ const LYRA_TARGETS = [
   LyraMarketContractId.OptionToken,
   LyraMarketContractId.ShortCollateral,
   LyraMarketContractId.OptionGreekCache,
-  LyraMarketContractId.LiquidityTokens,
+  LyraMarketContractId.LiquidityToken,
   LyraMarketContractId.LiquidityPool,
-  LyraMarketContractId.PoolHedger,
+  LyraMarketContractId.ShortPoolHedger,
 ]
 
 export default async function syncABIs(_argv: string[]): Promise<void> {
@@ -43,6 +43,7 @@ export default async function syncABIs(_argv: string[]): Promise<void> {
       // Skip TestFaucet on Mainnet (not deployed)
       return
     }
+    console.log(target)
     fs.writeFileSync(path.join(abisDir, target) + '.json', JSON.stringify(lyraSources[target].abi, null, 2))
     console.log('-- copied', target)
   })

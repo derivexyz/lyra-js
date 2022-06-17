@@ -419,7 +419,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -428,14 +427,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -457,7 +454,7 @@ export interface OptionGreekCacheInterface extends utils.Interface {
     "getMinCollatParams()": FunctionFragment;
     "getMinCollateral(uint8,uint256,uint256,uint256,uint256)": FunctionFragment;
     "getOptionBoardCache(uint256)": FunctionFragment;
-    "getPriceForForceClose((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256,bool)": FunctionFragment;
+    "getPriceForForceClose((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256,bool)": FunctionFragment;
     "getShockVol(uint256)": FunctionFragment;
     "getSkewGWAV(uint256,uint256)": FunctionFragment;
     "getStrikeCache(uint256)": FunctionFragment;
@@ -474,7 +471,7 @@ export interface OptionGreekCacheInterface extends utils.Interface {
     "setMinCollateralParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "setStrikeSkew(uint256,uint256)": FunctionFragment;
     "updateBoardCachedGreeks(uint256)": FunctionFragment;
-    "updateStrikeExposureAndGetPrice((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,uint256,bool)": FunctionFragment;
+    "updateStrikeExposureAndGetPrice((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),uint256,uint256,bool)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -930,7 +927,7 @@ export interface OptionGreekCache extends BaseContract {
       spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { minCollateral: BigNumber }>;
 
     getOptionBoardCache(
       boardId: BigNumberish,

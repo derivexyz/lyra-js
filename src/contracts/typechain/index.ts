@@ -3,28 +3,34 @@
 /* eslint-disable */
 export type { ERC20 } from "./ERC20";
 export type { LiquidityPool } from "./LiquidityPool";
-export type { LiquidityTokens } from "./LiquidityTokens";
+export type { LiquidityToken } from "./LiquidityToken";
+export type { LyraStakingModule } from "./LyraStakingModule";
+export type { LyraStakingModuleProxy } from "./LyraStakingModuleProxy";
+export type { OneInchOffChainOracle } from "./OneInchOffChainOracle";
 export type { OptionGreekCache } from "./OptionGreekCache";
 export type { OptionMarket } from "./OptionMarket";
 export type { OptionMarketPricer } from "./OptionMarketPricer";
 export type { OptionMarketViewer } from "./OptionMarketViewer";
 export type { OptionMarketWrapper } from "./OptionMarketWrapper";
 export type { OptionToken } from "./OptionToken";
-export type { PoolHedger } from "./PoolHedger";
 export type { ShortCollateral } from "./ShortCollateral";
+export type { ShortPoolHedger } from "./ShortPoolHedger";
 export type { SynthetixAdapter } from "./SynthetixAdapter";
 export type { TestFaucet } from "./TestFaucet";
 
 export { ERC20__factory } from "./factories/ERC20__factory";
 export { LiquidityPool__factory } from "./factories/LiquidityPool__factory";
-export { LiquidityTokens__factory } from "./factories/LiquidityTokens__factory";
+export { LiquidityToken__factory } from "./factories/LiquidityToken__factory";
+export { LyraStakingModule__factory } from "./factories/LyraStakingModule__factory";
+export { LyraStakingModuleProxy__factory } from "./factories/LyraStakingModuleProxy__factory";
+export { OneInchOffChainOracle__factory } from "./factories/OneInchOffChainOracle__factory";
 export { OptionGreekCache__factory } from "./factories/OptionGreekCache__factory";
 export { OptionMarket__factory } from "./factories/OptionMarket__factory";
 export { OptionMarketPricer__factory } from "./factories/OptionMarketPricer__factory";
 export { OptionMarketViewer__factory } from "./factories/OptionMarketViewer__factory";
 export { OptionMarketWrapper__factory } from "./factories/OptionMarketWrapper__factory";
 export { OptionToken__factory } from "./factories/OptionToken__factory";
-export { PoolHedger__factory } from "./factories/PoolHedger__factory";
 export { ShortCollateral__factory } from "./factories/ShortCollateral__factory";
+export { ShortPoolHedger__factory } from "./factories/ShortPoolHedger__factory";
 export { SynthetixAdapter__factory } from "./factories/SynthetixAdapter__factory";
 export { TestFaucet__factory } from "./factories/TestFaucet__factory";

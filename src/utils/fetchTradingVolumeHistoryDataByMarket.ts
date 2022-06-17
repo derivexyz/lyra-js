@@ -4,6 +4,7 @@ import { gql } from 'graphql-request'
 import Lyra from '..'
 import { MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT, MarketVolumeAndFeesSnapshotQueryResult } from '../constants/queries'
 import { Market, MarketTradingVolumeHistory } from '../market'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketVolumeAndFeesSnapshotsQuery = gql`
   query marketVolumeAndFeesSnapshots(
@@ -12,7 +13,7 @@ const marketVolumeAndFeesSnapshotsQuery = gql`
     marketVolumeAndFeesSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: {
       market: $market, 
       timestamp_gte: $startTimestamp, 
-      period_gte: $period 
+      period: $period
     }) {
       ${MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT}
     }
@@ -29,7 +30,7 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
   lyra: Lyra,
   market: Market,
   startTimestamp: number,
-  period: number
+  endTimestamp: number
 ): Promise<MarketTradingVolumeHistory[]> {
   const res = await lyra.subgraphClient.request<
     { marketVolumeAndFeesSnapshots: MarketVolumeAndFeesSnapshotQueryResult[] },
@@ -37,7 +38,7 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
   >(marketVolumeAndFeesSnapshotsQuery, {
     market: market.address.toLowerCase(),
     startTimestamp,
-    period,
+    period: getSnapshotPeriod(startTimestamp, endTimestamp),
   })
   const currentDate = Math.floor(new Date().getTime() / 1000)
   const tradingVolume: MarketTradingVolumeHistory[] = res.marketVolumeAndFeesSnapshots

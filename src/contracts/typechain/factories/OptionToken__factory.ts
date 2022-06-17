@@ -11,12 +11,12 @@ const _abi = [
     inputs: [
       {
         internalType: "string",
-        name: "name",
+        name: "name_",
         type: "string",
       },
       {
         internalType: "string",
-        name: "symbol",
+        name: "symbol_",
         type: "string",
       },
     ],
@@ -684,6 +684,22 @@ const _abi = [
     type: "error",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "strikeId",
+        type: "uint256",
+      },
+    ],
+    name: "StrikeIsSettled",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -763,6 +779,41 @@ const _abi = [
       },
     ],
     name: "OwnerNominated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "penaltyRatio",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "liquidatorFeeRatio",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "smFeeRatio",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minLiquidationFee",
+            type: "uint256",
+          },
+        ],
+        indexed: false,
+        internalType: "struct OptionToken.PartialCollateralParameters",
+        name: "partialCollateralParams",
+        type: "tuple",
+      },
+    ],
+    name: "PartialCollateralParamsSet",
     type: "event",
   },
   {
@@ -857,6 +908,19 @@ const _abi = [
       },
     ],
     name: "Transfer",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "URI",
+        type: "string",
+      },
+    ],
+    name: "URISet",
     type: "event",
   },
   {
@@ -982,11 +1046,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",
@@ -1724,11 +1783,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",

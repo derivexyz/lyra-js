@@ -98,7 +98,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -107,14 +106,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -128,8 +125,8 @@ export interface LiquidityPoolInterface extends utils.Interface {
     "boardSettlement(uint256,uint256,uint256,uint256)": FunctionFragment;
     "exchangeBase()": FunctionFragment;
     "freeQuoteCollateralAndSendPremium(uint256,address,uint256,uint256)": FunctionFragment;
-    "getLiquidity(uint256,address)": FunctionFragment;
-    "getLiquidityParams()": FunctionFragment;
+    "getCurrentLiquidity()": FunctionFragment;
+    "getLiquidity(uint256)": FunctionFragment;
     "getLpParams()": FunctionFragment;
     "getTokenPrice()": FunctionFragment;
     "getTotalPoolValueQuote()": FunctionFragment;
@@ -140,7 +137,7 @@ export interface LiquidityPoolInterface extends utils.Interface {
     "insolventSettlementAmount()": FunctionFragment;
     "liquidateBaseAndSendPremium(uint256,address,uint256,uint256)": FunctionFragment;
     "liquidationInsolventAmount()": FunctionFragment;
-    "lockBase(uint256,(uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
+    "lockBase(uint256,(uint256,bytes32,bytes32,uint256,uint256),uint256)": FunctionFragment;
     "lockQuote(uint256,uint256)": FunctionFragment;
     "lockedCollateral()": FunctionFragment;
     "lpParams()": FunctionFragment;
@@ -156,8 +153,8 @@ export interface LiquidityPoolInterface extends utils.Interface {
     "queuedDeposits(uint256)": FunctionFragment;
     "queuedWithdrawalHead()": FunctionFragment;
     "queuedWithdrawals(uint256)": FunctionFragment;
-    "reclaimInsolventBase((uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
-    "reclaimInsolventQuote((uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
+    "reclaimInsolventBase((uint256,bytes32,bytes32,uint256,uint256),uint256)": FunctionFragment;
+    "reclaimInsolventQuote(uint256,uint256)": FunctionFragment;
     "sendSettlementValue(address,uint256)": FunctionFragment;
     "sendShortPremium(address,uint256,uint256,uint256)": FunctionFragment;
     "setLiquidityPoolParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address,uint256,uint256,uint256))": FunctionFragment;
@@ -165,8 +162,9 @@ export interface LiquidityPoolInterface extends utils.Interface {
     "totalOutstandingSettlements()": FunctionFragment;
     "totalQueuedDeposits()": FunctionFragment;
     "totalQueuedWithdrawals()": FunctionFragment;
-    "transferQuoteToHedge((uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
+    "transferQuoteToHedge(uint256,uint256)": FunctionFragment;
     "updateCBs()": FunctionFragment;
+    "updateDelegateApproval()": FunctionFragment;
     "updateLiquidationInsolvency(uint256)": FunctionFragment;
   };
 
@@ -191,12 +189,12 @@ export interface LiquidityPoolInterface extends utils.Interface {
     values: [BigNumberish, string, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getLiquidity",
-    values: [BigNumberish, string]
+    functionFragment: "getCurrentLiquidity",
+    values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getLiquidityParams",
-    values?: undefined
+    functionFragment: "getLiquidity",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getLpParams",
@@ -302,7 +300,7 @@ export interface LiquidityPoolInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "reclaimInsolventQuote",
-    values: [SynthetixAdapter.ExchangeParamsStruct, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "sendSettlementValue",
@@ -334,9 +332,13 @@ export interface LiquidityPoolInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "transferQuoteToHedge",
-    values: [SynthetixAdapter.ExchangeParamsStruct, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "updateCBs", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "updateDelegateApproval",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "updateLiquidationInsolvency",
     values: [BigNumberish]
@@ -363,11 +365,11 @@ export interface LiquidityPoolInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getLiquidity",
+    functionFragment: "getCurrentLiquidity",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getLiquidityParams",
+    functionFragment: "getLiquidity",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -497,6 +499,10 @@ export interface LiquidityPoolInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "updateCBs", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateDelegateApproval",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "updateLiquidationInsolvency",
     data: BytesLike
@@ -862,13 +868,12 @@ export interface LiquidityPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getLiquidity(
-      basePrice: BigNumberish,
-      short: string,
+    getCurrentLiquidity(
       overrides?: CallOverrides
     ): Promise<[LiquidityPool.LiquidityStructOutput]>;
 
-    getLiquidityParams(
+    getLiquidity(
+      spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[LiquidityPool.LiquidityStructOutput]>;
 
@@ -885,7 +890,7 @@ export interface LiquidityPool extends BaseContract {
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
-      _liquidityTokens: string,
+      _liquidityToken: string,
       _greekCache: string,
       _poolHedger: string,
       _shortCollateral: string,
@@ -902,7 +907,7 @@ export interface LiquidityPool extends BaseContract {
 
     initiateWithdraw(
       beneficiary: string,
-      amountLiquidityTokens: BigNumberish,
+      amountLiquidityToken: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1033,7 +1038,7 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<ContractTransaction>;
 
     reclaimInsolventQuote(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -1071,12 +1076,16 @@ export interface LiquidityPool extends BaseContract {
     totalQueuedWithdrawals(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferQuoteToHedge(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     updateCBs(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1112,13 +1121,12 @@ export interface LiquidityPool extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  getLiquidity(
-    basePrice: BigNumberish,
-    short: string,
+  getCurrentLiquidity(
     overrides?: CallOverrides
   ): Promise<LiquidityPool.LiquidityStructOutput>;
 
-  getLiquidityParams(
+  getLiquidity(
+    spotPrice: BigNumberish,
     overrides?: CallOverrides
   ): Promise<LiquidityPool.LiquidityStructOutput>;
 
@@ -1135,7 +1143,7 @@ export interface LiquidityPool extends BaseContract {
   init(
     _synthetixAdapter: string,
     _optionMarket: string,
-    _liquidityTokens: string,
+    _liquidityToken: string,
     _greekCache: string,
     _poolHedger: string,
     _shortCollateral: string,
@@ -1152,7 +1160,7 @@ export interface LiquidityPool extends BaseContract {
 
   initiateWithdraw(
     beneficiary: string,
-    amountLiquidityTokens: BigNumberish,
+    amountLiquidityToken: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1283,7 +1291,7 @@ export interface LiquidityPool extends BaseContract {
   ): Promise<ContractTransaction>;
 
   reclaimInsolventQuote(
-    exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+    spotPrice: BigNumberish,
     amountQuote: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -1319,12 +1327,16 @@ export interface LiquidityPool extends BaseContract {
   totalQueuedWithdrawals(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferQuoteToHedge(
-    exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+    spotPrice: BigNumberish,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   updateCBs(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateDelegateApproval(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1356,13 +1368,12 @@ export interface LiquidityPool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getLiquidity(
-      basePrice: BigNumberish,
-      short: string,
+    getCurrentLiquidity(
       overrides?: CallOverrides
     ): Promise<LiquidityPool.LiquidityStructOutput>;
 
-    getLiquidityParams(
+    getLiquidity(
+      spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<LiquidityPool.LiquidityStructOutput>;
 
@@ -1379,7 +1390,7 @@ export interface LiquidityPool extends BaseContract {
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
-      _liquidityTokens: string,
+      _liquidityToken: string,
       _greekCache: string,
       _poolHedger: string,
       _shortCollateral: string,
@@ -1396,7 +1407,7 @@ export interface LiquidityPool extends BaseContract {
 
     initiateWithdraw(
       beneficiary: string,
-      amountLiquidityTokens: BigNumberish,
+      amountLiquidityToken: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1524,7 +1535,7 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<void>;
 
     reclaimInsolventQuote(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1560,12 +1571,14 @@ export interface LiquidityPool extends BaseContract {
     totalQueuedWithdrawals(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferQuoteToHedge(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     updateCBs(overrides?: CallOverrides): Promise<void>;
+
+    updateDelegateApproval(overrides?: CallOverrides): Promise<void>;
 
     updateLiquidationInsolvency(
       insolvencyAmountInQuote: BigNumberish,
@@ -1853,13 +1866,12 @@ export interface LiquidityPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    getCurrentLiquidity(overrides?: CallOverrides): Promise<BigNumber>;
+
     getLiquidity(
-      basePrice: BigNumberish,
-      short: string,
+      spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getLiquidityParams(overrides?: CallOverrides): Promise<BigNumber>;
 
     getLpParams(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1872,7 +1884,7 @@ export interface LiquidityPool extends BaseContract {
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
-      _liquidityTokens: string,
+      _liquidityToken: string,
       _greekCache: string,
       _poolHedger: string,
       _shortCollateral: string,
@@ -1889,7 +1901,7 @@ export interface LiquidityPool extends BaseContract {
 
     initiateWithdraw(
       beneficiary: string,
-      amountLiquidityTokens: BigNumberish,
+      amountLiquidityToken: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1968,7 +1980,7 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<BigNumber>;
 
     reclaimInsolventQuote(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -2004,12 +2016,16 @@ export interface LiquidityPool extends BaseContract {
     totalQueuedWithdrawals(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferQuoteToHedge(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     updateCBs(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2046,13 +2062,12 @@ export interface LiquidityPool extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    getLiquidity(
-      basePrice: BigNumberish,
-      short: string,
+    getCurrentLiquidity(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getLiquidityParams(
+    getLiquidity(
+      spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2071,7 +2086,7 @@ export interface LiquidityPool extends BaseContract {
     init(
       _synthetixAdapter: string,
       _optionMarket: string,
-      _liquidityTokens: string,
+      _liquidityToken: string,
       _greekCache: string,
       _poolHedger: string,
       _shortCollateral: string,
@@ -2088,7 +2103,7 @@ export interface LiquidityPool extends BaseContract {
 
     initiateWithdraw(
       beneficiary: string,
-      amountLiquidityTokens: BigNumberish,
+      amountLiquidityToken: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2177,7 +2192,7 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     reclaimInsolventQuote(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -2219,12 +2234,16 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     transferQuoteToHedge(
-      exchangeParams: SynthetixAdapter.ExchangeParamsStruct,
+      spotPrice: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     updateCBs(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

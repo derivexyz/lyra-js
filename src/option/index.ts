@@ -8,9 +8,19 @@ import { Market } from '../market'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
 import { getBlackScholesPrice, getDelta, getRho, getTheta } from '../utils/blackScholes'
+import fetchOptionPriceAndGreeksDataByID from '../utils/fetchOptionPriceAndGreeksDataByID'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
+
+export type OptionHistoryOptions = {
+  startTimestamp?: number
+}
+
+export type OptionPriceHistory = {
+  optionPrice: BigNumber
+  timestamp: number
+}
 
 export class Option {
   private __strike: Strike
@@ -138,5 +148,20 @@ export class Option {
 
   async quote(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
     return await this.strike().quote(this.isCall, isBuy, size, options)
+  }
+
+  // Price History
+
+  async priceHistory(lyra: Lyra, options?: OptionHistoryOptions): Promise<OptionPriceHistory[]> {
+    const { startTimestamp = 0 } = options ?? {}
+    const marketAddress = this.market().address
+    const strikeId = this.strike().id
+    const optionId = `${marketAddress.toLowerCase()}-${strikeId}-${this.isCall ? 'call' : 'put'}`
+    return await fetchOptionPriceAndGreeksDataByID(
+      lyra,
+      optionId,
+      startTimestamp,
+      this.strike().board().__blockTimestamp
+    )
   }
 }

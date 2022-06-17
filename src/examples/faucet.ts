@@ -2,12 +2,12 @@ import fromBigNumber from '../utils/fromBigNumber'
 import getLyra from './utils/getLyra'
 import getSigner from './utils/getSigner'
 
-export default async function faucet(argv: string[]) {
+export default async function faucet() {
   const lyra = getLyra()
   const signer = getSigner(lyra)
   const preAccount = lyra.account(signer.address)
   const balances = await preAccount.balances()
-  if (balances.base('eth').balance.isZero() || balances.stables.every(stableToken => stableToken.balance.isZero())) {
+  if (balances.base('sETH').balance.isZero() || balances.stables.every(stableToken => stableToken.balance.isZero())) {
     console.log('minting...', signer.address)
     const tx = await lyra.drip(signer.address)
     if (!tx) {
@@ -23,6 +23,6 @@ export default async function faucet(argv: string[]) {
   const newBalances = await lyra.account(signer.address).balances()
   console.log('balances', {
     quote: newBalances.stables,
-    base: fromBigNumber(newBalances.base('eth').balance),
+    base: fromBigNumber(newBalances.base('sETH').balance),
   })
 }

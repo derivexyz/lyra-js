@@ -253,25 +253,6 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "contractAddress",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "baseKey",
-        type: "bytes32",
-      },
-    ],
-    name: "BaseKeySet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
         name: "marketAddress",
         type: "address",
       },
@@ -404,25 +385,6 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "contractAddress",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bytes32",
-        name: "quoteKey",
-        type: "bytes32",
-      },
-    ],
-    name: "QuoteKeySet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
         name: "marketAddress",
         type: "address",
       },
@@ -471,37 +433,12 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "contract ICollateralShort",
-        name: "collateralShort",
-        type: "address",
-      },
-      {
-        indexed: false,
         internalType: "contract IDelegateApprovals",
         name: "delegateApprovals",
         type: "address",
       },
     ],
     name: "SynthetixAddressesUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "contractAddress",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "tradingCutoff",
-        type: "uint256",
-      },
-    ],
-    name: "TradingCutoffSet",
     type: "event",
   },
   {
@@ -545,19 +482,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "collateralShort",
-    outputs: [
-      {
-        internalType: "contract ICollateralShort",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "delegateApprovals",
     outputs: [
       {
@@ -587,11 +511,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -643,11 +562,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -762,11 +676,6 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
-          },
-          {
             internalType: "uint256",
             name: "quoteBaseFeeRate",
             type: "uint256",
@@ -826,11 +735,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -899,11 +803,6 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
-          },
-          {
             internalType: "uint256",
             name: "quoteBaseFeeRate",
             type: "uint256",
@@ -963,11 +862,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -1033,7 +927,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_contractAddress",
+        name: "optionMarket",
         type: "address",
       },
     ],
@@ -1055,11 +949,6 @@ const _abi = [
             internalType: "bytes32",
             name: "baseKey",
             type: "bytes32",
-          },
-          {
-            internalType: "contract ICollateralShort",
-            name: "short",
-            type: "address",
           },
           {
             internalType: "uint256",
@@ -1111,7 +1000,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "spotPrice",
         type: "uint256",
       },
     ],

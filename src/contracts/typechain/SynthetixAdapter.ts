@@ -22,7 +22,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -31,14 +30,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -50,17 +47,16 @@ export interface SynthetixAdapterInterface extends utils.Interface {
     "acceptOwnership()": FunctionFragment;
     "addressResolver()": FunctionFragment;
     "baseKey(address)": FunctionFragment;
-    "collateralShort()": FunctionFragment;
     "delegateApprovals()": FunctionFragment;
-    "estimateExchangeToExactBase((uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
-    "estimateExchangeToExactQuote((uint256,bytes32,bytes32,address,uint256,uint256),uint256)": FunctionFragment;
+    "estimateExchangeToExactBase((uint256,bytes32,bytes32,uint256,uint256),uint256)": FunctionFragment;
+    "estimateExchangeToExactQuote((uint256,bytes32,bytes32,uint256,uint256),uint256)": FunctionFragment;
     "exchangeFromExactBase(address,uint256)": FunctionFragment;
     "exchangeFromExactQuote(address,uint256)": FunctionFragment;
     "exchangeRates()": FunctionFragment;
-    "exchangeToExactBase((uint256,bytes32,bytes32,address,uint256,uint256),address,uint256)": FunctionFragment;
-    "exchangeToExactBaseWithLimit((uint256,bytes32,bytes32,address,uint256,uint256),address,uint256,uint256)": FunctionFragment;
-    "exchangeToExactQuote((uint256,bytes32,bytes32,address,uint256,uint256),address,uint256)": FunctionFragment;
-    "exchangeToExactQuoteWithLimit((uint256,bytes32,bytes32,address,uint256,uint256),address,uint256,uint256)": FunctionFragment;
+    "exchangeToExactBase((uint256,bytes32,bytes32,uint256,uint256),address,uint256)": FunctionFragment;
+    "exchangeToExactBaseWithLimit((uint256,bytes32,bytes32,uint256,uint256),address,uint256,uint256)": FunctionFragment;
+    "exchangeToExactQuote((uint256,bytes32,bytes32,uint256,uint256),address,uint256)": FunctionFragment;
+    "exchangeToExactQuoteWithLimit((uint256,bytes32,bytes32,uint256,uint256),address,uint256,uint256)": FunctionFragment;
     "exchanger()": FunctionFragment;
     "getExchangeParams(address)": FunctionFragment;
     "getSpotPrice(bytes32)": FunctionFragment;
@@ -92,10 +88,6 @@ export interface SynthetixAdapterInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "baseKey", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "collateralShort",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "delegateApprovals",
     values?: undefined
@@ -225,10 +217,6 @@ export interface SynthetixAdapterInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "baseKey", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "collateralShort",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "delegateApprovals",
     data: BytesLike
   ): Result;
@@ -336,31 +324,25 @@ export interface SynthetixAdapterInterface extends utils.Interface {
 
   events: {
     "AddressResolverSet(address)": EventFragment;
-    "BaseKeySet(address,bytes32)": EventFragment;
     "BaseSwappedForQuote(address,address,uint256,uint256)": EventFragment;
     "GlobalPausedSet(bool)": EventFragment;
     "GlobalsSetForContract(address,bytes32,bytes32,address,bytes32)": EventFragment;
     "MarketPausedSet(address,bool)": EventFragment;
     "OwnerChanged(address,address)": EventFragment;
     "OwnerNominated(address)": EventFragment;
-    "QuoteKeySet(address,bytes32)": EventFragment;
     "QuoteSwappedForBase(address,address,uint256,uint256)": EventFragment;
-    "SynthetixAddressesUpdated(address,address,address,address,address)": EventFragment;
-    "TradingCutoffSet(address,uint256)": EventFragment;
+    "SynthetixAddressesUpdated(address,address,address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AddressResolverSet"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BaseKeySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BaseSwappedForQuote"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "GlobalPausedSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "GlobalsSetForContract"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MarketPausedSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "QuoteKeySet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "QuoteSwappedForBase"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SynthetixAddressesUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TradingCutoffSet"): EventFragment;
 }
 
 export type AddressResolverSetEvent = TypedEvent<
@@ -370,13 +352,6 @@ export type AddressResolverSetEvent = TypedEvent<
 
 export type AddressResolverSetEventFilter =
   TypedEventFilter<AddressResolverSetEvent>;
-
-export type BaseKeySetEvent = TypedEvent<
-  [string, string],
-  { contractAddress: string; baseKey: string }
->;
-
-export type BaseKeySetEventFilter = TypedEventFilter<BaseKeySetEvent>;
 
 export type BaseSwappedForQuoteEvent = TypedEvent<
   [string, string, BigNumber, BigNumber],
@@ -427,13 +402,6 @@ export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
 
 export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
-export type QuoteKeySetEvent = TypedEvent<
-  [string, string],
-  { contractAddress: string; quoteKey: string }
->;
-
-export type QuoteKeySetEventFilter = TypedEventFilter<QuoteKeySetEvent>;
-
 export type QuoteSwappedForBaseEvent = TypedEvent<
   [string, string, BigNumber, BigNumber],
   {
@@ -448,26 +416,17 @@ export type QuoteSwappedForBaseEventFilter =
   TypedEventFilter<QuoteSwappedForBaseEvent>;
 
 export type SynthetixAddressesUpdatedEvent = TypedEvent<
-  [string, string, string, string, string],
+  [string, string, string, string],
   {
     synthetix: string;
     exchanger: string;
     exchangeRates: string;
-    collateralShort: string;
     delegateApprovals: string;
   }
 >;
 
 export type SynthetixAddressesUpdatedEventFilter =
   TypedEventFilter<SynthetixAddressesUpdatedEvent>;
-
-export type TradingCutoffSetEvent = TypedEvent<
-  [string, BigNumber],
-  { contractAddress: string; tradingCutoff: BigNumber }
->;
-
-export type TradingCutoffSetEventFilter =
-  TypedEventFilter<TradingCutoffSetEvent>;
 
 export interface SynthetixAdapter extends BaseContract {
   contractName: "SynthetixAdapter";
@@ -504,8 +463,6 @@ export interface SynthetixAdapter extends BaseContract {
     addressResolver(overrides?: CallOverrides): Promise<[string]>;
 
     baseKey(arg0: string, overrides?: CallOverrides): Promise<[string]>;
-
-    collateralShort(overrides?: CallOverrides): Promise<[string]>;
 
     delegateApprovals(overrides?: CallOverrides): Promise<[string]>;
 
@@ -568,7 +525,7 @@ export interface SynthetixAdapter extends BaseContract {
     exchanger(overrides?: CallOverrides): Promise<[string]>;
 
     getExchangeParams(
-      _contractAddress: string,
+      optionMarket: string,
       overrides?: CallOverrides
     ): Promise<
       [SynthetixAdapter.ExchangeParamsStructOutput] & {
@@ -584,7 +541,7 @@ export interface SynthetixAdapter extends BaseContract {
     getSpotPriceForMarket(
       _contractAddress: string,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { spotPrice: BigNumber }>;
 
     initialize(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -654,8 +611,6 @@ export interface SynthetixAdapter extends BaseContract {
 
   baseKey(arg0: string, overrides?: CallOverrides): Promise<string>;
 
-  collateralShort(overrides?: CallOverrides): Promise<string>;
-
   delegateApprovals(overrides?: CallOverrides): Promise<string>;
 
   estimateExchangeToExactBase(
@@ -717,7 +672,7 @@ export interface SynthetixAdapter extends BaseContract {
   exchanger(overrides?: CallOverrides): Promise<string>;
 
   getExchangeParams(
-    _contractAddress: string,
+    optionMarket: string,
     overrides?: CallOverrides
   ): Promise<SynthetixAdapter.ExchangeParamsStructOutput>;
 
@@ -793,8 +748,6 @@ export interface SynthetixAdapter extends BaseContract {
     addressResolver(overrides?: CallOverrides): Promise<string>;
 
     baseKey(arg0: string, overrides?: CallOverrides): Promise<string>;
-
-    collateralShort(overrides?: CallOverrides): Promise<string>;
 
     delegateApprovals(overrides?: CallOverrides): Promise<string>;
 
@@ -877,7 +830,7 @@ export interface SynthetixAdapter extends BaseContract {
     exchanger(overrides?: CallOverrides): Promise<string>;
 
     getExchangeParams(
-      _contractAddress: string,
+      optionMarket: string,
       overrides?: CallOverrides
     ): Promise<SynthetixAdapter.ExchangeParamsStructOutput>;
 
@@ -947,15 +900,6 @@ export interface SynthetixAdapter extends BaseContract {
     ): AddressResolverSetEventFilter;
     AddressResolverSet(addressResolver?: null): AddressResolverSetEventFilter;
 
-    "BaseKeySet(address,bytes32)"(
-      contractAddress?: string | null,
-      baseKey?: null
-    ): BaseKeySetEventFilter;
-    BaseKeySet(
-      contractAddress?: string | null,
-      baseKey?: null
-    ): BaseKeySetEventFilter;
-
     "BaseSwappedForQuote(address,address,uint256,uint256)"(
       marketAddress?: string | null,
       exchanger?: string | null,
@@ -1005,15 +949,6 @@ export interface SynthetixAdapter extends BaseContract {
     "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
     OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
 
-    "QuoteKeySet(address,bytes32)"(
-      contractAddress?: string | null,
-      quoteKey?: null
-    ): QuoteKeySetEventFilter;
-    QuoteKeySet(
-      contractAddress?: string | null,
-      quoteKey?: null
-    ): QuoteKeySetEventFilter;
-
     "QuoteSwappedForBase(address,address,uint256,uint256)"(
       marketAddress?: string | null,
       exchanger?: string | null,
@@ -1027,29 +962,18 @@ export interface SynthetixAdapter extends BaseContract {
       baseReceived?: null
     ): QuoteSwappedForBaseEventFilter;
 
-    "SynthetixAddressesUpdated(address,address,address,address,address)"(
+    "SynthetixAddressesUpdated(address,address,address,address)"(
       synthetix?: null,
       exchanger?: null,
       exchangeRates?: null,
-      collateralShort?: null,
       delegateApprovals?: null
     ): SynthetixAddressesUpdatedEventFilter;
     SynthetixAddressesUpdated(
       synthetix?: null,
       exchanger?: null,
       exchangeRates?: null,
-      collateralShort?: null,
       delegateApprovals?: null
     ): SynthetixAddressesUpdatedEventFilter;
-
-    "TradingCutoffSet(address,uint256)"(
-      contractAddress?: string | null,
-      tradingCutoff?: null
-    ): TradingCutoffSetEventFilter;
-    TradingCutoffSet(
-      contractAddress?: string | null,
-      tradingCutoff?: null
-    ): TradingCutoffSetEventFilter;
   };
 
   estimateGas: {
@@ -1060,8 +984,6 @@ export interface SynthetixAdapter extends BaseContract {
     addressResolver(overrides?: CallOverrides): Promise<BigNumber>;
 
     baseKey(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    collateralShort(overrides?: CallOverrides): Promise<BigNumber>;
 
     delegateApprovals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1124,7 +1046,7 @@ export interface SynthetixAdapter extends BaseContract {
     exchanger(overrides?: CallOverrides): Promise<BigNumber>;
 
     getExchangeParams(
-      _contractAddress: string,
+      optionMarket: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1207,8 +1129,6 @@ export interface SynthetixAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    collateralShort(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     delegateApprovals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     estimateExchangeToExactBase(
@@ -1270,7 +1190,7 @@ export interface SynthetixAdapter extends BaseContract {
     exchanger(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getExchangeParams(
-      _contractAddress: string,
+      optionMarket: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

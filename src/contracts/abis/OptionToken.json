@@ -3,12 +3,12 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "name",
+        "name": "name_",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "symbol",
+        "name": "symbol_",
         "type": "string"
       }
     ],
@@ -676,6 +676,22 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeId",
+        "type": "uint256"
+      }
+    ],
+    "name": "StrikeIsSettled",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -755,6 +771,41 @@
       }
     ],
     "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "penaltyRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidatorFeeRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "smFeeRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minLiquidationFee",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct OptionToken.PartialCollateralParameters",
+        "name": "partialCollateralParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "PartialCollateralParamsSet",
     "type": "event"
   },
   {
@@ -849,6 +900,19 @@
       }
     ],
     "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "URI",
+        "type": "string"
+      }
+    ],
+    "name": "URISet",
     "type": "event"
   },
   {
@@ -974,11 +1038,6 @@
                 "internalType": "bytes32",
                 "name": "baseKey",
                 "type": "bytes32"
-              },
-              {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
               },
               {
                 "internalType": "uint256",
@@ -1716,11 +1775,6 @@
                 "internalType": "bytes32",
                 "name": "baseKey",
                 "type": "bytes32"
-              },
-              {
-                "internalType": "contract ICollateralShort",
-                "name": "short",
-                "type": "address"
               },
               {
                 "internalType": "uint256",

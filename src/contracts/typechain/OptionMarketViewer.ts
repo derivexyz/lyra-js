@@ -20,7 +20,7 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export declare namespace OptionMarketViewer {
   export type OptionMarketAddressesStruct = {
     liquidityPool: string;
-    liquidityTokens: string;
+    liquidityToken: string;
     greekCache: string;
     optionMarket: string;
     optionMarketPricer: string;
@@ -44,7 +44,7 @@ export declare namespace OptionMarketViewer {
     string
   ] & {
     liquidityPool: string;
-    liquidityTokens: string;
+    liquidityToken: string;
     greekCache: string;
     optionMarket: string;
     optionMarketPricer: string;
@@ -145,6 +145,7 @@ export declare namespace OptionMarketViewer {
   ] & { token: string; balance: BigNumber; allowance: BigNumber };
 
   export type MarketParametersStruct = {
+    optionMarketParams: OptionMarket.OptionMarketParametersStruct;
     lpParams: LiquidityPool.LiquidityPoolParametersStruct;
     greekCacheParams: OptionGreekCache.GreekCacheParametersStruct;
     forceCloseParams: OptionGreekCache.ForceCloseParametersStruct;
@@ -157,6 +158,7 @@ export declare namespace OptionMarketViewer {
   };
 
   export type MarketParametersStructOutput = [
+    OptionMarket.OptionMarketParametersStructOutput,
     LiquidityPool.LiquidityPoolParametersStructOutput,
     OptionGreekCache.GreekCacheParametersStructOutput,
     OptionGreekCache.ForceCloseParametersStructOutput,
@@ -167,6 +169,7 @@ export declare namespace OptionMarketViewer {
     OptionToken.PartialCollateralParametersStructOutput,
     PoolHedger.PoolHedgerParametersStructOutput
   ] & {
+    optionMarketParams: OptionMarket.OptionMarketParametersStructOutput;
     lpParams: LiquidityPool.LiquidityPoolParametersStructOutput;
     greekCacheParams: OptionGreekCache.GreekCacheParametersStructOutput;
     forceCloseParams: OptionGreekCache.ForceCloseParametersStructOutput;
@@ -417,6 +420,27 @@ export declare namespace OptionGreekCache {
   };
 }
 
+export declare namespace OptionMarket {
+  export type OptionMarketParametersStruct = {
+    maxBoardExpiry: BigNumberish;
+    securityModule: string;
+    feePortionReserved: BigNumberish;
+    staticBaseSettlementFee: BigNumberish;
+  };
+
+  export type OptionMarketParametersStructOutput = [
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber
+  ] & {
+    maxBoardExpiry: BigNumber;
+    securityModule: string;
+    feePortionReserved: BigNumber;
+    staticBaseSettlementFee: BigNumber;
+  };
+}
+
 export declare namespace LiquidityPool {
   export type LiquidityPoolParametersStruct = {
     minDepositWithdraw: BigNumberish;
@@ -654,17 +678,11 @@ export declare namespace OptionToken {
 
 export declare namespace PoolHedger {
   export type PoolHedgerParametersStruct = {
-    shortBuffer: BigNumberish;
     interactionDelay: BigNumberish;
     hedgeCap: BigNumberish;
   };
 
-  export type PoolHedgerParametersStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    shortBuffer: BigNumber;
+  export type PoolHedgerParametersStructOutput = [BigNumber, BigNumber] & {
     interactionDelay: BigNumber;
     hedgeCap: BigNumber;
   };
@@ -675,7 +693,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -684,14 +701,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -967,7 +982,7 @@ export interface OptionMarketViewer extends BaseContract {
 
     getLiquidityBalancesAndAllowances(
       markets: string[],
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<[OptionMarketViewer.LiquidityBalanceAndAllowanceStructOutput[]]>;
 
@@ -1001,16 +1016,20 @@ export interface OptionMarketViewer extends BaseContract {
     getMarkets(
       markets: string[],
       overrides?: CallOverrides
-    ): Promise<[OptionMarketViewer.MarketsViewStructOutput]>;
+    ): Promise<
+      [OptionMarketViewer.MarketsViewStructOutput] & {
+        marketsView: OptionMarketViewer.MarketsViewStructOutput;
+      }
+    >;
 
     getOwnerPositions(
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<[OptionMarketViewer.MarketOptionPositionsStructOutput[]]>;
 
     getOwnerPositionsInRange(
       market: string,
-      owner: string,
+      account: string,
       start: BigNumberish,
       limit: BigNumberish,
       overrides?: CallOverrides
@@ -1040,7 +1059,7 @@ export interface OptionMarketViewer extends BaseContract {
         string
       ] & {
         liquidityPool: string;
-        liquidityTokens: string;
+        liquidityToken: string;
         greekCache: string;
         optionMarket: string;
         optionMarketPricer: string;
@@ -1103,7 +1122,7 @@ export interface OptionMarketViewer extends BaseContract {
 
   getLiquidityBalancesAndAllowances(
     markets: string[],
-    owner: string,
+    account: string,
     overrides?: CallOverrides
   ): Promise<OptionMarketViewer.LiquidityBalanceAndAllowanceStructOutput[]>;
 
@@ -1132,13 +1151,13 @@ export interface OptionMarketViewer extends BaseContract {
   ): Promise<OptionMarketViewer.MarketsViewStructOutput>;
 
   getOwnerPositions(
-    owner: string,
+    account: string,
     overrides?: CallOverrides
   ): Promise<OptionMarketViewer.MarketOptionPositionsStructOutput[]>;
 
   getOwnerPositionsInRange(
     market: string,
-    owner: string,
+    account: string,
     start: BigNumberish,
     limit: BigNumberish,
     overrides?: CallOverrides
@@ -1168,7 +1187,7 @@ export interface OptionMarketViewer extends BaseContract {
       string
     ] & {
       liquidityPool: string;
-      liquidityTokens: string;
+      liquidityToken: string;
       greekCache: string;
       optionMarket: string;
       optionMarketPricer: string;
@@ -1226,7 +1245,7 @@ export interface OptionMarketViewer extends BaseContract {
 
     getLiquidityBalancesAndAllowances(
       markets: string[],
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<OptionMarketViewer.LiquidityBalanceAndAllowanceStructOutput[]>;
 
@@ -1255,13 +1274,13 @@ export interface OptionMarketViewer extends BaseContract {
     ): Promise<OptionMarketViewer.MarketsViewStructOutput>;
 
     getOwnerPositions(
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<OptionMarketViewer.MarketOptionPositionsStructOutput[]>;
 
     getOwnerPositionsInRange(
       market: string,
-      owner: string,
+      account: string,
       start: BigNumberish,
       limit: BigNumberish,
       overrides?: CallOverrides
@@ -1288,7 +1307,7 @@ export interface OptionMarketViewer extends BaseContract {
         string
       ] & {
         liquidityPool: string;
-        liquidityTokens: string;
+        liquidityToken: string;
         greekCache: string;
         optionMarket: string;
         optionMarketPricer: string;
@@ -1363,7 +1382,7 @@ export interface OptionMarketViewer extends BaseContract {
 
     getLiquidityBalancesAndAllowances(
       markets: string[],
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1387,13 +1406,13 @@ export interface OptionMarketViewer extends BaseContract {
     ): Promise<BigNumber>;
 
     getOwnerPositions(
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getOwnerPositionsInRange(
       market: string,
-      owner: string,
+      account: string,
       start: BigNumberish,
       limit: BigNumberish,
       overrides?: CallOverrides
@@ -1463,7 +1482,7 @@ export interface OptionMarketViewer extends BaseContract {
 
     getLiquidityBalancesAndAllowances(
       markets: string[],
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1492,13 +1511,13 @@ export interface OptionMarketViewer extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getOwnerPositions(
-      owner: string,
+      account: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getOwnerPositionsInRange(
       market: string,
-      owner: string,
+      account: string,
       start: BigNumberish,
       limit: BigNumberish,
       overrides?: CallOverrides

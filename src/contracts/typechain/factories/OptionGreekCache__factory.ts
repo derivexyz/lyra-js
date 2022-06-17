@@ -61,6 +61,32 @@ const _abi = [
       },
       {
         internalType: "uint256",
+        name: "boardId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "expiry",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "currentTimestamp",
+        type: "uint256",
+      },
+    ],
+    name: "CannotUpdateExpiredBoard",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
         name: "timestamp",
         type: "uint256",
       },
@@ -1432,7 +1458,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "minCollateral",
         type: "uint256",
       },
     ],
@@ -1614,11 +1640,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",
@@ -2346,11 +2367,6 @@ const _abi = [
                 internalType: "bytes32",
                 name: "baseKey",
                 type: "bytes32",
-              },
-              {
-                internalType: "contract ICollateralShort",
-                name: "short",
-                type: "address",
               },
               {
                 internalType: "uint256",

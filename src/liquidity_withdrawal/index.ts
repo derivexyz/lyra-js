@@ -55,7 +55,7 @@ export class LiquidityWithdrawal {
     this.tokenValueAtRequestWithdraw = ZERO_BN
     this.tokenPriceAtWithdraw = processed?.args.tokenPrice
     this.tokenValueAtWithdraw = processed?.args.tokenPrice.mul(processed?.args.amountWithdrawn)
-    this.isPending = !!(queued && processed)
+    this.isPending = !processed
     this.withdrawalRequestedTimestamp = queuedOrProcessed.args.timestamp.toNumber()
     this.withdrawalTimestamp = processed
       ? processed.args.timestamp.toNumber()

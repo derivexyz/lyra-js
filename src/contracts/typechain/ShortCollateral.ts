@@ -59,6 +59,7 @@ export interface ShortCollateralInterface extends utils.Interface {
     "sendBaseCollateral(address,uint256)": FunctionFragment;
     "sendQuoteCollateral(address,uint256)": FunctionFragment;
     "settleOptions(uint256[])": FunctionFragment;
+    "updateDelegateApproval()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -106,6 +107,10 @@ export interface ShortCollateralInterface extends utils.Interface {
     functionFragment: "settleOptions",
     values: [BigNumberish[]]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateDelegateApproval",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "LPBaseExcess",
@@ -147,6 +152,10 @@ export interface ShortCollateralInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "settleOptions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateDelegateApproval",
     data: BytesLike
   ): Result;
 
@@ -331,6 +340,10 @@ export interface ShortCollateral extends BaseContract {
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    updateDelegateApproval(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>;
@@ -388,6 +401,10 @@ export interface ShortCollateral extends BaseContract {
 
   settleOptions(
     positionIds: BigNumberish[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateDelegateApproval(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -449,6 +466,8 @@ export interface ShortCollateral extends BaseContract {
       positionIds: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<void>;
+
+    updateDelegateApproval(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -583,6 +602,10 @@ export interface ShortCollateral extends BaseContract {
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    updateDelegateApproval(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -641,6 +664,10 @@ export interface ShortCollateral extends BaseContract {
 
     settleOptions(
       positionIds: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

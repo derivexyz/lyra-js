@@ -221,6 +221,11 @@ const _abi = [
             name: "feePortionReserved",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "staticBaseSettlementFee",
+            type: "uint256",
+          },
         ],
         internalType: "struct OptionMarket.OptionMarketParameters",
         name: "optionMarketParams",
@@ -555,6 +560,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "feePortionReserved",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "staticBaseSettlementFee",
             type: "uint256",
           },
         ],
@@ -1125,7 +1135,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "boardId",
         type: "uint256",
       },
     ],
@@ -1343,7 +1353,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256[]",
-        name: "",
+        name: "strikeIds",
         type: "uint256[]",
       },
     ],
@@ -1415,6 +1425,41 @@ const _abi = [
           },
         ],
         internalType: "struct OptionMarket.OptionBoard",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getOptionMarketParams",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "maxBoardExpiry",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "securityModule",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "feePortionReserved",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "staticBaseSettlementFee",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct OptionMarket.OptionMarketParameters",
         name: "",
         type: "tuple",
       },
@@ -1811,29 +1856,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "optionMarketParams",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "maxBoardExpiry",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "securityModule",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "feePortionReserved",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "owner",
     outputs: [
       {
@@ -1900,6 +1922,11 @@ const _abi = [
             name: "feePortionReserved",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "staticBaseSettlementFee",
+            type: "uint256",
+          },
         ],
         internalType: "struct OptionMarket.OptionMarketParameters",
         name: "_optionMarketParams",
@@ -1947,25 +1974,6 @@ const _abi = [
     name: "smClaim",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "strikeToBaseReturnedRatio",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ];

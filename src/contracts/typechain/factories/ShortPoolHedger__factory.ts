@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { PoolHedger, PoolHedgerInterface } from "../PoolHedger";
+import type {
+  ShortPoolHedger,
+  ShortPoolHedgerInterface,
+} from "../ShortPoolHedger";
 
 const _abi = [
   {
@@ -57,29 +60,12 @@ const _abi = [
         type: "address",
       },
       {
-        components: [
-          {
-            internalType: "uint256",
-            name: "shortBuffer",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "interactionDelay",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "hedgeCap",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct PoolHedger.PoolHedgerParameters",
-        name: "poolHedgerParams",
-        type: "tuple",
+        internalType: "uint256",
+        name: "newShortBuffer",
+        type: "uint256",
       },
     ],
-    name: "InvalidPoolHedgerParameters",
+    name: "InvalidShortBuffer",
     type: "error",
   },
   {
@@ -300,11 +286,6 @@ const _abi = [
         components: [
           {
             internalType: "uint256",
-            name: "shortBuffer",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
             name: "interactionDelay",
             type: "uint256",
           },
@@ -367,6 +348,32 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
+        name: "newShortBuffer",
+        type: "uint256",
+      },
+    ],
+    name: "ShortBufferSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "contract ICollateralShort",
+        name: "collateralShort",
+        type: "address",
+      },
+    ],
+    name: "ShortCollateralSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
         name: "oldShort",
         type: "uint256",
       },
@@ -401,6 +408,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "collateralShort",
+    outputs: [
+      {
+        internalType: "contract ICollateralShort",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getCappedExpectedHedge",
     outputs: [
       {
@@ -427,11 +447,6 @@ const _abi = [
   },
   {
     inputs: [
-      {
-        internalType: "contract ICollateralShort",
-        name: "short",
-        type: "address",
-      },
       {
         internalType: "uint256",
         name: "spotPrice",
@@ -462,11 +477,6 @@ const _abi = [
         components: [
           {
             internalType: "uint256",
-            name: "shortBuffer",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
             name: "interactionDelay",
             type: "uint256",
           },
@@ -485,13 +495,37 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
+    inputs: [],
+    name: "getPoolHedgerSettings",
+    outputs: [
       {
-        internalType: "contract ICollateralShort",
-        name: "short",
-        type: "address",
+        components: [
+          {
+            internalType: "uint256",
+            name: "interactionDelay",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "hedgeCap",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct PoolHedger.PoolHedgerParameters",
+        name: "",
+        type: "tuple",
+      },
+      {
+        internalType: "uint256",
+        name: "_shortBuffer",
+        type: "uint256",
       },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getShortPosition",
     outputs: [
       {
@@ -614,29 +648,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "poolHedgerParams",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "shortBuffer",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "interactionDelay",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "hedgeCap",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "resetInteractionDelay",
     outputs: [],
     stateMutability: "nonpayable",
@@ -646,11 +657,6 @@ const _abi = [
     inputs: [
       {
         components: [
-          {
-            internalType: "uint256",
-            name: "shortBuffer",
-            type: "uint256",
-          },
           {
             internalType: "uint256",
             name: "interactionDelay",
@@ -673,6 +679,32 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_shortBuffer",
+        type: "uint256",
+      },
+    ],
+    name: "setShortBuffer",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "shortBuffer",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "shortId",
     outputs: [
@@ -692,17 +724,31 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [],
+    name: "updateCollateralShortAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "updateDelegateApproval",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ];
 
-export class PoolHedger__factory {
+export class ShortPoolHedger__factory {
   static readonly abi = _abi;
-  static createInterface(): PoolHedgerInterface {
-    return new utils.Interface(_abi) as PoolHedgerInterface;
+  static createInterface(): ShortPoolHedgerInterface {
+    return new utils.Interface(_abi) as ShortPoolHedgerInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): PoolHedger {
-    return new Contract(address, _abi, signerOrProvider) as PoolHedger;
+  ): ShortPoolHedger {
+    return new Contract(address, _abi, signerOrProvider) as ShortPoolHedger;
   }
 }

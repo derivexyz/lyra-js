@@ -9,9 +9,19 @@ import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
 import { getDelta, getGamma, getVega } from '../utils/blackScholes'
+import fetchStrikeIVAndGreeksDataByID from '../utils/fetchStrikeIVAndGreeksDataByID'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
+
+export type StrikeHistoryOptions = {
+  startTimestamp?: number
+}
+
+export type StrikeIVHistory = {
+  iv: BigNumber
+  timestamp: number
+}
 
 export class Strike {
   private __board: Board
@@ -122,5 +132,14 @@ export class Strike {
 
   async quote(isCall: boolean, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
     return await this.market().quote(this.id, isCall, isBuy, size, options)
+  }
+
+  // Implied Volatility History
+
+  async ivHistory(lyra: Lyra, options?: StrikeHistoryOptions): Promise<StrikeIVHistory[]> {
+    const { startTimestamp = 0 } = options ?? {}
+    const marketAddress = this.market().address
+    const strikeId = `${marketAddress.toLowerCase()}-${this.id}`
+    return await fetchStrikeIVAndGreeksDataByID(lyra, strikeId, startTimestamp, this.__board.__blockTimestamp)
   }
 }

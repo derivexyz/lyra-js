@@ -19,31 +19,27 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace PoolHedger {
   export type PoolHedgerParametersStruct = {
-    shortBuffer: BigNumberish;
     interactionDelay: BigNumberish;
     hedgeCap: BigNumberish;
   };
 
-  export type PoolHedgerParametersStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    shortBuffer: BigNumber;
+  export type PoolHedgerParametersStructOutput = [BigNumber, BigNumber] & {
     interactionDelay: BigNumber;
     hedgeCap: BigNumber;
   };
 }
 
-export interface PoolHedgerInterface extends utils.Interface {
-  contractName: "PoolHedger";
+export interface ShortPoolHedgerInterface extends utils.Interface {
+  contractName: "ShortPoolHedger";
   functions: {
     "acceptOwnership()": FunctionFragment;
+    "collateralShort()": FunctionFragment;
     "getCappedExpectedHedge()": FunctionFragment;
     "getCurrentHedgedNetDelta()": FunctionFragment;
-    "getHedgingLiquidity(address,uint256)": FunctionFragment;
+    "getHedgingLiquidity(uint256)": FunctionFragment;
     "getPoolHedgerParams()": FunctionFragment;
-    "getShortPosition(address)": FunctionFragment;
+    "getPoolHedgerSettings()": FunctionFragment;
+    "getShortPosition()": FunctionFragment;
     "hedgeDelta()": FunctionFragment;
     "init(address,address,address,address,address,address)": FunctionFragment;
     "lastInteraction()": FunctionFragment;
@@ -51,15 +47,22 @@ export interface PoolHedgerInterface extends utils.Interface {
     "nominatedOwner()": FunctionFragment;
     "openShortAccount()": FunctionFragment;
     "owner()": FunctionFragment;
-    "poolHedgerParams()": FunctionFragment;
     "resetInteractionDelay()": FunctionFragment;
-    "setPoolHedgerParams((uint256,uint256,uint256))": FunctionFragment;
+    "setPoolHedgerParams((uint256,uint256))": FunctionFragment;
+    "setShortBuffer(uint256)": FunctionFragment;
+    "shortBuffer()": FunctionFragment;
     "shortId()": FunctionFragment;
     "updateCollateral()": FunctionFragment;
+    "updateCollateralShortAddress()": FunctionFragment;
+    "updateDelegateApproval()": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "collateralShort",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -72,15 +75,19 @@ export interface PoolHedgerInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getHedgingLiquidity",
-    values: [string, BigNumberish]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getPoolHedgerParams",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getPoolHedgerSettings",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getShortPosition",
-    values: [string]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "hedgeDelta",
@@ -108,10 +115,6 @@ export interface PoolHedgerInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "poolHedgerParams",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "resetInteractionDelay",
     values?: undefined
   ): string;
@@ -119,14 +122,34 @@ export interface PoolHedgerInterface extends utils.Interface {
     functionFragment: "setPoolHedgerParams",
     values: [PoolHedger.PoolHedgerParametersStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setShortBuffer",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "shortBuffer",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "shortId", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updateCollateral",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateCollateralShortAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateDelegateApproval",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "collateralShort",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -143,6 +166,10 @@ export interface PoolHedgerInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getPoolHedgerParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPoolHedgerSettings",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -169,10 +196,6 @@ export interface PoolHedgerInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "poolHedgerParams",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "resetInteractionDelay",
     data: BytesLike
   ): Result;
@@ -180,9 +203,25 @@ export interface PoolHedgerInterface extends utils.Interface {
     functionFragment: "setPoolHedgerParams",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setShortBuffer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "shortBuffer",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "shortId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "updateCollateral",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateCollateralShortAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateDelegateApproval",
     data: BytesLike
   ): Result;
 
@@ -194,6 +233,8 @@ export interface PoolHedgerInterface extends utils.Interface {
     "PoolHedgerParametersSet(tuple)": EventFragment;
     "PositionUpdated(int256,int256,int256)": EventFragment;
     "QuoteReturnedToLP(uint256)": EventFragment;
+    "ShortBufferSet(uint256)": EventFragment;
+    "ShortCollateralSet(address)": EventFragment;
     "ShortSetTo(uint256,uint256,uint256,uint256)": EventFragment;
   };
 
@@ -204,6 +245,8 @@ export interface PoolHedgerInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "PoolHedgerParametersSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PositionUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "QuoteReturnedToLP"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ShortBufferSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ShortCollateralSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ShortSetTo"): EventFragment;
 }
 
@@ -260,6 +303,21 @@ export type QuoteReturnedToLPEvent = TypedEvent<
 export type QuoteReturnedToLPEventFilter =
   TypedEventFilter<QuoteReturnedToLPEvent>;
 
+export type ShortBufferSetEvent = TypedEvent<
+  [BigNumber],
+  { newShortBuffer: BigNumber }
+>;
+
+export type ShortBufferSetEventFilter = TypedEventFilter<ShortBufferSetEvent>;
+
+export type ShortCollateralSetEvent = TypedEvent<
+  [string],
+  { collateralShort: string }
+>;
+
+export type ShortCollateralSetEventFilter =
+  TypedEventFilter<ShortCollateralSetEvent>;
+
 export type ShortSetToEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber, BigNumber],
   {
@@ -272,13 +330,13 @@ export type ShortSetToEvent = TypedEvent<
 
 export type ShortSetToEventFilter = TypedEventFilter<ShortSetToEvent>;
 
-export interface PoolHedger extends BaseContract {
-  contractName: "PoolHedger";
+export interface ShortPoolHedger extends BaseContract {
+  contractName: "ShortPoolHedger";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: PoolHedgerInterface;
+  interface: ShortPoolHedgerInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -304,6 +362,8 @@ export interface PoolHedger extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    collateralShort(overrides?: CallOverrides): Promise<[string]>;
+
     getCappedExpectedHedge(
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { cappedExpectedHedge: BigNumber }>;
@@ -311,7 +371,6 @@ export interface PoolHedger extends BaseContract {
     getCurrentHedgedNetDelta(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getHedgingLiquidity(
-      short: string,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -325,8 +384,15 @@ export interface PoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[PoolHedger.PoolHedgerParametersStructOutput]>;
 
+    getPoolHedgerSettings(
+      overrides?: CallOverrides
+    ): Promise<
+      [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+        _shortBuffer: BigNumber;
+      }
+    >;
+
     getShortPosition(
-      short: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -364,16 +430,6 @@ export interface PoolHedger extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
-    poolHedgerParams(
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        shortBuffer: BigNumber;
-        interactionDelay: BigNumber;
-        hedgeCap: BigNumber;
-      }
-    >;
-
     resetInteractionDelay(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -383,9 +439,24 @@ export interface PoolHedger extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setShortBuffer(
+      _shortBuffer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    shortBuffer(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     shortId(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     updateCollateral(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateCollateralShortAddress(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -394,12 +465,13 @@ export interface PoolHedger extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  collateralShort(overrides?: CallOverrides): Promise<string>;
+
   getCappedExpectedHedge(overrides?: CallOverrides): Promise<BigNumber>;
 
   getCurrentHedgedNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
 
   getHedgingLiquidity(
-    short: string,
     spotPrice: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
@@ -413,8 +485,15 @@ export interface PoolHedger extends BaseContract {
     overrides?: CallOverrides
   ): Promise<PoolHedger.PoolHedgerParametersStructOutput>;
 
+  getPoolHedgerSettings(
+    overrides?: CallOverrides
+  ): Promise<
+    [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+      _shortBuffer: BigNumber;
+    }
+  >;
+
   getShortPosition(
-    short: string,
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, BigNumber] & { shortBalance: BigNumber; collateral: BigNumber }
@@ -449,16 +528,6 @@ export interface PoolHedger extends BaseContract {
 
   owner(overrides?: CallOverrides): Promise<string>;
 
-  poolHedgerParams(
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
-      shortBuffer: BigNumber;
-      interactionDelay: BigNumber;
-      hedgeCap: BigNumber;
-    }
-  >;
-
   resetInteractionDelay(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -468,21 +537,37 @@ export interface PoolHedger extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setShortBuffer(
+    _shortBuffer: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  shortBuffer(overrides?: CallOverrides): Promise<BigNumber>;
+
   shortId(overrides?: CallOverrides): Promise<BigNumber>;
 
   updateCollateral(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateCollateralShortAddress(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateDelegateApproval(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     acceptOwnership(overrides?: CallOverrides): Promise<void>;
+
+    collateralShort(overrides?: CallOverrides): Promise<string>;
 
     getCappedExpectedHedge(overrides?: CallOverrides): Promise<BigNumber>;
 
     getCurrentHedgedNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
 
     getHedgingLiquidity(
-      short: string,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
@@ -496,8 +581,15 @@ export interface PoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PoolHedger.PoolHedgerParametersStructOutput>;
 
+    getPoolHedgerSettings(
+      overrides?: CallOverrides
+    ): Promise<
+      [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+        _shortBuffer: BigNumber;
+      }
+    >;
+
     getShortPosition(
-      short: string,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
@@ -528,16 +620,6 @@ export interface PoolHedger extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<string>;
 
-    poolHedgerParams(
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        shortBuffer: BigNumber;
-        interactionDelay: BigNumber;
-        hedgeCap: BigNumber;
-      }
-    >;
-
     resetInteractionDelay(overrides?: CallOverrides): Promise<void>;
 
     setPoolHedgerParams(
@@ -545,9 +627,20 @@ export interface PoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setShortBuffer(
+      _shortBuffer: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    shortBuffer(overrides?: CallOverrides): Promise<BigNumber>;
+
     shortId(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateCollateral(overrides?: CallOverrides): Promise<void>;
+
+    updateCollateralShortAddress(overrides?: CallOverrides): Promise<void>;
+
+    updateDelegateApproval(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -594,6 +687,14 @@ export interface PoolHedger extends BaseContract {
     ): QuoteReturnedToLPEventFilter;
     QuoteReturnedToLP(amountQuote?: null): QuoteReturnedToLPEventFilter;
 
+    "ShortBufferSet(uint256)"(newShortBuffer?: null): ShortBufferSetEventFilter;
+    ShortBufferSet(newShortBuffer?: null): ShortBufferSetEventFilter;
+
+    "ShortCollateralSet(address)"(
+      collateralShort?: null
+    ): ShortCollateralSetEventFilter;
+    ShortCollateralSet(collateralShort?: null): ShortCollateralSetEventFilter;
+
     "ShortSetTo(uint256,uint256,uint256,uint256)"(
       oldShort?: null,
       newShort?: null,
@@ -613,22 +714,22 @@ export interface PoolHedger extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    collateralShort(overrides?: CallOverrides): Promise<BigNumber>;
+
     getCappedExpectedHedge(overrides?: CallOverrides): Promise<BigNumber>;
 
     getCurrentHedgedNetDelta(overrides?: CallOverrides): Promise<BigNumber>;
 
     getHedgingLiquidity(
-      short: string,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getPoolHedgerParams(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getShortPosition(
-      short: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getPoolHedgerSettings(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getShortPosition(overrides?: CallOverrides): Promise<BigNumber>;
 
     hedgeDelta(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -659,8 +760,6 @@ export interface PoolHedger extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    poolHedgerParams(overrides?: CallOverrides): Promise<BigNumber>;
-
     resetInteractionDelay(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -670,9 +769,24 @@ export interface PoolHedger extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setShortBuffer(
+      _shortBuffer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    shortBuffer(overrides?: CallOverrides): Promise<BigNumber>;
+
     shortId(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateCollateral(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateCollateralShortAddress(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -681,6 +795,8 @@ export interface PoolHedger extends BaseContract {
     acceptOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    collateralShort(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getCappedExpectedHedge(
       overrides?: CallOverrides
@@ -691,7 +807,6 @@ export interface PoolHedger extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getHedgingLiquidity(
-      short: string,
       spotPrice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -700,10 +815,11 @@ export interface PoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getShortPosition(
-      short: string,
+    getPoolHedgerSettings(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getShortPosition(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     hedgeDelta(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -734,8 +850,6 @@ export interface PoolHedger extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    poolHedgerParams(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     resetInteractionDelay(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -745,9 +859,24 @@ export interface PoolHedger extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    setShortBuffer(
+      _shortBuffer: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    shortBuffer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     shortId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     updateCollateral(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateCollateralShortAddress(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateDelegateApproval(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

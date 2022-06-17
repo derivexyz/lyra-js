@@ -49,29 +49,12 @@
         "type": "address"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "shortBuffer",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "interactionDelay",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "hedgeCap",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct PoolHedger.PoolHedgerParameters",
-        "name": "poolHedgerParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "newShortBuffer",
+        "type": "uint256"
       }
     ],
-    "name": "InvalidPoolHedgerParameters",
+    "name": "InvalidShortBuffer",
     "type": "error"
   },
   {
@@ -292,11 +275,6 @@
         "components": [
           {
             "internalType": "uint256",
-            "name": "shortBuffer",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "interactionDelay",
             "type": "uint256"
           },
@@ -359,6 +337,32 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "newShortBuffer",
+        "type": "uint256"
+      }
+    ],
+    "name": "ShortBufferSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "contract ICollateralShort",
+        "name": "collateralShort",
+        "type": "address"
+      }
+    ],
+    "name": "ShortCollateralSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "oldShort",
         "type": "uint256"
       },
@@ -393,6 +397,19 @@
   },
   {
     "inputs": [],
+    "name": "collateralShort",
+    "outputs": [
+      {
+        "internalType": "contract ICollateralShort",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getCappedExpectedHedge",
     "outputs": [
       {
@@ -419,11 +436,6 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "contract ICollateralShort",
-        "name": "short",
-        "type": "address"
-      },
       {
         "internalType": "uint256",
         "name": "spotPrice",
@@ -454,11 +466,6 @@
         "components": [
           {
             "internalType": "uint256",
-            "name": "shortBuffer",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
             "name": "interactionDelay",
             "type": "uint256"
           },
@@ -477,13 +484,37 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "getPoolHedgerSettings",
+    "outputs": [
       {
-        "internalType": "contract ICollateralShort",
-        "name": "short",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "interactionDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hedgeCap",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PoolHedger.PoolHedgerParameters",
+        "name": "",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_shortBuffer",
+        "type": "uint256"
       }
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getShortPosition",
     "outputs": [
       {
@@ -606,29 +637,6 @@
   },
   {
     "inputs": [],
-    "name": "poolHedgerParams",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "shortBuffer",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "interactionDelay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "hedgeCap",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "resetInteractionDelay",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -638,11 +646,6 @@
     "inputs": [
       {
         "components": [
-          {
-            "internalType": "uint256",
-            "name": "shortBuffer",
-            "type": "uint256"
-          },
           {
             "internalType": "uint256",
             "name": "interactionDelay",
@@ -665,6 +668,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_shortBuffer",
+        "type": "uint256"
+      }
+    ],
+    "name": "setShortBuffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "shortBuffer",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "shortId",
     "outputs": [
@@ -680,6 +709,20 @@
   {
     "inputs": [],
     "name": "updateCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateCollateralShortAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateDelegateApproval",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -212,6 +212,11 @@
             "internalType": "uint256",
             "name": "feePortionReserved",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "staticBaseSettlementFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct OptionMarket.OptionMarketParameters",
@@ -547,6 +552,11 @@
           {
             "internalType": "uint256",
             "name": "feePortionReserved",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "staticBaseSettlementFee",
             "type": "uint256"
           }
         ],
@@ -1117,7 +1127,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "boardId",
         "type": "uint256"
       }
     ],
@@ -1335,7 +1345,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "strikeIds",
         "type": "uint256[]"
       }
     ],
@@ -1407,6 +1417,41 @@
           }
         ],
         "internalType": "struct OptionMarket.OptionBoard",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOptionMarketParams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "maxBoardExpiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "securityModule",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "feePortionReserved",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "staticBaseSettlementFee",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct OptionMarket.OptionMarketParameters",
         "name": "",
         "type": "tuple"
       }
@@ -1803,29 +1848,6 @@
   },
   {
     "inputs": [],
-    "name": "optionMarketParams",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "maxBoardExpiry",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "securityModule",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "feePortionReserved",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1891,6 +1913,11 @@
             "internalType": "uint256",
             "name": "feePortionReserved",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "staticBaseSettlementFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct OptionMarket.OptionMarketParameters",
@@ -1939,25 +1966,6 @@
     "name": "smClaim",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "strikeToBaseReturnedRatio",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

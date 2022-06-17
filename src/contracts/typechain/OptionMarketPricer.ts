@@ -258,7 +258,6 @@ export declare namespace SynthetixAdapter {
     spotPrice: BigNumberish;
     quoteKey: BytesLike;
     baseKey: BytesLike;
-    short: string;
     quoteBaseFeeRate: BigNumberish;
     baseQuoteFeeRate: BigNumberish;
   };
@@ -267,14 +266,12 @@ export declare namespace SynthetixAdapter {
     BigNumber,
     string,
     string,
-    string,
     BigNumber,
     BigNumber
   ] & {
     spotPrice: BigNumber;
     quoteKey: string;
     baseKey: string;
-    short: string;
     quoteBaseFeeRate: BigNumber;
     baseQuoteFeeRate: BigNumber;
   };
@@ -387,12 +384,12 @@ export interface OptionMarketPricerInterface extends utils.Interface {
     "getPricingParams()": FunctionFragment;
     "getTimeWeightedFee(uint256,uint256,uint256,uint256)": FunctionFragment;
     "getTradeLimitParams()": FunctionFragment;
-    "getTradeResult((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256),uint256,uint256)": FunctionFragment;
-    "getVarianceFee((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256),uint256)": FunctionFragment;
+    "getTradeResult((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256),uint256,uint256)": FunctionFragment;
+    "getVarianceFee((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256),uint256)": FunctionFragment;
     "getVarianceFeeParams()": FunctionFragment;
-    "getVegaUtilFee((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256))": FunctionFragment;
+    "getVegaUtilFee((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),(uint256,int256,int256,int256,uint256,uint256,uint256))": FunctionFragment;
     "init(address,address)": FunctionFragment;
-    "ivImpactForTrade((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,uint256)": FunctionFragment;
+    "ivImpactForTrade((bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),uint256,uint256)": FunctionFragment;
     "nominateNewOwner(address)": FunctionFragment;
     "nominatedOwner()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -401,7 +398,7 @@ export interface OptionMarketPricerInterface extends utils.Interface {
     "setTradeLimitParams((int256,int256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "setVarianceFeeParams((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "tradeLimitParams()": FunctionFragment;
-    "updateCacheAndGetTradeResult((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,address,uint256,uint256)),uint256,uint256)": FunctionFragment;
+    "updateCacheAndGetTradeResult((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(bool,bool,uint8,uint8,uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,bytes32,bytes32,uint256,uint256)),uint256,uint256)": FunctionFragment;
     "varianceFeeParams()": FunctionFragment;
   };
 
@@ -659,7 +656,11 @@ export interface OptionMarketPricer extends BaseContract {
 
     getPricingParams(
       overrides?: CallOverrides
-    ): Promise<[OptionMarketPricer.PricingParametersStructOutput]>;
+    ): Promise<
+      [OptionMarketPricer.PricingParametersStructOutput] & {
+        pricingParameters: OptionMarketPricer.PricingParametersStructOutput;
+      }
+    >;
 
     getTimeWeightedFee(
       expiry: BigNumberish,
@@ -671,7 +672,11 @@ export interface OptionMarketPricer extends BaseContract {
 
     getTradeLimitParams(
       overrides?: CallOverrides
-    ): Promise<[OptionMarketPricer.TradeLimitParametersStructOutput]>;
+    ): Promise<
+      [OptionMarketPricer.TradeLimitParametersStructOutput] & {
+        tradeLimitParameters: OptionMarketPricer.TradeLimitParametersStructOutput;
+      }
+    >;
 
     getTradeResult(
       trade: OptionMarket.TradeParametersStruct,
@@ -679,7 +684,11 @@ export interface OptionMarketPricer extends BaseContract {
       newBaseIv: BigNumberish,
       newSkew: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[OptionMarketPricer.TradeResultStructOutput]>;
+    ): Promise<
+      [OptionMarketPricer.TradeResultStructOutput] & {
+        tradeResult: OptionMarketPricer.TradeResultStructOutput;
+      }
+    >;
 
     getVarianceFee(
       trade: OptionMarket.TradeParametersStruct,
@@ -694,7 +703,11 @@ export interface OptionMarketPricer extends BaseContract {
 
     getVarianceFeeParams(
       overrides?: CallOverrides
-    ): Promise<[OptionMarketPricer.VarianceFeeParametersStructOutput]>;
+    ): Promise<
+      [OptionMarketPricer.VarianceFeeParametersStructOutput] & {
+        varianceFeeParameters: OptionMarketPricer.VarianceFeeParametersStructOutput;
+      }
+    >;
 
     getVegaUtilFee(
       trade: OptionMarket.TradeParametersStruct,
@@ -717,7 +730,9 @@ export interface OptionMarketPricer extends BaseContract {
       boardBaseIv: BigNumberish,
       strikeSkew: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
+    ): Promise<
+      [BigNumber, BigNumber] & { newBaseIv: BigNumber; newSkew: BigNumber }
+    >;
 
     nominateNewOwner(
       _owner: string,
@@ -892,7 +907,9 @@ export interface OptionMarketPricer extends BaseContract {
     boardBaseIv: BigNumberish,
     strikeSkew: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber]>;
+  ): Promise<
+    [BigNumber, BigNumber] & { newBaseIv: BigNumber; newSkew: BigNumber }
+  >;
 
   nominateNewOwner(
     _owner: string,
@@ -1065,7 +1082,9 @@ export interface OptionMarketPricer extends BaseContract {
       boardBaseIv: BigNumberish,
       strikeSkew: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber]>;
+    ): Promise<
+      [BigNumber, BigNumber] & { newBaseIv: BigNumber; newSkew: BigNumber }
+    >;
 
     nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
 

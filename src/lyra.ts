@@ -16,11 +16,14 @@ import { Position } from './position'
 import LyraJsonRpcProvider from './provider'
 import { Quote, QuoteOptions } from './quote'
 import getQuoteBoard from './quote/getQuoteBoard'
+import { RewardEpoch } from './reward_epoch'
+import { Staking } from './staking'
 import { Strike } from './strike'
 import { Trade } from './trade'
 import { TradeEvent, TradeEventListener, TradeEventListenerCallback, TradeEventListenerOptions } from './trade_event'
 import getLyraDeploymentChainId from './utils/getLyraDeploymentChainId'
 import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
+import getLyraDeploymentOptimismBlockSubgraphURI from './utils/getLyraDeploymentOptimismBlockSubgraphURI'
 import getLyraDeploymentRPCURL from './utils/getLyraDeploymentRPCURL'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
 import { SortEventOptions } from './utils/sortEvents'
@@ -29,6 +32,7 @@ export type LyraConfig = {
   rpcUrl: string
   chainId: number
   subgraphUri?: string
+  blockSubgraphUri?: string
 }
 
 export { Deployment } from './constants/contracts'
@@ -40,7 +44,8 @@ export default class Lyra {
   provider: JsonRpcProvider
   subgraphUri: string
   subgraphClient: GraphQLClient
-
+  blockSubgraphUri: string
+  blockSubgraphClient: GraphQLClient
   constructor(config: LyraConfig | Deployment | number = Deployment.Mainnet, disableCache?: boolean) {
     if (typeof config === 'object') {
       // LyraConfig
@@ -49,18 +54,21 @@ export default class Lyra {
       this.deployment = getLyraDeploymentForChainId(this.chainId)
       this.rpcUrl = configObj?.rpcUrl ?? getLyraDeploymentRPCURL(this.deployment)
       this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.deployment)
+      this.blockSubgraphUri = configObj?.blockSubgraphUri ?? getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     } else if (typeof config === 'number') {
       // Chain ID
       this.chainId = config
       this.deployment = getLyraDeploymentForChainId(this.chainId)
       this.rpcUrl = getLyraDeploymentRPCURL(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
+      this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     } else {
       // String
       this.deployment = config
       this.chainId = getLyraDeploymentChainId(this.deployment)
       this.rpcUrl = getLyraDeploymentRPCURL(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
+      this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     }
 
     this.provider =
@@ -69,12 +77,14 @@ export default class Lyra {
         : new LyraJsonRpcProvider({ url: this.rpcUrl, throttleLimit: 1 }, this.chainId)
 
     this.subgraphClient = new GraphQLClient(this.subgraphUri)
+    this.blockSubgraphClient = new GraphQLClient(this.blockSubgraphUri)
 
     console.debug('Lyra', {
       deployment: this.deployment,
       chainId: this.chainId,
       rpcUrl: this.rpcUrl,
       subgraphUri: this.subgraphUri,
+      blockSubgraphUri: this.blockSubgraphUri,
     })
   }
 
@@ -232,5 +242,15 @@ export default class Lyra {
   // Admin
   admin(): Admin {
     return Admin.get(this)
+  }
+
+  // Staking
+  async staking(): Promise<Staking> {
+    return await Staking.get(this)
+  }
+
+  // Reward Epoch
+  async rewardEpochs(account: string): Promise<RewardEpoch[]> {
+    return await RewardEpoch.getByOwner(this, account)
   }
 }

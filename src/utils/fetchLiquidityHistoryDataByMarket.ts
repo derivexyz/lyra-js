@@ -8,7 +8,8 @@ import {
   MarketTotalValueSnapshotQueryResult,
   MetaQueryResult,
 } from '../constants/queries'
-import { Market, MarketLiquidity } from '../market'
+import { Market, MarketLiquidityHistory } from '../market'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketTotalValueSnapshotsQuery = gql`
   query marketTotalValueSnapshots(
@@ -18,7 +19,8 @@ const marketTotalValueSnapshotsQuery = gql`
       first: 1000, orderBy: timestamp, orderDirection: asc, where: { 
         market: $market, 
         timestamp_gte: $startTimestamp, 
-        period_gte: $period 
+        period: $period 
+        NAV_gt: 0
       }
     ) {
       ${MARKET_TOTAL_VALUE_SNAPSHOT_FRAGMENT}
@@ -36,15 +38,15 @@ export default async function fetchLiquidityHistoryDataByMarket(
   lyra: Lyra,
   market: Market,
   startTimestamp: number,
-  period: number
-): Promise<{ liquidity: MarketLiquidity[] }> {
+  endTimestamp: number
+): Promise<MarketLiquidityHistory[]> {
   const res = await lyra.subgraphClient.request<
     { marketTotalValueSnapshots: MarketTotalValueSnapshotQueryResult[]; _meta: MetaQueryResult },
     MarketTotalValueSnapshotVariables
   >(marketTotalValueSnapshotsQuery, {
     market: market.address.toLowerCase(),
     startTimestamp,
-    period,
+    period: getSnapshotPeriod(startTimestamp, endTimestamp),
   })
   const currentDate = Math.floor(new Date().getTime() / 1000)
   const marketLiquidity = res.marketTotalValueSnapshots
@@ -69,9 +71,9 @@ export default async function fetchLiquidityHistoryDataByMarket(
         usedDeltaLiquidity: usedDeltaLiquidityBN,
         tokenPrice: tokenPriceBN,
         timestamp: marketTotalValueSnapshot.timestamp,
+        pendingDeposits: BigNumber.from(marketTotalValueSnapshot.pendingDeposits),
+        pendingWithdrawals: BigNumber.from(marketTotalValueSnapshot.pendingWithdrawals),
       }
     })
-  return {
-    liquidity: marketLiquidity,
-  }
+  return marketLiquidity
 }

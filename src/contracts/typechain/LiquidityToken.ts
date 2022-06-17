@@ -17,8 +17,8 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface LiquidityTokensInterface extends utils.Interface {
-  contractName: "LiquidityTokens";
+export interface LiquidityTokenInterface extends utils.Interface {
+  contractName: "LiquidityToken";
   functions: {
     "acceptOwnership()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
@@ -164,12 +164,14 @@ export interface LiquidityTokensInterface extends utils.Interface {
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
+    "LiquidityTrackerSet(address)": EventFragment;
     "OwnerChanged(address,address)": EventFragment;
     "OwnerNominated(address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LiquidityTrackerSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
@@ -181,6 +183,14 @@ export type ApprovalEvent = TypedEvent<
 >;
 
 export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
+
+export type LiquidityTrackerSetEvent = TypedEvent<
+  [string],
+  { liquidityTracker: string }
+>;
+
+export type LiquidityTrackerSetEventFilter =
+  TypedEventFilter<LiquidityTrackerSetEvent>;
 
 export type OwnerChangedEvent = TypedEvent<
   [string, string],
@@ -200,13 +210,13 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface LiquidityTokens extends BaseContract {
-  contractName: "LiquidityTokens";
+export interface LiquidityToken extends BaseContract {
+  contractName: "LiquidityToken";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: LiquidityTokensInterface;
+  interface: LiquidityTokenInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -247,7 +257,7 @@ export interface LiquidityTokens extends BaseContract {
     balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     burn(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -276,7 +286,7 @@ export interface LiquidityTokens extends BaseContract {
     liquidityTracker(overrides?: CallOverrides): Promise<[string]>;
 
     mint(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -334,7 +344,7 @@ export interface LiquidityTokens extends BaseContract {
   balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    owner: string,
+    account: string,
     tokenAmount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -363,7 +373,7 @@ export interface LiquidityTokens extends BaseContract {
   liquidityTracker(overrides?: CallOverrides): Promise<string>;
 
   mint(
-    owner: string,
+    account: string,
     tokenAmount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -419,7 +429,7 @@ export interface LiquidityTokens extends BaseContract {
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -445,7 +455,7 @@ export interface LiquidityTokens extends BaseContract {
     liquidityTracker(overrides?: CallOverrides): Promise<string>;
 
     mint(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -493,6 +503,13 @@ export interface LiquidityTokens extends BaseContract {
       value?: null
     ): ApprovalEventFilter;
 
+    "LiquidityTrackerSet(address)"(
+      liquidityTracker?: null
+    ): LiquidityTrackerSetEventFilter;
+    LiquidityTrackerSet(
+      liquidityTracker?: null
+    ): LiquidityTrackerSetEventFilter;
+
     "OwnerChanged(address,address)"(
       oldOwner?: null,
       newOwner?: null
@@ -534,7 +551,7 @@ export interface LiquidityTokens extends BaseContract {
     balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -563,7 +580,7 @@ export interface LiquidityTokens extends BaseContract {
     liquidityTracker(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -625,7 +642,7 @@ export interface LiquidityTokens extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     burn(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -654,7 +671,7 @@ export interface LiquidityTokens extends BaseContract {
     liquidityTracker(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
-      owner: string,
+      account: string,
       tokenAmount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

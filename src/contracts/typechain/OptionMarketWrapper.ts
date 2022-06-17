@@ -22,12 +22,22 @@ export declare namespace OptionMarketWrapperWithSwaps {
     quoteAsset: string;
     baseAsset: string;
     optionToken: string;
+    liquidityPool: string;
+    liquidityToken: string;
   };
 
-  export type OptionMarketContractsStructOutput = [string, string, string] & {
+  export type OptionMarketContractsStructOutput = [
+    string,
+    string,
+    string,
+    string,
+    string
+  ] & {
     quoteAsset: string;
     baseAsset: string;
     optionToken: string;
+    liquidityPool: string;
+    liquidityToken: string;
   };
 
   export type OptionPositionParamsStruct = {
@@ -159,6 +169,18 @@ export declare namespace OptionMarketWrapperWithSwaps {
     allowance: BigNumber;
     isApprovedForAll: boolean;
   };
+
+  export type LiquidityBalanceAndAllowanceStruct = {
+    token: string;
+    balance: BigNumberish;
+    allowance: BigNumberish;
+  };
+
+  export type LiquidityBalanceAndAllowanceStructOutput = [
+    string,
+    BigNumber,
+    BigNumber
+  ] & { token: string; balance: BigNumber; allowance: BigNumber };
 }
 
 export interface OptionMarketWrapperInterface extends utils.Interface {
@@ -167,7 +189,7 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     "acceptOwnership()": FunctionFragment;
     "addCurveStable(address,uint8)": FunctionFragment;
     "addLong(uint256)": FunctionFragment;
-    "addMarket(address,uint8,(address,address,address))": FunctionFragment;
+    "addMarket(address,uint8,(address,address,address,address,address))": FunctionFragment;
     "addShort(uint256)": FunctionFragment;
     "closeLong(uint256)": FunctionFragment;
     "closePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
@@ -176,6 +198,7 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
     "ercIds(uint256)": FunctionFragment;
     "forceClosePosition((address,uint256,uint256,uint256,uint256,uint256,uint8,uint256,uint256,uint256,uint256,address))": FunctionFragment;
     "getBalancesAndAllowances(address)": FunctionFragment;
+    "getMarketAndErcIds()": FunctionFragment;
     "idToERC(uint8)": FunctionFragment;
     "idToMarket(uint8)": FunctionFragment;
     "marketContracts(address)": FunctionFragment;
@@ -245,6 +268,10 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getBalancesAndAllowances",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMarketAndErcIds",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "idToERC",
@@ -345,6 +372,10 @@ export interface OptionMarketWrapperInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getBalancesAndAllowances",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMarketAndErcIds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "idToERC", data: BytesLike): Result;
@@ -563,9 +594,14 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<
       [
         OptionMarketWrapperWithSwaps.StableAssetViewStructOutput[],
-        OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[]
+        OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[],
+        OptionMarketWrapperWithSwaps.LiquidityBalanceAndAllowanceStructOutput[]
       ]
     >;
+
+    getMarketAndErcIds(
+      overrides?: CallOverrides
+    ): Promise<[number[], number[]]>;
 
     idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
@@ -578,10 +614,12 @@ export interface OptionMarketWrapper extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string] & {
+      [string, string, string, string, string] & {
         quoteAsset: string;
         baseAsset: string;
         optionToken: string;
+        liquidityPool: string;
+        liquidityToken: string;
       }
     >;
 
@@ -710,9 +748,12 @@ export interface OptionMarketWrapper extends BaseContract {
   ): Promise<
     [
       OptionMarketWrapperWithSwaps.StableAssetViewStructOutput[],
-      OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[]
+      OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[],
+      OptionMarketWrapperWithSwaps.LiquidityBalanceAndAllowanceStructOutput[]
     ]
   >;
+
+  getMarketAndErcIds(overrides?: CallOverrides): Promise<[number[], number[]]>;
 
   idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -722,10 +763,12 @@ export interface OptionMarketWrapper extends BaseContract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [string, string, string] & {
+    [string, string, string, string, string] & {
       quoteAsset: string;
       baseAsset: string;
       optionToken: string;
+      liquidityPool: string;
+      liquidityToken: string;
     }
   >;
 
@@ -852,9 +895,14 @@ export interface OptionMarketWrapper extends BaseContract {
     ): Promise<
       [
         OptionMarketWrapperWithSwaps.StableAssetViewStructOutput[],
-        OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[]
+        OptionMarketWrapperWithSwaps.MarketAssetViewStructOutput[],
+        OptionMarketWrapperWithSwaps.LiquidityBalanceAndAllowanceStructOutput[]
       ]
     >;
+
+    getMarketAndErcIds(
+      overrides?: CallOverrides
+    ): Promise<[number[], number[]]>;
 
     idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -864,10 +912,12 @@ export interface OptionMarketWrapper extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [string, string, string] & {
+      [string, string, string, string, string] & {
         quoteAsset: string;
         baseAsset: string;
         optionToken: string;
+        liquidityPool: string;
+        liquidityToken: string;
       }
     >;
 
@@ -1044,6 +1094,8 @@ export interface OptionMarketWrapper extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getMarketAndErcIds(overrides?: CallOverrides): Promise<BigNumber>;
+
     idToERC(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     idToMarket(
@@ -1184,6 +1236,10 @@ export interface OptionMarketWrapper extends BaseContract {
 
     getBalancesAndAllowances(
       owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMarketAndErcIds(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

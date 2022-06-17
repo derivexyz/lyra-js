@@ -51,7 +51,7 @@ export class LiquidityDeposit {
     this.amount = queuedOrProcessed.args.amountDeposited
     this.tokenPriceAtDeposit = processed?.args.tokenPrice
     this.tokenValueAtDeposit = processed?.args.tokenPrice.mul(processed?.args.amountDeposited).div(UNIT)
-    this.isPending = !!(queued && processed)
+    this.isPending = !processed
     this.depositRequestedTimestamp = queuedOrProcessed.args.timestamp.toNumber()
     this.depositTimestamp = processed
       ? processed.args.timestamp.toNumber()
