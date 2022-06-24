@@ -11,9 +11,9 @@ const FIFTEEN_MINUTE_INTERVAL_IN_SECONDS = 60 * 15
 const getSnapshotPeriod = (startTimestamp: number, endTimestamp: number): number => {
   const oneDayAgo = Math.floor(endTimestamp - 60 * 60 * 24)
   const oneWeekAgo = Math.floor(endTimestamp - 60 * 60 * 24 * 7)
-  if (startTimestamp <= oneDayAgo) {
+  if (startTimestamp >= oneDayAgo) {
     return 60 * 15
-  } else if (startTimestamp <= oneWeekAgo) {
+  } else if (startTimestamp >= oneWeekAgo) {
     return 60 * 60
   } else {
     return 60 * 60 * 24

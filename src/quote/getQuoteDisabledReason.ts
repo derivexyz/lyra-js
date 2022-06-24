@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { ONE_BN, UNIT } from '../constants/bn'
-import { Strike } from '../strike'
+import { Option } from '../option'
 import { getDelta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
@@ -9,7 +9,7 @@ import toBigNumber from '../utils/toBigNumber'
 import { QuoteDisabledReason } from '.'
 
 export default function getQuoteDisabledReason(
-  strike: Strike,
+  option: Option,
   size: BigNumber,
   premium: BigNumber,
   newIv: BigNumber,
@@ -18,8 +18,11 @@ export default function getQuoteDisabledReason(
   isBuy: boolean,
   isForceClose: boolean
 ): QuoteDisabledReason | null {
-  const marketView = strike.market().__marketData
-  const timeToExpiryAnnualized = getTimeToExpiryAnnualized(strike.board())
+  const market = option.market()
+  const board = option.board()
+  const strike = option.strike()
+  const marketView = market.__marketData
+  const timeToExpiryAnnualized = getTimeToExpiryAnnualized(board)
   if (timeToExpiryAnnualized == 0) {
     return QuoteDisabledReason.Expired
   }
@@ -34,24 +37,13 @@ export default function getQuoteDisabledReason(
 
   // Check trading cutoff
   const { tradeLimitParams, greekCacheParams } = marketView.marketParameters
-  const isPostCutoff =
-    strike.board().__blockTimestamp + tradeLimitParams.tradingCutoff.toNumber() > strike.board().expiryTimestamp
+  const isPostCutoff = board.__blockTimestamp + tradeLimitParams.tradingCutoff.toNumber() > board.expiryTimestamp
   if (isPostCutoff && !isForceClose) {
     return QuoteDisabledReason.TradingCutoff
   }
 
-  // Check available liquidity
-  const { freeLiquidity } = marketView.liquidity
-  const spotPrice = strike.market().spotPrice
+  const spotPrice = market.spotPrice
   const strikePrice = strike.strikePrice
-  if (
-    // freeLiquidity > amount * (strike or spot)
-    (isBuy && (freeLiquidity.lt(size.mul(spotPrice).div(UNIT)) || freeLiquidity.lt(size.mul(strikePrice).div(UNIT)))) ||
-    // freeLiquidity > premium
-    (!isBuy && freeLiquidity.lt(premium))
-  ) {
-    return QuoteDisabledReason.InsufficientLiquidity
-  }
 
   // Check delta range
   const rate = greekCacheParams.rateAndCarry
@@ -87,6 +79,20 @@ export default function getQuoteDisabledReason(
     } else if (newIv.lt(tradeLimitParams.minVol)) {
       return QuoteDisabledReason.VolTooHigh
     }
+  }
+
+  // Check available liquidity
+  const { freeLiquidity } = marketView.liquidity
+  if (
+    // Must be opening trade
+    !isForceClose &&
+    (isBuy
+      ? option.isCall
+        ? freeLiquidity.lt(size.mul(spotPrice).div(UNIT))
+        : freeLiquidity.lt(size.mul(strikePrice).div(UNIT))
+      : freeLiquidity.lt(premium))
+  ) {
+    return QuoteDisabledReason.InsufficientLiquidity
   }
 
   return null

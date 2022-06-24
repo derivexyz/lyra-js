@@ -501,7 +501,7 @@
           }
         ],
         "internalType": "struct PoolHedger.PoolHedgerParameters",
-        "name": "",
+        "name": "_poolHedgerParams",
         "type": "tuple"
       },
       {

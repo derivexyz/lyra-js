@@ -388,6 +388,7 @@ export interface ShortPoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+        _poolHedgerParams: PoolHedger.PoolHedgerParametersStructOutput;
         _shortBuffer: BigNumber;
       }
     >;
@@ -489,6 +490,7 @@ export interface ShortPoolHedger extends BaseContract {
     overrides?: CallOverrides
   ): Promise<
     [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+      _poolHedgerParams: PoolHedger.PoolHedgerParametersStructOutput;
       _shortBuffer: BigNumber;
     }
   >;
@@ -585,6 +587,7 @@ export interface ShortPoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [PoolHedger.PoolHedgerParametersStructOutput, BigNumber] & {
+        _poolHedgerParams: PoolHedger.PoolHedgerParametersStructOutput;
         _shortBuffer: BigNumber;
       }
     >;

@@ -80,7 +80,6 @@ export type QuoteGreeks = {
 export type QuoteOptions = {
   isForceClose?: boolean
   iterations?: number
-  isBaseCollateral?: boolean
 }
 
 export class Quote {
@@ -176,7 +175,6 @@ export class Quote {
     }
 
     const isForceClose = options?.isForceClose ?? false
-    const isBaseCollateral = options?.isBaseCollateral ?? false
 
     const board = option.board()
     const strike = option.strike()
@@ -276,28 +274,27 @@ export class Quote {
 
     const premium = iterations.reduce((sum, quote) => sum.add(quote.premium), ZERO_BN)
 
-    const disabledReason = getQuoteDisabledReason(
-      option.strike(),
-      size,
-      premium,
-      newIv,
-      skew,
-      baseIv,
-      isBuy,
-      isForceClose
-    )
+    const disabledReason = getQuoteDisabledReason(option, size, premium, newIv, skew, baseIv, isBuy, isForceClose)
     if (disabledReason) {
-      return this.getDisabledFields(option, disabledReason)
+      // For subset of disabled reasons, return empty quote
+      switch (disabledReason) {
+        case QuoteDisabledReason.DeltaOutOfRange:
+        case QuoteDisabledReason.EmptyPremium:
+        case QuoteDisabledReason.EmptySize:
+        case QuoteDisabledReason.Expired:
+        case QuoteDisabledReason.IVTooHigh:
+        case QuoteDisabledReason.IVTooLow:
+        case QuoteDisabledReason.SkewTooHigh:
+        case QuoteDisabledReason.SkewTooLow:
+        case QuoteDisabledReason.VolTooHigh:
+        case QuoteDisabledReason.VolTooLow:
+          return this.getDisabledFields(option, disabledReason)
+      }
     }
 
     // Pricing
     const pricePerOption = premium.mul(UNIT).div(size)
-    const breakEven = getBreakEvenPrice(
-      option.isCall,
-      strike.strikePrice,
-      premium.mul(UNIT).div(size),
-      isBaseCollateral
-    )
+    const breakEven = getBreakEvenPrice(option.isCall, strike.strikePrice, premium.mul(UNIT).div(size))
     const forceClosePenalty = iterations.reduce((sum, quote) => sum.add(quote.forceClosePenalty), ZERO_BN)
 
     // Fees
@@ -327,8 +324,8 @@ export class Quote {
       },
       isForceClose,
       forceClosePenalty,
-      isDisabled: false,
-      disabledReason: null,
+      isDisabled: !!disabledReason,
+      disabledReason,
       breakEven,
       iterations,
     }

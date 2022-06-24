@@ -13,7 +13,9 @@ export default function getTradeDisabledReason(quote: Quote, trade: Trade): Trad
       trade.collateral &&
       !trade.collateral.amount.eq(position.collateral.amount)
     ) {
-      // Skip disabled flag
+      // Skip disabled flag for collateral adjustments
+    } else if (disabledReason === TradeDisabledReason.InsufficientLiquidity && !trade.isOpen) {
+      // Skip disabled flag for closing trades with insufficient liquidity
     } else {
       return disabledReason
     }

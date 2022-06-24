@@ -15,7 +15,7 @@ const optionPriceAndGreeksSnapshotsQuery = gql`
       first: 1000
       orderBy: timestamp
       orderDirection: asc
-      where: { option: $optionId, timestamp_gte: $startTimestamp, period_gte: $period }
+      where: { option: $optionId, timestamp_gte: $startTimestamp, period_gte: $period, optionPrice_gt: 0 }
     ) {
       ${OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT}
     }
@@ -40,7 +40,7 @@ export default async function fetchOptionPriceAndGreeksDataByID(
   >(optionPriceAndGreeksSnapshotsQuery, {
     optionId: optionId,
     startTimestamp,
-    period: getSnapshotPeriod(startTimestamp, endTimestamp),
+    period: getSnapshotPeriod(startTimestamp, endTimestamp, true),
   })
   const optionPriceHistory: OptionPriceHistory[] = res.optionPriceAndGreeksSnapshots.map(
     (snapshot: OptionPriceAndGreeksSnapshotQueryResult) => {

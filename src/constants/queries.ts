@@ -152,6 +152,7 @@ export const MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT = `
   spotPriceFees
   optionPriceFees
   vegaFees
+  varianceFees
   deltaCutoffFees
   liquidatorFees
   smLiquidationFees
@@ -367,6 +368,7 @@ export type MarketVolumeAndFeesSnapshotQueryResult = {
   spotPriceFees: string
   optionPriceFees: string
   vegaFees: string
+  varianceFees: string
   deltaCutoffFees: string
   liquidatorFees: string
   smLiquidationFees: string

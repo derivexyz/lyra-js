@@ -2,9 +2,11 @@
 
 A JavaScript SDK for [Optimistic Ethereum](https://optimism.io/) and the [Lyra Protocol](https://docs.lyra.finance/). Wraps around [Ethers.js](https://docs.ethers.io/v5/). Works in the web browser and Node.js.
 
-_Documentation coming soon._
+[Documentation](https://docs.lyra.finance/developers/tools/lyra.js)
 
-⚠️ This SDK is in open alpha for Optimistic Kovan testnet, and is constantly under development. USE AT YOUR OWN RISK.
+[Guides](https://docs.lyra.finance/developers/guides/execute-a-trade-off-chain)
+
+⚠️ This SDK is in open alpha and is constantly under development. USE AT YOUR OWN RISK.
 
 ## Install
 

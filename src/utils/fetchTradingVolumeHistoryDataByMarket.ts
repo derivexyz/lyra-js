@@ -40,10 +40,8 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
     startTimestamp,
     period: getSnapshotPeriod(startTimestamp, endTimestamp),
   })
-  const currentDate = Math.floor(new Date().getTime() / 1000)
-  const tradingVolume: MarketTradingVolumeHistory[] = res.marketVolumeAndFeesSnapshots
-    .filter(snapshot => snapshot.timestamp <= currentDate)
-    .map((marketVolumeAndFeesSnapshot: MarketVolumeAndFeesSnapshotQueryResult) => {
+  const tradingVolume: MarketTradingVolumeHistory[] = res.marketVolumeAndFeesSnapshots.map(
+    (marketVolumeAndFeesSnapshot: MarketVolumeAndFeesSnapshotQueryResult) => {
       return {
         premiumVolume: BigNumber.from(marketVolumeAndFeesSnapshot.premiumVolume),
         notionalVolume: BigNumber.from(marketVolumeAndFeesSnapshot.notionalVolume),
@@ -52,13 +50,16 @@ export default async function fetchTradingVolumeHistoryDataByMarket(
         spotPriceFees: BigNumber.from(marketVolumeAndFeesSnapshot.spotPriceFees),
         optionPriceFees: BigNumber.from(marketVolumeAndFeesSnapshot.optionPriceFees),
         vegaFees: BigNumber.from(marketVolumeAndFeesSnapshot.vegaFees),
+        varianceFees: BigNumber.from(marketVolumeAndFeesSnapshot.varianceFees),
         deltaCutoffFees: BigNumber.from(marketVolumeAndFeesSnapshot.deltaCutoffFees),
         liquidatorFees: BigNumber.from(marketVolumeAndFeesSnapshot.liquidatorFees),
         smLiquidationFees: BigNumber.from(marketVolumeAndFeesSnapshot.smLiquidationFees),
         lpLiquidationFees: BigNumber.from(marketVolumeAndFeesSnapshot.lpLiquidationFees),
-        timestamp: marketVolumeAndFeesSnapshot.timestamp,
+        startTimestamp: marketVolumeAndFeesSnapshot.timestamp - getSnapshotPeriod(startTimestamp, endTimestamp),
+        endTimestamp: marketVolumeAndFeesSnapshot.timestamp,
       }
-    })
+    }
+  )
 
   return tradingVolume
 }

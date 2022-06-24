@@ -9,6 +9,7 @@ import {
   MetaQueryResult,
 } from '../constants/queries'
 import { Market, MarketLiquidityHistory } from '../market'
+import fromBigNumber from './fromBigNumber'
 import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketTotalValueSnapshotsQuery = gql`
@@ -64,7 +65,7 @@ export default async function fetchLiquidityHistoryDataByMarket(
         burnableLiquidity: burnableLiquidityBN,
         totalQueuedDeposits: ZERO_BN, // TODO: paul said he will add
         nav: NAVBN,
-        utilization: NAVBN.gt(0) ? NAVBN.sub(freeLiquidityBN).mul(UNIT).div(NAVBN) : ZERO_BN,
+        utilization: NAVBN.gt(0) ? fromBigNumber(NAVBN.sub(freeLiquidityBN).mul(UNIT).div(NAVBN)) : 0,
         totalWithdrawingDeposits: ZERO_BN, // TODO: paul said he will add
         usedCollatLiquidity: usedCollatLiquidityBN,
         pendingDeltaLiquidity: pendingDeltaLiquidityBN,

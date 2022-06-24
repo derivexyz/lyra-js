@@ -10,7 +10,8 @@ const spotPriceSnapshotsQuery = gql`
   query spotPriceSnapshots(
     $market: String, $startTimestamp: Int, $period: Int
   ) {
-    spotPriceSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { market: $market, 
+    spotPriceSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { 
+      market: $market, 
       timestamp_gte: $startTimestamp, 
       period_gte: $period 
     }) {

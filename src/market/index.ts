@@ -20,6 +20,7 @@ import fetchLiquidityHistoryDataByMarket from '../utils/fetchLiquidityHistoryDat
 import fetchNetGreeksHistoryDataByMarket from '../utils/fetchNetGreeksHistoryDataByMarket'
 import fetchSpotPriceHistoryDataByMarket from '../utils/fetchSpotPriceHistoryDataByMarket'
 import fetchTradingVolumeHistoryDataByMarket from '../utils/fetchTradingVolumeHistoryDataByMarket'
+import fromBigNumber from '../utils/fromBigNumber'
 import getBoardView from '../utils/getBoardView'
 import getBoardViewForStrikeId from '../utils/getBoardViewForStrikeId'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
@@ -44,6 +45,8 @@ export type MarketContractAddresses = {
   optionToken: string
   shortCollateral: string
   poolHedger: string
+  // HACK @michaelxuwu: needs to be updated once `ShortPoolHedger` is exposed in viewer
+  shortPoolHedger?: string
 }
 
 export type MarketLiquidity = {
@@ -51,7 +54,7 @@ export type MarketLiquidity = {
   burnableLiquidity: BigNumber
   totalQueuedDeposits: BigNumber
   nav: BigNumber
-  utilization: BigNumber
+  utilization: number
   totalWithdrawingDeposits: BigNumber
   usedCollatLiquidity: BigNumber
   pendingDeltaLiquidity: BigNumber
@@ -86,11 +89,13 @@ export type MarketTradingVolumeHistory = {
   spotPriceFees: BigNumber
   optionPriceFees: BigNumber
   vegaFees: BigNumber
+  varianceFees: BigNumber
   deltaCutoffFees: BigNumber
   liquidatorFees: BigNumber
   smLiquidationFees: BigNumber
   lpLiquidationFees: BigNumber
-  timestamp: number
+  startTimestamp: number
+  endTimestamp: number
 }
 
 export type MarketPendingLiquidityHistory = {
@@ -119,6 +124,13 @@ export type ForceCloseParams = {
 
 export type MinCollateralParams = {
   [prop in keyof OptionGreekCache.MinCollateralParametersStruct]: BigNumber
+}
+
+export type OptionMarketParams = {
+  maxBoardExpiry: BigNumber
+  securityModule: string
+  feePortionReserved: BigNumber
+  staticBaseSettlementFee: BigNumber
 }
 
 export type LpParams = {
@@ -271,8 +283,10 @@ export class Market {
     const totalQueuedDeposits = marketView.totalQueuedDeposits
     const nav = marketView.liquidity.NAV
     const utilization = marketView.liquidity.NAV.gt(0)
-      ? marketView.liquidity.NAV.sub(marketView.liquidity.freeLiquidity).mul(UNIT).div(marketView.liquidity.NAV)
-      : ZERO_BN
+      ? fromBigNumber(
+          marketView.liquidity.NAV.sub(marketView.liquidity.freeLiquidity).mul(UNIT).div(marketView.liquidity.NAV)
+        )
+      : 0
     const totalWithdrawingDeposits = marketView.totalQueuedWithdrawals
     const usedCollatLiquidity = marketView.liquidity.usedCollatLiquidity
     const pendingDeltaLiquidity = marketView.liquidity.pendingDeltaLiquidity
@@ -445,16 +459,14 @@ export class Market {
       startTimestamp,
       this.block.timestamp
     )
-    if (liquidityHistory.length <= 1) {
-      return liquidityHistory
-    }
     const latestSnapshot = liquidityHistory[liquidityHistory.length - 1]
-    return mergeAndSortSnapshots(liquidityHistory, {
+    const res = mergeAndSortSnapshots(liquidityHistory, 'timestamp', {
       ...this.liquidity,
-      pendingDeposits: latestSnapshot.pendingDeposits,
-      pendingWithdrawals: latestSnapshot.pendingWithdrawals,
+      pendingDeposits: latestSnapshot ? latestSnapshot.pendingDeposits : ZERO_BN,
+      pendingWithdrawals: latestSnapshot ? latestSnapshot.pendingWithdrawals : ZERO_BN,
       timestamp: this.block.timestamp,
     })
+    return res
   }
 
   // TODO: @earthtojake Add pool + hedger net delta to viewer, make sync
@@ -485,13 +497,14 @@ export class Market {
       this.netGreeks(),
       fetchNetGreeksHistoryDataByMarket(this.lyra, this, startTimestamp, this.block.timestamp),
     ])
-    return mergeAndSortSnapshots(netGreeksHistory, netGreeks)
+    return mergeAndSortSnapshots(netGreeksHistory, 'timestamp', netGreeks)
   }
 
   async tradingVolumeHistory(options?: MarketHistoryOptions): Promise<MarketTradingVolumeHistory[]> {
     const { startTimestamp = 0 } = options ?? {}
     return mergeAndSortSnapshots(
-      await fetchTradingVolumeHistoryDataByMarket(this.lyra, this, startTimestamp, this.block.timestamp)
+      await fetchTradingVolumeHistoryDataByMarket(this.lyra, this, startTimestamp, this.block.timestamp),
+      'endTimestamp'
     )
   }
 
@@ -503,11 +516,14 @@ export class Market {
       startTimestamp,
       this.block.timestamp
     )
-    return mergeAndSortSnapshots(spotPriceHistory, { spotPrice: this.spotPrice, timestamp: this.block.timestamp })
+    return mergeAndSortSnapshots(spotPriceHistory, 'timestamp', {
+      spotPrice: this.spotPrice,
+      timestamp: this.block.timestamp,
+    })
   }
 
   async owner(): Promise<string> {
-    return await getMarketOwner(this.lyra, this.__marketData.marketAddresses)
+    return await getMarketOwner(this.lyra, this.contractAddresses)
   }
 
   // Transactions
@@ -528,11 +544,7 @@ export class Market {
     skews: BigNumber[],
     frozen: boolean = false
   ): AddBoardReturn {
-    const optionMarket = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.OptionMarket
-    )
+    const optionMarket = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionMarket)
     const calldata = optionMarket.interface.encodeFunctionData('createOptionBoard', [
       expiry,
       baseIV,
@@ -546,11 +558,7 @@ export class Market {
   }
 
   addStrikeToBoard(account: string, boardId: BigNumber, strike: BigNumber, skew: BigNumber): AddStrikeReturn {
-    const optionMarket = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.OptionMarket
-    )
+    const optionMarket = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionMarket)
     const calldata = optionMarket.interface.encodeFunctionData('addStrikeToBoard', [boardId, strike, skew])
     const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
     tx.gasLimit = BigNumber.from(10_000_000)
@@ -565,11 +573,7 @@ export class Market {
   }
 
   setBoardPaused(account: string, boardId: BigNumber, isPaused: boolean): PopulatedTransaction {
-    const optionMarket = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.OptionMarket
-    )
+    const optionMarket = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionMarket)
     const calldata = optionMarket.interface.encodeFunctionData('setBoardFrozen', [boardId, isPaused])
     const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
     return {
@@ -579,11 +583,7 @@ export class Market {
   }
 
   setBoardBaseIv(account: string, boardId: BigNumber, baseIv: BigNumber): PopulatedTransaction {
-    const optionMarket = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.OptionMarket
-    )
+    const optionMarket = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionMarket)
     const calldata = optionMarket.interface.encodeFunctionData('setBoardBaseIv', [boardId, baseIv])
     const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
     return {
@@ -603,7 +603,7 @@ export class Market {
     }
     const optionGreekCache = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionGreekCache
     )
     const calldata = optionGreekCache.interface.encodeFunctionData('setGreekCacheParameters', [toGreekCacheParams])
@@ -623,7 +623,7 @@ export class Market {
     }
     const optionGreekCache = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionGreekCache
     )
     const calldata = optionGreekCache.interface.encodeFunctionData('setForceCloseParameters', [toForceCloseParams])
@@ -643,7 +643,7 @@ export class Market {
     }
     const optionGreekCache = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionGreekCache
     )
     const calldata = optionGreekCache.interface.encodeFunctionData('setMinCollateralParameters', [
@@ -661,11 +661,7 @@ export class Market {
       ...lpParams,
     }
 
-    const liquidityPool = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.LiquidityPool
-    )
+    const liquidityPool = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.LiquidityPool)
     const calldata = liquidityPool.interface.encodeFunctionData('setLiquidityPoolParameters', [toLPParams])
     const tx = buildTx(this.lyra, liquidityPool.address, account, calldata)
     tx.gasLimit = BigNumber.from(10_000_000)
@@ -683,7 +679,7 @@ export class Market {
     }
     const optionMarketPricer = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionMarketPricer
     )
     const calldata = optionMarketPricer.interface.encodeFunctionData('setPricingParams', [toPricingParams])
@@ -703,7 +699,7 @@ export class Market {
     }
     const optionMarketPricer = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionMarketPricer
     )
     const calldata = optionMarketPricer.interface.encodeFunctionData('setTradeLimitParams', [toTradeLimitParams])
@@ -723,7 +719,7 @@ export class Market {
     }
     const optionMarketPricer = getLyraMarketContract(
       this.lyra,
-      this.__marketData.marketAddresses,
+      this.contractAddresses,
       LyraMarketContractId.OptionMarketPricer
     )
     const calldata = optionMarketPricer.interface.encodeFunctionData('setVarianceFeeParams', [toParams])
@@ -741,11 +737,7 @@ export class Market {
       ...currMarketView.marketParameters.partialCollatParams,
       ...params,
     }
-    const optionToken = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.OptionToken
-    )
+    const optionToken = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionToken)
     const calldata = optionToken.interface.encodeFunctionData('setPartialCollateralParams', [toParams])
     const tx = buildTx(this.lyra, optionToken.address, account, calldata)
     tx.gasLimit = BigNumber.from(10_000_000)
@@ -761,13 +753,49 @@ export class Market {
       ...currMarketView.marketParameters.poolHedgerParams,
       ...params,
     }
-    const poolHedger = getLyraMarketContract(
-      this.lyra,
-      this.__marketData.marketAddresses,
-      LyraMarketContractId.ShortPoolHedger
-    )
+    const poolHedger = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.ShortPoolHedger)
     const calldata = poolHedger.interface.encodeFunctionData('setPoolHedgerParams', [toParams])
     const tx = buildTx(this.lyra, poolHedger.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: toParams, tx }
+  }
+
+  async getShortBuffer(): Promise<BigNumber> {
+    const shortPoolHedger = getLyraMarketContract(
+      this.lyra,
+      this.contractAddresses,
+      LyraMarketContractId.ShortPoolHedger
+    )
+    return await shortPoolHedger.shortBuffer()
+  }
+
+  async setShortBuffer(
+    account: string,
+    shortBuffer: BigNumber
+  ): Promise<SetMarketParamsReturn<{ shortBuffer: BigNumber }>> {
+    const shortPoolHedger = getLyraMarketContract(
+      this.lyra,
+      this.contractAddresses,
+      LyraMarketContractId.ShortPoolHedger
+    )
+    const calldata = shortPoolHedger.interface.encodeFunctionData('setShortBuffer', [shortBuffer])
+    const tx = buildTx(this.lyra, shortPoolHedger.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return { params: { shortBuffer }, tx }
+  }
+
+  async setOptionMarketParams(
+    account: string,
+    params: Partial<OptionMarketParams>
+  ): Promise<SetMarketParamsReturn<OptionMarketParams>> {
+    const currMarketView = await getMarketView(this.lyra, this.address)
+    const toParams = {
+      ...currMarketView.marketParameters.optionMarketParams,
+      ...params,
+    }
+    const optionMarket = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.OptionMarket)
+    const calldata = optionMarket.interface.encodeFunctionData('setOptionMarketParams', [toParams])
+    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
     tx.gasLimit = BigNumber.from(10_000_000)
     return { params: toParams, tx }
   }

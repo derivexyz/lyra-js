@@ -512,7 +512,7 @@ const _abi = [
           },
         ],
         internalType: "struct PoolHedger.PoolHedgerParameters",
-        name: "",
+        name: "_poolHedgerParams",
         type: "tuple",
       },
       {

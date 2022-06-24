@@ -1446,6 +1446,29 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getTokenPriceWithCheck",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "tokenPrice",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "isStale",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "circuitBreakerExpiry",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getTotalPoolValueQuote",
     outputs: [
       {

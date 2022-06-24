@@ -27,6 +27,7 @@ import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import { from18DecimalBN } from '../utils/convertBNDecimals'
 import fromBigNumber from '../utils/fromBigNumber'
 import getAverageCostPerOption from '../utils/getAverageCostPerOption'
+import getBreakEvenPrice from '../utils/getBreakEvenPrice'
 import getLyraContract from '../utils/getLyraContract'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 import getOptionType from '../utils/getOptionType'
@@ -173,8 +174,8 @@ export class Trade {
 
     let quote = Quote.get(option, this.isBuy, this.size, {
       iterations,
-      isBaseCollateral,
     })
+
     if (
       !this.isOpen &&
       (quote.disabledReason === QuoteDisabledReason.DeltaOutOfRange ||
@@ -184,7 +185,6 @@ export class Trade {
       quote = Quote.get(option, this.isBuy, this.size, {
         iterations,
         isForceClose: true,
-        isBaseCollateral,
       })
     }
 
@@ -194,7 +194,7 @@ export class Trade {
     this.fee = quote.fee
     this.feeComponents = quote.feeComponents
     this.forceClosePenalty = quote.forceClosePenalty
-    this.breakEven = quote.breakEven
+    this.breakEven = getBreakEvenPrice(option.isCall, strike.strikePrice, quote.pricePerOption, isBaseCollateral)
     this.iterations = quote.iterations
     this.externalSwapFee = ZERO_BN
 

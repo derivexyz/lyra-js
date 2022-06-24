@@ -129,6 +129,7 @@ export interface LiquidityPoolInterface extends utils.Interface {
     "getLiquidity(uint256)": FunctionFragment;
     "getLpParams()": FunctionFragment;
     "getTokenPrice()": FunctionFragment;
+    "getTokenPriceWithCheck()": FunctionFragment;
     "getTotalPoolValueQuote()": FunctionFragment;
     "getTotalTokenSupply()": FunctionFragment;
     "init(address,address,address,address,address,address,address,address)": FunctionFragment;
@@ -202,6 +203,10 @@ export interface LiquidityPoolInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTokenPrice",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTokenPriceWithCheck",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -378,6 +383,10 @@ export interface LiquidityPoolInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTokenPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTokenPriceWithCheck",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -883,6 +892,16 @@ export interface LiquidityPool extends BaseContract {
 
     getTokenPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getTokenPriceWithCheck(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, boolean, BigNumber] & {
+        tokenPrice: BigNumber;
+        isStale: boolean;
+        circuitBreakerExpiry: BigNumber;
+      }
+    >;
+
     getTotalPoolValueQuote(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTotalTokenSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -1136,6 +1155,16 @@ export interface LiquidityPool extends BaseContract {
 
   getTokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getTokenPriceWithCheck(
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, boolean, BigNumber] & {
+      tokenPrice: BigNumber;
+      isStale: boolean;
+      circuitBreakerExpiry: BigNumber;
+    }
+  >;
+
   getTotalPoolValueQuote(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTotalTokenSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1382,6 +1411,16 @@ export interface LiquidityPool extends BaseContract {
     ): Promise<LiquidityPool.LiquidityPoolParametersStructOutput>;
 
     getTokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getTokenPriceWithCheck(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, boolean, BigNumber] & {
+        tokenPrice: BigNumber;
+        isStale: boolean;
+        circuitBreakerExpiry: BigNumber;
+      }
+    >;
 
     getTotalPoolValueQuote(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1877,6 +1916,8 @@ export interface LiquidityPool extends BaseContract {
 
     getTokenPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTokenPriceWithCheck(overrides?: CallOverrides): Promise<BigNumber>;
+
     getTotalPoolValueQuote(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTotalTokenSupply(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2074,6 +2115,10 @@ export interface LiquidityPool extends BaseContract {
     getLpParams(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTokenPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getTokenPriceWithCheck(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getTotalPoolValueQuote(
       overrides?: CallOverrides

@@ -37,7 +37,7 @@ export default async function fetchStrikeIVAndGreeksDataByID(
   >(strikeIVAndGreeksSnapshotsQuery, {
     strikeId: strikeId,
     startTimestamp,
-    period: getSnapshotPeriod(startTimestamp, endTimestamp),
+    period: getSnapshotPeriod(startTimestamp, endTimestamp, true),
   })
   const strikeIVHistory: StrikeIVHistory[] = res.strikeIVAndGreeksSnapshots.map(
     (snapshot: StrikeIVAndGreeksSnapshotQueryResult) => {
