@@ -127,3 +127,12 @@ lyra.onTrade(trade => {
 ## Examples
 
 See the `src/scripts` directory for more examples of SDK interactions.
+Run those scripts with
+```
+yarn examples scriptname
+```
+For e.g., to run the script `markets.ts`, use the following:
+```
+yarn example markets
+```
+
