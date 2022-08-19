@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { Block } from '@ethersproject/providers'
 
 import { Board } from '../board'
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
@@ -9,7 +10,7 @@ import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
 import { getDelta, getGamma, getVega } from '../utils/blackScholes'
-import fetchStrikeIVAndGreeksDataByID from '../utils/fetchStrikeIVAndGreeksDataByID'
+import fetchStrikeIVHistory from '../utils/fetchStrikeIVHistory'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
@@ -24,9 +25,11 @@ export type StrikeIVHistory = {
 }
 
 export class Strike {
+  private lyra: Lyra
   private __board: Board
   __strikeData: OptionMarketViewer.StrikeViewStructOutput
   __source = DataSource.ContractCall
+  block: Block
   id: number
   strikePrice: BigNumber
   skew: BigNumber
@@ -35,7 +38,8 @@ export class Strike {
   gamma: BigNumber
   isDeltaInRange: boolean
 
-  constructor(board: Board, strikeId: number) {
+  constructor(lyra: Lyra, board: Board, strikeId: number, block: Block) {
+    this.lyra = lyra
     this.__board = board
     const strikeView = board.__boardData.strikes.find(strikeView => strikeView.strikeId.toNumber() === strikeId)
     if (!strikeView) {
@@ -43,6 +47,7 @@ export class Strike {
     }
     this.__strikeData = strikeView
     const fields = Strike.getFields(board, strikeId)
+    this.block = block
     this.id = fields.id
     this.strikePrice = fields.strikePrice
     this.skew = fields.skew
@@ -117,11 +122,11 @@ export class Strike {
   }
 
   call(): Option {
-    return new Option(this, true)
+    return new Option(this.lyra, this, true, this.block)
   }
 
   put(): Option {
-    return new Option(this, false)
+    return new Option(this.lyra, this, false, this.block)
   }
 
   option(isCall: boolean): Option {
@@ -140,6 +145,6 @@ export class Strike {
     const { startTimestamp = 0 } = options ?? {}
     const marketAddress = this.market().address
     const strikeId = `${marketAddress.toLowerCase()}-${this.id}`
-    return await fetchStrikeIVAndGreeksDataByID(lyra, strikeId, startTimestamp, this.__board.__blockTimestamp)
+    return await fetchStrikeIVHistory(lyra, strikeId, startTimestamp, this.block.timestamp)
   }
 }

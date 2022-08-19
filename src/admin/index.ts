@@ -1,7 +1,7 @@
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from 'ethers'
 
-import Lyra from '..'
+import Lyra, { LyraRegistry, OptionMarketViewer } from '..'
 import { LyraContractId } from '../constants/contracts'
 import buildTx from '../utils/buildTx'
 import getGlobalOwner from '../utils/getGlobalOwner'
@@ -46,6 +46,51 @@ export class Admin {
     const synthetixAdapter = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.SynthetixAdapter)
     const calldata = synthetixAdapter.interface.encodeFunctionData('setMarketPaused', [marketAddress, isPaused])
     const tx = buildTx(this.lyra, synthetixAdapter.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
+  }
+
+  addMarketToWrapper(
+    account: string,
+    id: number,
+    newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct
+  ): PopulatedTransaction {
+    const { optionMarket, quoteAsset, baseAsset, optionToken, liquidityPool, liquidityToken } = newMarketAddresses
+    const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
+    const calldata = wrapper.interface.encodeFunctionData('addMarket', [
+      optionMarket,
+      id,
+      { quoteAsset, baseAsset, optionToken, liquidityPool, liquidityToken },
+    ])
+    const tx = buildTx(this.lyra, wrapper.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
+  }
+
+  addMarketToViewer(
+    account: string,
+    newMarketAddresses: OptionMarketViewer.OptionMarketAddressesStruct
+  ): PopulatedTransaction {
+    const viewer = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketViewer)
+    const calldata = viewer.interface.encodeFunctionData('addMarket', [newMarketAddresses])
+    const tx = buildTx(this.lyra, viewer.address, account, calldata)
+    return {
+      ...tx,
+      gasLimit: BigNumber.from(10_000_000),
+    }
+  }
+
+  addMarketToRegistry(
+    account: string,
+    newMarketAddresses: LyraRegistry.OptionMarketAddressesStruct
+  ): PopulatedTransaction {
+    const registry = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.LyraRegistry)
+    const calldata = registry.interface.encodeFunctionData('addMarket', [newMarketAddresses])
+    const tx = buildTx(this.lyra, registry.address, account, calldata)
     return {
       ...tx,
       gasLimit: BigNumber.from(10_000_000),

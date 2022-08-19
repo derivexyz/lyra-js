@@ -16,6 +16,7 @@ import fetchPositionDataByID from '../utils/fetchPositionDataByID'
 import fetchPositionDataByOwner from '../utils/fetchPositionDataByOwner'
 import getAverageCostPerOption from '../utils/getAverageCostPerOption'
 import getBreakEvenPrice from '../utils/getBreakEvenPrice'
+import getSettlePnl from '../utils/getSettlePnl'
 import { PositionCollateral } from './getPositionCollateral'
 import getPositionRealizedPnl from './getPositionRealizedPnl'
 import getPositionRealizedPnlPercent from './getPositionRealizedPnlPercent'
@@ -153,6 +154,7 @@ export class Position {
     return getAverageCostPerOption(this.trades())
   }
 
+  // TODO: @earthtojake Add option to account for base collateral P&L
   realizedPnl(): BigNumber {
     return getPositionRealizedPnl(this)
   }
@@ -174,6 +176,22 @@ export class Position {
       this.isCall,
       this.strikePrice,
       this.avgCostPerOption().mul(this.sizeBeforeClose()).div(UNIT)
+    )
+  }
+
+  payoff(spotPriceAtExpiry: BigNumber, avgSpotPrice?: BigNumber): BigNumber {
+    return getSettlePnl(
+      this.isLong,
+      this.isCall,
+      this.strikePrice,
+      spotPriceAtExpiry,
+      this.avgCostPerOption(),
+      this.sizeBeforeClose(),
+      this.collateral?.liquidationPrice,
+      this.collateral && this.collateral.isBase && avgSpotPrice
+        ? // TODO: @earthtojake Use rolling average spot price
+          { collateral: this.collateral.amount, avgSpotPrice }
+        : undefined
     )
   }
 

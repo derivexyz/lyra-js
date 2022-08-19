@@ -31,6 +31,7 @@ import getBreakEvenPrice from '../utils/getBreakEvenPrice'
 import getLyraContract from '../utils/getLyraContract'
 import getMinCollateralForSpotPrice from '../utils/getMinCollateralForSpotPrice'
 import getOptionType from '../utils/getOptionType'
+import getSettlePnl from '../utils/getSettlePnl'
 import getTradeRealizedPnl from '../utils/getTradeRealizedPnl'
 import getTradeRealizedPnlPercent from '../utils/getTradeRealizedPnlPercent'
 import toBigNumber from '../utils/toBigNumber'
@@ -103,6 +104,15 @@ export class Trade {
   private __position?: Position
   __source = DataSource.ContractCall
 
+  marketName: string
+  marketAddress: string
+  expiryTimestamp: number
+  boardId: number
+  strikePrice: BigNumber
+  strikeId: number
+  isCall: boolean
+  positionId?: number
+
   isBuy: boolean
   isOpen: boolean
   isLong: boolean
@@ -118,6 +128,7 @@ export class Trade {
   externalSwapFee: BigNumber
   collateral?: TradeCollateral
   iv: BigNumber
+  fairIv: BigNumber
   greeks: QuoteGreeks
   breakEven: BigNumber
   slippage: number
@@ -131,9 +142,9 @@ export class Trade {
   isDisabled: boolean
   disabledReason: TradeDisabledReason | null
 
-  tx: PopulatedTransaction | null
+  tx: PopulatedTransaction
   iterations: QuoteIteration[]
-  __params: OptionMarketWrapperWithSwaps.OptionPositionParamsStruct | null
+  __params: OptionMarketWrapperWithSwaps.OptionPositionParamsStruct
   __calldata: string | null
 
   private constructor(
@@ -160,9 +171,19 @@ export class Trade {
     this.__position = position
     const strike = option.strike()
     const market = option.market()
+    const board = option.board()
 
     // References
     this.lyra = lyra
+
+    this.marketName = market.name
+    this.marketAddress = market.address
+    this.expiryTimestamp = board.expiryTimestamp
+    this.boardId = board.id
+    this.strikePrice = strike.strikePrice
+    this.strikeId = strike.id
+    this.isCall = option.isCall
+    this.positionId = position?.id
 
     // Check if opening or closing active position
     this.isBuy = isBuy
@@ -190,6 +211,7 @@ export class Trade {
 
     this.isForceClose = quote.isForceClose
     this.iv = quote.iv
+    this.fairIv = quote.fairIv
     this.greeks = quote.greeks
     this.fee = quote.fee
     this.feeComponents = quote.feeComponents
@@ -336,7 +358,7 @@ export class Trade {
     // TODO: @earthtojake Pass individual args instead of "this" to constructor
     this.disabledReason = getTradeDisabledReason(quote, this)
     this.isDisabled = !!this.disabledReason
-    this.tx = !this.isDisabled ? buildTx(lyra, wrapper.address, owner, this.__calldata) : null
+    this.tx = buildTx(lyra, wrapper.address, owner, this.__calldata)
   }
 
   // Getters
@@ -388,10 +410,15 @@ export class Trade {
         : undefined,
     })
 
-    trade.tx =
-      trade.tx && trade.tx.to && trade.tx.from && trade.tx.data
-        ? await buildTxWithGasEstimate(lyra, trade.tx.to, trade.tx.from, trade.tx.data)
-        : null
+    const to = trade.tx.to
+    const from = trade.tx.from
+    const data = trade.tx.data
+    if (!to || !from || !data) {
+      throw new Error('Missing tx data')
+    }
+
+    trade.tx = await buildTxWithGasEstimate(lyra, to, from, data)
+
     return trade
   }
 
@@ -449,6 +476,22 @@ export class Trade {
   prevAvgCostPerOption(): BigNumber {
     const position = this.__position
     return position ? getAverageCostPerOption(position.trades()) : ZERO_BN
+  }
+
+  payoff(spotPriceAtExpiry: BigNumber): BigNumber {
+    return getSettlePnl(
+      this.isLong,
+      this.option().isCall,
+      this.strike().strikePrice,
+      spotPriceAtExpiry,
+      this.newAvgCostPerOption(),
+      this.newSize,
+      this.collateral?.liquidationPrice,
+      this.collateral && this.collateral.isBase
+        ? // TODO: @earthtojake Use rolling average spot price
+          { collateral: this.collateral.amount, avgSpotPrice: this.market().spotPrice }
+        : undefined
+    )
   }
 
   // Edges

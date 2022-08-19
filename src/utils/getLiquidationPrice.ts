@@ -23,10 +23,12 @@ export default function getLiquidationPrice(
   const minCollateral = getMinCollateralForSpotPrice(option, size, option.market().spotPrice, isBaseCollateral, true)
   const maxCollateral = getMaxCollateral(option.isCall, option.strike().strikePrice, size, isBaseCollateral)
 
+  const isCashSecuredCall = option.isCall && !isBaseCollateral
+
   if (timeToExpiry <= 0 || size.eq(0) || collateral.eq(0)) {
     // Closed or uncollateralized position
     return null
-  } else if (maxCollateral && collateral.gte(maxCollateral) && !(option.isCall && !isBaseCollateral)) {
+  } else if (maxCollateral && collateral.gte(maxCollateral) && !isCashSecuredCall) {
     // Fully collateralized cash secured puts and covered calls are not liquidatable
     return null
   } else if (collateral.lt(minCollateral)) {

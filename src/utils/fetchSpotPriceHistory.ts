@@ -1,59 +1,49 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 import { gql } from 'graphql-request'
 
+import Lyra from '..'
 import { SPOT_PRICE_SNAPSHOT_FRAGMENT, SpotPriceSnapshotQueryResult } from '../constants/queries'
-import Lyra from '../lyra'
+import { SnapshotOptions } from '../constants/snapshots'
+import { Market, MarketSpotPrice } from '../market'
+import fetchSnapshots from './fetchSnapshots'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
-type SpotPriceHistoryVariables = {
-  market: string
-  startTimestamp: number
-  period: number
-}
-
-export const spotPriceQuery = gql`
+const spotPriceSnapshotsQuery = gql`
   query spotPriceSnapshots(
     $market: String, $startTimestamp: Int, $period: Int
   ) {
-    spotPriceSnapshots(
-      first: 1000
-      orderBy: timestamp
-      orderDirection: asc
-      where: {
-        market: $market
-        timestamp_gte: $startTimestamp,
-        period_gte: $period
-      }
-    ) {
+    spotPriceSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { 
+      market: $market, 
+      timestamp_gte: $startTimestamp, 
+      period_gte: $period 
+    }) {
       ${SPOT_PRICE_SNAPSHOT_FRAGMENT}
     }
   }
 `
 
-export const fetchSpotPriceHistory = async (
+export default async function fetchSpotPriceHistory(
   lyra: Lyra,
-  marketAddress: string,
-  startTimestamp: number,
-  period: number
-): Promise<
-  {
-    timestamp: number
-    spotPrice: BigNumber
-  }[]
-> => {
-  const res = await lyra.subgraphClient.request<
-    { spotPriceSnapshots: SpotPriceSnapshotQueryResult[] },
-    SpotPriceHistoryVariables
-  >(spotPriceQuery, {
-    market: marketAddress,
+  market: Market,
+  options?: SnapshotOptions
+): Promise<MarketSpotPrice[]> {
+  const startTimestamp = options?.startTimestamp ?? 0
+  const endTimestamp = options?.endTimestamp ?? market.block.timestamp
+  const data = await fetchSnapshots<
+    SpotPriceSnapshotQueryResult,
+    {
+      market: string
+    }
+  >(lyra, spotPriceSnapshotsQuery, 'spotPriceSnapshots', {
+    market: market.address.toLowerCase(),
     startTimestamp,
-    period,
+    endTimestamp,
+    period: getSnapshotPeriod(startTimestamp, endTimestamp),
   })
-  return (
-    res.spotPriceSnapshots.map(spotPrice => {
-      return {
-        timestamp: spotPrice.timestamp,
-        spotPrice: BigNumber.from(spotPrice.spotPrice),
-      }
-    }) ?? []
-  )
+  return data.map(spotPriceSnapshot => {
+    return {
+      spotPrice: BigNumber.from(spotPriceSnapshot.spotPrice),
+      timestamp: spotPriceSnapshot.timestamp,
+    }
+  })
 }

@@ -30,7 +30,7 @@ export default function getPositionDataFromStruct(
   const strikePrice = option.strike().strikePrice
   const isInTheMoney = isCall ? spotPrice.gt(strikePrice) : spotPrice.lt(strikePrice)
   return {
-    blockNumber: option.board().__blockNumber,
+    blockNumber: option.block.number,
     owner,
     marketName: option.market().name,
     marketAddress: option.market().address,

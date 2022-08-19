@@ -1,12 +1,10 @@
-import yargs from 'yargs'
-
 import getLyra from './utils/getLyra'
 
-export default async function rewardEpoch(argv: string[]) {
+export default async function rewardEpoch() {
   const lyra = getLyra()
-  const args = await yargs(argv).options({
-    account: { type: 'string', alias: 'a', require: true },
-  }).argv
-  const rewardEpoch = await lyra.rewardEpochs(args.account)
-  console.log(rewardEpoch)
+  const epoch = await lyra.latestGlobalRewardEpoch()
+  const minVaultApy = epoch.minVaultApy('eth')
+  const maxVaultApy = epoch.maxVaultApy('eth')
+  const stakingApy = epoch.stakingApy
+  console.log('Global', { minVaultApy, maxVaultApy, stakingApy })
 }

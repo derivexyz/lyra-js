@@ -37,7 +37,7 @@ export default function getQuoteDisabledReason(
 
   // Check trading cutoff
   const { tradeLimitParams, greekCacheParams } = marketView.marketParameters
-  const isPostCutoff = board.__blockTimestamp + tradeLimitParams.tradingCutoff.toNumber() > board.expiryTimestamp
+  const isPostCutoff = board.block.timestamp + tradeLimitParams.tradingCutoff.toNumber() > board.expiryTimestamp
   if (isPostCutoff && !isForceClose) {
     return QuoteDisabledReason.TradingCutoff
   }

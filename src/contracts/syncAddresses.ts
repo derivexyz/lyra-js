@@ -11,6 +11,7 @@ const LYRA_TARGETS = [
   LyraContractId.OptionMarketWrapper,
   LyraContractId.SynthetixAdapter,
   LyraContractId.TestFaucet,
+  LyraContractId.LyraRegistry,
 ]
 
 export default async function syncAddresses(_argv: string[]): Promise<void> {

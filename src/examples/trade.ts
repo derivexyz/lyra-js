@@ -56,8 +56,8 @@ export default async function trade(argv: string[]) {
   })
 
   printObject('Quote', {
-    timestamp: trade.board().__blockTimestamp,
-    blockNumber: trade.board().__blockNumber,
+    timestamp: trade.board().block.timestamp,
+    blockNumber: trade.board().block.number,
     premium: trade.quoted,
     fee: trade.fee,
     feeComponents: trade.feeComponents,
@@ -69,7 +69,7 @@ export default async function trade(argv: string[]) {
       : null,
   })
 
-  if (!trade.__params || !trade.tx) {
+  if (trade.disabledReason) {
     console.log('Disabled:', trade.disabledReason)
     return
   }

@@ -16,9 +16,10 @@ export default async function getLiquidityTokenBalance(
     address: liquidityTokenBalance.token,
     balance: liquidityTokenBalance.balance,
     value: market.liquidity.tokenPrice.mul(liquidityTokenBalance.balance).div(UNIT),
+    tokenPrice: market.liquidity.tokenPrice,
     allowance: liquidityTokenBalance.allowance,
     // TODO: @earthtojake Add symbol and decimals to getLiquidityBalancesAndAllowances
-    symbol: 'LyLP',
+    symbol: `Ly${market.name}LP`,
     decimals: 18,
   }
 }

@@ -1,6 +1,9 @@
 import {
   LiquidityPool,
   LiquidityToken,
+  LyraRegistry,
+  LyraStakingModule,
+  MultiDistributor,
   OptionGreekCache,
   OptionMarketPricer,
   OptionMarketViewer,
@@ -19,8 +22,9 @@ export type LyraContractReturnType = {
   [LyraContractId.OptionMarketWrapper]: OptionMarketWrapper
   [LyraContractId.TestFaucet]: TestFaucet
   [LyraContractId.SynthetixAdapter]: SynthetixAdapter
-  [LyraContractId.LyraStakingModule]: SynthetixAdapter
-  [LyraContractId.LyraStakingModuleProxy]: SynthetixAdapter
+  [LyraContractId.LyraStakingModuleProxy]: LyraStakingModule
+  [LyraContractId.MultiDistributor]: MultiDistributor
+  [LyraContractId.LyraRegistry]: LyraRegistry
 }
 
 export type LyraMarketContractReturnType = {

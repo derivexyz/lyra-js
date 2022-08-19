@@ -98,7 +98,7 @@ export default async function positionTrade(argv: string[]) {
   //   totalFee: fromBigNumber(ret.totalFee),
   // })
 
-  if (!trade.tx) {
+  if (trade.disabledReason) {
     console.log('disabled:', trade.disabledReason)
     return
   }

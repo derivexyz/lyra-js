@@ -1,9 +1,12 @@
+import { BigNumber } from 'ethers'
 import { gql } from 'graphql-request'
 
 import { AccountLongOptionHistory } from '..'
-import { UNIT, ZERO_BN } from '../constants/bn'
-import { POSITIONS_FRAGMENT } from '../constants/queries'
+import { UNIT } from '../constants/bn'
+import { PositionState } from '../constants/contracts'
+import { LONG_OPTION_FRAGMENT } from '../constants/queries'
 import Lyra from '../lyra'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 type OptionPriceAndGreeksHistory = {
   id: string
@@ -23,6 +26,11 @@ type PositionTrades = {
   size: string
   premium: string
   blockNumber: number
+  transactionHash: string
+  collateralUpdate: {
+    timestamp: number
+    amount: string
+  }
 }
 
 type PositionOption = {
@@ -35,6 +43,7 @@ type LongOptionHistoryVariables = {
   owner: string
   startTimestamp: number
   period: number
+  state: number
 }
 
 type Position = {
@@ -54,18 +63,20 @@ type Position = {
 
 const positionQuery = gql`
   query longOptionHistory(
-    $owner: String, $startTimestamp: Int, $period: Int
+    $owner: String
+    $startTimestamp: Int
+    $period: Int
+    $state: Int
   ) {
     positions(
       first: 1000,
-      orderBy: openTimestamp,
-      orderDirection: asc,
       where: {
         owner: $owner,
-        isLong: true
+        isLong: true,
+        state: $state
       }
     ) {
-      ${POSITIONS_FRAGMENT}
+      ${LONG_OPTION_FRAGMENT}
     }
   }
 `
@@ -74,55 +85,53 @@ export default async function fetchLongOptionHistory(
   lyra: Lyra,
   owner: string,
   startTimestamp: number,
-  period: number
+  endTimestamp: number
 ): Promise<AccountLongOptionHistory[]> {
-  const historicalPositions = await lyra.subgraphClient.request<{ positions: Position[] }, LongOptionHistoryVariables>(
+  const longOptions = await lyra.subgraphClient.request<{ positions: Position[] }, LongOptionHistoryVariables>(
     positionQuery,
     {
       owner,
       startTimestamp,
-      period,
+      period: getSnapshotPeriod(startTimestamp, endTimestamp),
+      state: PositionState.Active,
     }
   )
-  const longOptionsHistory = historicalPositions.positions.reduce(
-    (longOptionsHistory: Record<number, AccountLongOptionHistory>, position) => {
-      const closeTimestamp = position.closeTimestamp ?? Infinity
-      if (closeTimestamp < startTimestamp) {
-        return longOptionsHistory
-      }
-      const tradeEvents = position.trades.reduce((tradeEvents: Record<number, PositionTrades>, trade) => {
-        const closestTimestamp =
-          position?.option.optionPriceAndGreeksHistory.find(
-            optionPriceAndGreeksHistory => optionPriceAndGreeksHistory.timestamp >= trade.timestamp
-          )?.timestamp ?? Infinity
-        tradeEvents[closestTimestamp] = trade
-        return tradeEvents
-      }, {})
-      let currentPositionSize = ZERO_BN
-      let currentPositionValue = ZERO_BN
-      position.option.optionPriceAndGreeksHistory.forEach(optionPriceAndGreeksHistory => {
-        const timestamp = optionPriceAndGreeksHistory.timestamp
-        if (tradeEvents[timestamp]) {
-          const trade = tradeEvents[timestamp]
-          if (trade.isBuy) {
-            currentPositionSize = currentPositionSize.add(trade.size)
-          } else {
-            currentPositionSize = currentPositionSize.sub(trade.size)
-          }
-          currentPositionValue = currentPositionSize.mul(optionPriceAndGreeksHistory.optionPrice).div(UNIT)
-        }
-        if (!longOptionsHistory[timestamp]) {
-          longOptionsHistory[timestamp] = {
-            timestamp: timestamp,
-            optionValue: currentPositionValue,
-          }
+  const longOptionsHistory: Record<number, AccountLongOptionHistory> = {}
+  longOptions.positions.forEach(position => {
+    const tradeEvents = position.trades.reduce((tradeEvents: Record<number, PositionTrades>, trade) => {
+      const closestTimestamp =
+        position.option.optionPriceAndGreeksHistory.find(
+          optionPriceAndGreeksHistory => trade.timestamp >= optionPriceAndGreeksHistory.timestamp
+        )?.timestamp ?? Infinity
+      tradeEvents[closestTimestamp] = trade
+      return tradeEvents
+    }, {})
+    let currentPositionSize = BigNumber.from(position.size)
+    let currentPositionValue = BigNumber.from(position.option.optionPriceAndGreeksHistory[0].optionPrice)
+      .mul(currentPositionSize)
+      .div(UNIT)
+    position.option.optionPriceAndGreeksHistory.forEach(optionPriceAndGreeksHistory => {
+      let optionPriceTimestamp = optionPriceAndGreeksHistory.timestamp
+      if (tradeEvents[optionPriceTimestamp]) {
+        const trade = tradeEvents[optionPriceTimestamp]
+        optionPriceTimestamp = trade.timestamp // enforces exact timestamp on a trade event instead of nearest timestamp
+        if (trade.isBuy) {
+          currentPositionSize = currentPositionSize.sub(trade.size)
         } else {
-          longOptionsHistory[timestamp].optionValue.add(currentPositionValue)
+          currentPositionSize = currentPositionSize.add(trade.size)
         }
-      })
-      return longOptionsHistory
-    },
-    {}
-  )
+      }
+      currentPositionValue = currentPositionSize.mul(optionPriceAndGreeksHistory.optionPrice).div(UNIT)
+      if (!longOptionsHistory[optionPriceTimestamp]) {
+        longOptionsHistory[optionPriceTimestamp] = {
+          timestamp: optionPriceTimestamp,
+          optionValue: currentPositionValue,
+        }
+      } else {
+        longOptionsHistory[optionPriceTimestamp].optionValue =
+          longOptionsHistory[optionPriceTimestamp].optionValue.add(currentPositionValue)
+      }
+    })
+  })
   return Object.values(longOptionsHistory)
 }

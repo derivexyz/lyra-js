@@ -12,6 +12,7 @@ const LYRA_TARGETS = [
   LyraContractId.OptionMarketWrapper,
   LyraContractId.SynthetixAdapter,
   LyraContractId.TestFaucet,
+  LyraContractId.LyraRegistry,
   LyraMarketContractId.OptionMarket,
   LyraMarketContractId.OptionMarketPricer,
   LyraMarketContractId.OptionToken,

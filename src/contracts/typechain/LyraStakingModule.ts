@@ -435,6 +435,7 @@ export interface LyraStakingModuleInterface extends utils.Interface {
     "AssetConfigUpdated(address,uint256)": EventFragment;
     "AssetIndexUpdated(address,uint256)": EventFragment;
     "Cooldown(address)": EventFragment;
+    "CooldownUpdated(address,uint256,uint256)": EventFragment;
     "DelegateChanged(address,address,uint8)": EventFragment;
     "DelegatedPowerChanged(address,uint256,uint8)": EventFragment;
     "Redeem(address,address,uint256)": EventFragment;
@@ -449,6 +450,7 @@ export interface LyraStakingModuleInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AssetConfigUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AssetIndexUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Cooldown"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CooldownUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DelegateChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DelegatedPowerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Redeem"): EventFragment;
@@ -485,6 +487,13 @@ export type AssetIndexUpdatedEventFilter =
 export type CooldownEvent = TypedEvent<[string], { user: string }>;
 
 export type CooldownEventFilter = TypedEventFilter<CooldownEvent>;
+
+export type CooldownUpdatedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { user: string; balance: BigNumber; cooldownTimestamp: BigNumber }
+>;
+
+export type CooldownUpdatedEventFilter = TypedEventFilter<CooldownUpdatedEvent>;
 
 export type DelegateChangedEvent = TypedEvent<
   [string, string, number],
@@ -1298,6 +1307,17 @@ export interface LyraStakingModule extends BaseContract {
 
     "Cooldown(address)"(user?: string | null): CooldownEventFilter;
     Cooldown(user?: string | null): CooldownEventFilter;
+
+    "CooldownUpdated(address,uint256,uint256)"(
+      user?: string | null,
+      balance?: null,
+      cooldownTimestamp?: null
+    ): CooldownUpdatedEventFilter;
+    CooldownUpdated(
+      user?: string | null,
+      balance?: null,
+      cooldownTimestamp?: null
+    ): CooldownUpdatedEventFilter;
 
     "DelegateChanged(address,address,uint8)"(
       delegator?: string | null,

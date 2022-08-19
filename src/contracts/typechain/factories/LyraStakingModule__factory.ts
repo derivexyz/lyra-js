@@ -133,6 +133,31 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "user",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "balance",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "cooldownTimestamp",
+        type: "uint256",
+      },
+    ],
+    name: "CooldownUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "delegator",
         type: "address",
       },

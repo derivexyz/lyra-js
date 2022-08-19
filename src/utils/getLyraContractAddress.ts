@@ -14,13 +14,14 @@ const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Reco
     case LyraContractId.OptionMarketWrapper:
     case LyraContractId.SynthetixAdapter:
     case LyraContractId.TestFaucet:
+    case LyraContractId.LyraRegistry:
       return deployment === Deployment.Kovan
         ? kovanAddressMap
         : deployment === Deployment.Mainnet
         ? mainnetAddressMap
         : {}
-    case LyraContractId.LyraStakingModule:
     case LyraContractId.LyraStakingModuleProxy:
+    case LyraContractId.MultiDistributor:
       return deployment === Deployment.Kovan
         ? kovanMiscAddressMap
         : deployment === Deployment.Mainnet

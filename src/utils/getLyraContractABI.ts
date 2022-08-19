@@ -3,8 +3,9 @@ import { ContractInterface } from '@ethersproject/contracts'
 import { LyraContractId, LyraMarketContractId } from '../constants/contracts'
 import LIQUIDITY_POOL_ABI from '../contracts/abis/LiquidityPool.json'
 import LIQUIDITY_TOKEN_ABI from '../contracts/abis/LiquidityToken.json'
+import LYRA_REGISTRY_ABI from '../contracts/abis/LyraRegistry.json'
 import LYRA_STAKING_MODULE_ABI from '../contracts/abis/LyraStakingModule.json'
-import LYRA_STAKING_MODULE_PROXY_ABI from '../contracts/abis/LyraStakingModuleProxy.json'
+import MULTIDISTRIBUTOR_ABI from '../contracts/abis/MultiDistributor.json'
 import OPTION_GREEK_CACHE_ABI from '../contracts/abis/OptionGreekCache.json'
 import OPTION_MARKET_ABI from '../contracts/abis/OptionMarket.json'
 import OPTION_MARKET_PRICER_ABI from '../contracts/abis/OptionMarketPricer.json'
@@ -42,9 +43,11 @@ export default function getLyraContractABI(contractId: LyraContractId | LyraMark
       return OPTION_MARKET_PRICER_ABI
     case LyraMarketContractId.ShortPoolHedger:
       return SHORT_POOL_HEDGER_ABI
-    case LyraContractId.LyraStakingModule:
-      return LYRA_STAKING_MODULE_ABI
     case LyraContractId.LyraStakingModuleProxy:
-      return LYRA_STAKING_MODULE_PROXY_ABI
+      return LYRA_STAKING_MODULE_ABI
+    case LyraContractId.LyraRegistry:
+      return LYRA_REGISTRY_ABI
+    case LyraContractId.MultiDistributor:
+      return MULTIDISTRIBUTOR_ABI
   }
 }

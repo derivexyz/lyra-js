@@ -34,7 +34,7 @@ export default function getForceClosePrice(
 
   const { tradeLimitParams } = marketParams
   const isPostCutoff =
-    option.board().__blockTimestamp + tradeLimitParams.tradingCutoff.toNumber() > option.board().expiryTimestamp
+    option.block.timestamp + tradeLimitParams.tradingCutoff.toNumber() > option.board().expiryTimestamp
 
   const forceCloseGwavIv = option.board().__boardData.forceCloseGwavIV
   const forceCloseSkew = option.strike().__strikeData.forceCloseSkew

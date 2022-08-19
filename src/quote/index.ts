@@ -85,6 +85,13 @@ export type QuoteOptions = {
 export class Quote {
   private __option: Option
   __source = DataSource.ContractCall
+  marketName: string
+  marketAddress: string
+  expiryTimestamp: number
+  boardId: number
+  strikePrice: BigNumber
+  strikeId: number
+  isCall: boolean
   isBuy: boolean
   size: BigNumber
   pricePerOption: BigNumber
@@ -92,6 +99,7 @@ export class Quote {
   fee: BigNumber
   feeComponents: QuoteFeeComponents
   iv: BigNumber
+  fairIv: BigNumber
   greeks: QuoteGreeks
   forceClosePenalty: BigNumber
   isForceClose: boolean
@@ -105,6 +113,13 @@ export class Quote {
     this.__option = option
     this.isBuy = isBuy
     this.size = size
+    this.marketName = option.market().name
+    this.marketAddress = option.market().address
+    this.expiryTimestamp = option.board().expiryTimestamp
+    this.boardId = option.board().id
+    this.strikePrice = option.strike().strikePrice
+    this.strikeId = option.strike().id
+    this.isCall = option.isCall
 
     const fields = this.getFields(option, isBuy, size, options)
     this.pricePerOption = fields.pricePerOption
@@ -112,6 +127,7 @@ export class Quote {
     this.fee = fields.fee
     this.feeComponents = fields.feeComponents
     this.iv = fields.iv
+    this.fairIv = fields.fairIv
     this.greeks = fields.greeks
     this.forceClosePenalty = fields.forceClosePenalty
     this.isForceClose = fields.isForceClose
@@ -122,11 +138,14 @@ export class Quote {
   }
 
   private getDisabledFields(option: Option, disabledReason: QuoteDisabledReason) {
-    const vol = option.strike().skew.mul(option.board().baseIv).div(UNIT)
+    const skew = option.strike().skew
+    const baseIv = option.board().baseIv
+    const iv = skew.mul(baseIv).div(UNIT)
     return {
       pricePerOption: ZERO_BN,
       premium: ZERO_BN,
-      iv: vol,
+      iv,
+      fairIv: iv,
       fee: ZERO_BN,
       feeComponents: {
         optionPriceFee: ZERO_BN,
@@ -159,6 +178,7 @@ export class Quote {
     pricePerOption: BigNumber
     premium: BigNumber
     iv: BigNumber
+    fairIv: BigNumber
     fee: BigNumber
     feeComponents: QuoteFeeComponents
     greeks: QuoteGreeks
@@ -214,7 +234,7 @@ export class Quote {
       preTradeAmmNetStdVega = quote.postTradeAmmNetStdVega
     }
 
-    const newIv = baseIv.mul(skew).div(UNIT)
+    const fairIv = baseIv.mul(skew).div(UNIT)
     const spotPrice = option.market().spotPrice
     const strikePrice = option.strike().strikePrice
     const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
@@ -222,7 +242,7 @@ export class Quote {
     const delta = toBigNumber(
       getDelta(
         timeToExpiryAnnualized,
-        fromBigNumber(newIv),
+        fromBigNumber(fairIv),
         fromBigNumber(spotPrice),
         fromBigNumber(strikePrice),
         fromBigNumber(rate),
@@ -233,7 +253,7 @@ export class Quote {
     const vega = toBigNumber(
       getVega(
         timeToExpiryAnnualized,
-        fromBigNumber(newIv),
+        fromBigNumber(fairIv),
         fromBigNumber(spotPrice),
         fromBigNumber(strikePrice),
         fromBigNumber(rate)
@@ -243,7 +263,7 @@ export class Quote {
     const gamma = toBigNumber(
       getGamma(
         timeToExpiryAnnualized,
-        fromBigNumber(newIv),
+        fromBigNumber(fairIv),
         fromBigNumber(spotPrice),
         fromBigNumber(strikePrice),
         fromBigNumber(rate)
@@ -253,7 +273,7 @@ export class Quote {
     const theta = toBigNumber(
       getTheta(
         timeToExpiryAnnualized,
-        fromBigNumber(newIv),
+        fromBigNumber(fairIv),
         fromBigNumber(spotPrice),
         fromBigNumber(strikePrice),
         fromBigNumber(rate),
@@ -264,7 +284,7 @@ export class Quote {
     const rho = toBigNumber(
       getRho(
         timeToExpiryAnnualized,
-        fromBigNumber(newIv),
+        fromBigNumber(fairIv),
         fromBigNumber(spotPrice),
         fromBigNumber(strikePrice),
         fromBigNumber(rate),
@@ -274,7 +294,7 @@ export class Quote {
 
     const premium = iterations.reduce((sum, quote) => sum.add(quote.premium), ZERO_BN)
 
-    const disabledReason = getQuoteDisabledReason(option, size, premium, newIv, skew, baseIv, isBuy, isForceClose)
+    const disabledReason = getQuoteDisabledReason(option, size, premium, fairIv, skew, baseIv, isBuy, isForceClose)
     if (disabledReason) {
       // For subset of disabled reasons, return empty quote
       switch (disabledReason) {
@@ -304,11 +324,15 @@ export class Quote {
     const varianceFee = iterations.reduce((sum, quote) => sum.add(quote.varianceFee.varianceFee), ZERO_BN)
     const fee = optionPriceFee.add(spotPriceFee).add(vegaUtilFee).add(varianceFee)
 
+    const ivFeeFactor = fee.gt(0) && vega.gt(0) ? fee.mul(UNIT).div(vega).div(100) : ZERO_BN
+    const iv = isBuy ? fairIv.add(ivFeeFactor) : fairIv.sub(ivFeeFactor)
+
     return {
       pricePerOption,
       premium,
       fee,
-      iv: newIv,
+      iv,
+      fairIv,
       feeComponents: {
         optionPriceFee,
         spotPriceFee,

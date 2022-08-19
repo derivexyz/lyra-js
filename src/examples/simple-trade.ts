@@ -34,7 +34,7 @@ export default async function simpleTrade() {
   })
 
   // Check if trade is disabled
-  if (!trade.tx) {
+  if (trade.disabledReason) {
     throw new Error(`Trade is disabled: ${trade.disabledReason}`)
   }
 

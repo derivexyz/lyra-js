@@ -6,8 +6,9 @@ export enum LyraContractId {
   OptionMarketWrapper = 'OptionMarketWrapper',
   TestFaucet = 'TestFaucet',
   SynthetixAdapter = 'SynthetixAdapter',
-  LyraStakingModule = 'LyraStakingModule',
   LyraStakingModuleProxy = 'LyraStakingModuleProxy',
+  LyraRegistry = 'LyraRegistry',
+  MultiDistributor = 'MultiDistributor',
 }
 
 // Per-market contract name mappings
@@ -86,3 +87,13 @@ export const POSITION_UPDATED_TYPES = [
   PositionUpdatedType.SplitFrom,
   PositionUpdatedType.SplitInto,
 ]
+
+export const LYRA_OPTIMISM_MAINNET_ADDRESS = '0x50c5725949a6f0c72e6c4a641f24049a917db0cb'
+export const OP_OPTIMISM_MAINNET_ADDRESS = '0x4200000000000000000000000000000000000042'
+export const LYRA_OPTIMISM_KOVAN_ADDRESS = '0xC9801013F0c45F836Ad07Dded1df9C475d2844FC'
+export const STAKED_LYRA_OPTIMISM_ADDRESS = '0xde48b1b5853cc63b1d05e507414d3e02831722f8'
+export const STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS = '0xd16d254c42a03ad72d77b4226d086afcc0b2e43e'
+export const ONE_INCH_ORACLE_OPTIMISM_MAINNET_ADDRESS = '0x11DEE30E710B8d4a8630392781Cc3c0046365d4c'
+export const USDC_OPTIMISM_MAINNET_ADDRESS = '0x7F5c764cBc14f9669B88837ca1490cCa17c31607'
+export const USDC_OPTIMISM_MAINNET_DECIMALS = 6
+export const VAULTS_UTILIZATION_THRESHOLD = 0.99

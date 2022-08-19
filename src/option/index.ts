@@ -1,30 +1,38 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { Block } from '@ethersproject/providers'
 
 import { Board } from '../board'
 import { ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
+import { SnapshotOptions } from '../constants/snapshots'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
 import { getBlackScholesPrice, getDelta, getRho, getTheta } from '../utils/blackScholes'
-import fetchOptionPriceAndGreeksDataByID from '../utils/fetchOptionPriceAndGreeksDataByID'
+import fetchOptionPriceHistory from '../utils/fetchOptionPriceHistory'
+import fetchOptionVolumeHistory from '../utils/fetchOptionVolumeHistory'
 import fromBigNumber from '../utils/fromBigNumber'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
+import mergeAndSortSnapshots from '../utils/mergeAndSortSnapshots'
 import toBigNumber from '../utils/toBigNumber'
-
-export type OptionHistoryOptions = {
-  startTimestamp?: number
-}
 
 export type OptionPriceHistory = {
   optionPrice: BigNumber
   timestamp: number
 }
 
+export type OptionTradingVolume = {
+  notionalVolume: BigNumber
+  premiumVolume: BigNumber
+  timestamp: number
+}
+
 export class Option {
+  private lyra: Lyra
   private __strike: Strike
   __source = DataSource.ContractCall
+  block: Block
   isCall: boolean
   price: BigNumber
   longOpenInterest: BigNumber
@@ -34,8 +42,10 @@ export class Option {
   rho: BigNumber
   isInTheMoney: boolean
 
-  constructor(strike: Strike, isCall: boolean) {
+  constructor(lyra: Lyra, strike: Strike, isCall: boolean, block: Block) {
+    this.lyra = lyra
     this.__strike = strike
+    this.block = block
     this.isCall = isCall
     const fields = Option.getFields(strike, isCall)
     this.price = fields.price
@@ -140,8 +150,6 @@ export class Option {
     return this.__strike
   }
 
-  // Quote
-
   quoteSync(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
     return Quote.get(this, isBuy, size, options)
   }
@@ -150,18 +158,11 @@ export class Option {
     return await this.strike().quote(this.isCall, isBuy, size, options)
   }
 
-  // Price History
+  async tradingVolumeHistory(options?: SnapshotOptions): Promise<OptionTradingVolume[]> {
+    return mergeAndSortSnapshots(await fetchOptionVolumeHistory(this.lyra, this, options), 'timestamp')
+  }
 
-  async priceHistory(lyra: Lyra, options?: OptionHistoryOptions): Promise<OptionPriceHistory[]> {
-    const { startTimestamp = 0 } = options ?? {}
-    const marketAddress = this.market().address
-    const strikeId = this.strike().id
-    const optionId = `${marketAddress.toLowerCase()}-${strikeId}-${this.isCall ? 'call' : 'put'}`
-    return await fetchOptionPriceAndGreeksDataByID(
-      lyra,
-      optionId,
-      startTimestamp,
-      this.strike().board().__blockTimestamp
-    )
+  async priceHistory(options?: SnapshotOptions): Promise<OptionPriceHistory[]> {
+    return mergeAndSortSnapshots(await fetchOptionPriceHistory(this.lyra, this, options), 'timestamp')
   }
 }

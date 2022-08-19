@@ -1,20 +1,32 @@
+import { getAddress } from '@ethersproject/address'
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
-import { ZERO_BN } from '../constants/bn'
-import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
+import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
+import {
+  Deployment,
+  LYRA_OPTIMISM_KOVAN_ADDRESS,
+  LYRA_OPTIMISM_MAINNET_ADDRESS,
+  LyraContractId,
+  LyraMarketContractId,
+  OP_OPTIMISM_MAINNET_ADDRESS,
+  STAKED_LYRA_OPTIMISM_ADDRESS,
+  STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS,
+} from '../constants/contracts'
 import { LiquidityDeposit } from '../liquidity_deposit'
 import { LiquidityWithdrawal } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
+import { LyraStaking } from '../lyra_staking'
 import { Market } from '../market'
-import { RewardEpoch } from '../reward_epoch'
 import { Stake } from '../stake'
 import { Unstake } from '../unstake'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
+import getLyraContractAddress from '../utils/getLyraContractAddress'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 import getAccountBalancesAndAllowances from './getAccountBalancesAndAllowances'
+import getAverageCostPerLPToken from './getAverageCostPerLPToken'
 import getLiquidityDepositBalance from './getLiquidityDepositBalance'
 import getLiquidityTokenBalance from './getLiquidityTokenBalance'
 import getPortfolioBalance from './getPortfolioBalance'
@@ -24,6 +36,7 @@ export type AccountPortfolioHistorySnapshot = {
   timestamp: number
   longOptionValue: number
   shortOptionValue: number
+  collateralValue: number
   balance: number
   total: number
 }
@@ -31,6 +44,7 @@ export type AccountPortfolioHistorySnapshot = {
 export type AccountPortfolioBalance = {
   longOptionValue: number
   shortOptionValue: number
+  collateralValue: number
   balance: number
   total: number
 }
@@ -81,9 +95,15 @@ export type AccountLiquidityTokenBalance = {
   address: string
   balance: BigNumber
   value: BigNumber
+  tokenPrice: BigNumber
   symbol: string
   decimals: number
   allowance: BigNumber
+}
+
+export type AccountLiquidityProfitAndLoss = {
+  balance: BigNumber
+  averageTokenPrice: BigNumber
 }
 
 export type AccountBalances = {
@@ -95,11 +115,28 @@ export type AccountBalances = {
   optionToken: (tokenOrMarketAddress: string) => AccountOptionTokenBalance
 }
 
-export type AccountStaking = {
+export type AccountLyraStaking = {
+  staking: LyraStaking
+  lyraBalance: AccountLyraBalance
+  stakedLyraBalance: AccountStakedLyraBalance
+  isInUnstakeWindow: boolean
+  isInCooldown: boolean
+  unstakeWindowStartTimestamp: number | null
+  unstakeWindowEndTimestamp: number | null
+}
+
+export type AccountLyraBalance = {
   balance: BigNumber
-  isUnstaking: boolean
-  unstakeWindowStartTimestamp: number
-  unstakeWindowEndTimestamp: number
+  stakingAllowance: BigNumber
+}
+
+export type AccountStakedLyraBalance = {
+  balance: BigNumber
+}
+
+export type ClaimableBalance = {
+  op: BigNumber
+  lyra: BigNumber
 }
 
 export class Account {
@@ -173,6 +210,83 @@ export class Account {
   async liquidityTokenBalance(marketAddressOrName: string): Promise<AccountLiquidityTokenBalance> {
     const market = await this.lyra.market(marketAddressOrName)
     return await getLiquidityTokenBalance(this.lyra, this.address, market)
+  }
+
+  async liquidityUnrealizedPnl(marketAddressOrName: string): Promise<{ pnl: BigNumber; pnlPercent: BigNumber }> {
+    const [{ balance, value, tokenPrice }, liquidityDeposits, liquidityWithdrawals] = await Promise.all([
+      this.liquidityTokenBalance(marketAddressOrName),
+      this.lyra.liquidityDeposits(marketAddressOrName, this.address),
+      this.lyra.liquidityWithdrawals(marketAddressOrName, this.address),
+    ])
+    const avgCostPerToken = getAverageCostPerLPToken(liquidityDeposits, liquidityWithdrawals)
+    const avgValue = avgCostPerToken.mul(balance).div(UNIT)
+    const pnl = value.sub(avgValue)
+    const pnlPercent = avgCostPerToken.gt(0) ? tokenPrice.mul(UNIT).div(avgCostPerToken).sub(ONE_BN) : ZERO_BN
+    return {
+      pnl,
+      pnlPercent,
+    }
+  }
+
+  async lyraBalance(): Promise<AccountLyraBalance> {
+    const lyraTokenContract = getERC20Contract(
+      this.lyra.provider,
+      this.lyra.deployment === Deployment.Mainnet ? LYRA_OPTIMISM_MAINNET_ADDRESS : LYRA_OPTIMISM_KOVAN_ADDRESS
+    )
+    const lyraStakingModuleProxyAddress = getLyraContractAddress(
+      this.lyra.deployment,
+      LyraContractId.LyraStakingModuleProxy
+    )
+    const [balance, stakingAllowance] = await Promise.all([
+      lyraTokenContract.balanceOf(this.address),
+      lyraTokenContract.allowance(this.address, lyraStakingModuleProxyAddress),
+    ])
+    return {
+      balance,
+      stakingAllowance,
+    }
+  }
+
+  async stakedLyraBalance(): Promise<AccountStakedLyraBalance> {
+    const stakedLyraContract = getERC20Contract(
+      this.lyra.provider,
+      this.lyra.deployment === Deployment.Mainnet ? STAKED_LYRA_OPTIMISM_ADDRESS : STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS
+    ) // BLOCK: @dillonlin change address to mainnet
+    const balance = await stakedLyraContract.balanceOf(this.address)
+    return {
+      balance,
+    }
+  }
+
+  async claimableRewards(): Promise<ClaimableBalance> {
+    const distributorContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.MultiDistributor
+    )
+    const stkLyraAddress = getAddress(
+      this.lyra.deployment === Deployment.Mainnet ? STAKED_LYRA_OPTIMISM_ADDRESS : STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS
+    )
+    const opAddress =
+      this.lyra.deployment === Deployment.Mainnet ? OP_OPTIMISM_MAINNET_ADDRESS : LYRA_OPTIMISM_KOVAN_ADDRESS
+    const [stkLyraClaimableBalance, opClaimableBalance] = await Promise.all([
+      distributorContract.claimableBalances(this.address, stkLyraAddress),
+      distributorContract.claimableBalances(this.address, opAddress),
+    ])
+    return {
+      lyra: stkLyraClaimableBalance ?? ZERO_BN,
+      op: opClaimableBalance ?? ZERO_BN,
+    }
+  }
+
+  async claim(tokenAddresses: string[]): Promise<PopulatedTransaction> {
+    const distributorContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.MultiDistributor
+    )
+    const calldata = distributorContract.interface.encodeFunctionData('claim', [tokenAddresses])
+    return await buildTxWithGasEstimate(this.lyra, distributorContract.address, this.address, calldata)
   }
 
   // Approval
@@ -252,35 +366,61 @@ export class Account {
     return await LiquidityWithdrawal.withdraw(this.lyra, marketAddressOrName, beneficiary, amountLiquidityTokens)
   }
 
-  async rewardEpochs(): Promise<RewardEpoch[]> {
-    return await RewardEpoch.getByOwner(this.lyra, this.address)
-  }
-
-  async staking(): Promise<AccountStaking> {
-    const balance = ZERO_BN // TODO: @dillonlin fetch from contracts
-    const unstakeWindowStartTimestamp = 0 // TODO: @dillonlin fetch from contracts
-    const unstakeWindowEndTimestamp = 0 // TODO: @dillonlin fetch from contracts
-    const isUnstaking =
-      unstakeWindowEndTimestamp - unstakeWindowStartTimestamp > 0 &&
-      unstakeWindowEndTimestamp - unstakeWindowStartTimestamp <= 60 * 60 * 24 * 2
+  async lyraStaking(): Promise<AccountLyraStaking> {
+    const lyraStakingModuleProxyContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.LyraStakingModuleProxy
+    )
+    const [block, lyraBalance, stakedLyraBalance, staking, accountCooldownBN] = await Promise.all([
+      this.lyra.provider.getBlock('latest'),
+      this.lyraBalance(),
+      this.stakedLyraBalance(),
+      this.lyra.lyraStaking(),
+      lyraStakingModuleProxyContract.stakersCooldowns(this.address),
+    ])
+    const accountCooldown = accountCooldownBN.toNumber()
+    const cooldownStartTimestamp = accountCooldown > 0 ? accountCooldown : null
+    const cooldownEndTimestamp = accountCooldown > 0 ? accountCooldown + staking.cooldownPeriod : null
+    const unstakeWindowStartTimestamp = cooldownEndTimestamp
+    const unstakeWindowEndTimestamp = unstakeWindowStartTimestamp
+      ? unstakeWindowStartTimestamp + staking.unstakeWindow
+      : null
+    const isInUnstakeWindow =
+      !!unstakeWindowStartTimestamp &&
+      !!unstakeWindowEndTimestamp &&
+      block.timestamp >= unstakeWindowStartTimestamp &&
+      block.timestamp <= unstakeWindowEndTimestamp
+    const isInCooldown =
+      !!cooldownStartTimestamp &&
+      !!cooldownEndTimestamp &&
+      block.timestamp >= cooldownStartTimestamp &&
+      block.timestamp <= cooldownEndTimestamp
     return {
-      balance,
-      isUnstaking,
+      staking,
+      lyraBalance,
+      stakedLyraBalance,
+      isInUnstakeWindow,
+      isInCooldown,
       unstakeWindowStartTimestamp,
       unstakeWindowEndTimestamp,
     }
+  }
+
+  async approveStake(): Promise<PopulatedTransaction> {
+    return await Stake.approve(this.lyra, this.address)
   }
 
   async stake(amount: BigNumber): Promise<Stake> {
     return await Stake.get(this.lyra, this.address, amount)
   }
 
-  async initiateUnstake(amount: BigNumber): Promise<Stake> {
-    return await Unstake.get(this.lyra, this.address, amount)
+  async requestUnstake(): Promise<PopulatedTransaction> {
+    return await Unstake.requestUnstake(this.lyra, this.address)
   }
 
-  async unstake(): Promise<PopulatedTransaction | null> {
-    return await Unstake.unstake(this.lyra, this.address)
+  async unstake(amount: BigNumber): Promise<Unstake> {
+    return await Unstake.get(this.lyra, this.address, amount)
   }
 
   // Edges

@@ -1,14 +1,37 @@
+import { BigNumber } from 'ethers'
+
 import { AccountBalanceHistory } from '../account'
 import { ZERO_BN } from '../constants/bn'
 import Lyra from '../lyra'
-import fetchBlocksFromTimestamp from './fetchBlocksFromTimestamp'
-import { fetchSpotPriceHistory } from './fetchSpotPriceHistory'
+import { MarketSpotPrice } from '../market'
+import fetchEarliestBlockFromTimestamp from './fetchEarliestBlockFromTimestamp'
+import fetchSpotPriceHistory from './fetchSpotPriceHistory'
+import fetchTimestampsFromBlocks, { BlockTimestamps } from './fetchTimestampsFromBlocks'
 import fromBigNumber from './fromBigNumber'
 import getERC20Contract from './getERC20Contract'
+import getSnapshotPeriod from './getSnapshotPeriod'
 import toBigNumber from './toBigNumber'
 
-type BalanceHistory = {
-  [key: string]: number
+type BalanceHistoryEvent = {
+  blockNumber: number
+  balance: number
+}
+
+type BalanceHistory = BalanceHistoryEvent[]
+
+const getClosestSpotPrice = (spotPrices: MarketSpotPrice[], currentTimestamp: number): BigNumber => {
+  return spotPrices.find(spotPrice => spotPrice.timestamp >= currentTimestamp)?.spotPrice ?? spotPrices[0].spotPrice
+}
+
+const getClosestBlockNumber = (blockTimestamps: BlockTimestamps[], currentTimestamp: number): number => {
+  return (
+    blockTimestamps.find(blockTimestamp => blockTimestamp.timestamp >= currentTimestamp)?.number ??
+    blockTimestamps[0].number
+  )
+}
+
+const getClosestBalance = (balances: BalanceHistory, currentBlockNumber: number): number => {
+  return balances.find(balance => balance.blockNumber === currentBlockNumber)?.balance ?? balances[0].balance
 }
 
 const getBalanceHistory = async (
@@ -16,12 +39,11 @@ const getBalanceHistory = async (
   owner: string,
   tokenAddress: string,
   tokenDecimals: number,
-  blockTimestamps: Record<number, string>
+  fromBlock: number
 ) => {
   const contract = getERC20Contract(lyra.provider, tokenAddress)
   const transferFromFilter = contract.filters.Transfer(owner, null, null)
   const transferToFilter = contract.filters.Transfer(null, owner, null)
-  const fromBlock = parseInt(Object.values(blockTimestamps)[0])
   const [transferFromEvents, transferToEvents] = await Promise.all([
     contract.queryFilter(transferFromFilter, fromBlock),
     contract.queryFilter(transferToFilter, fromBlock),
@@ -29,33 +51,32 @@ const getBalanceHistory = async (
   transferFromEvents.sort((a, b) => b.blockNumber - a.blockNumber)
   transferToEvents.sort((a, b) => b.blockNumber - a.blockNumber)
 
-  const blockTimestampsMap: Record<string | number, string> = {}
-  for (const timestamp in blockTimestamps) {
-    const blockNumber = blockTimestamps[timestamp]
-    blockTimestampsMap[blockNumber] = timestamp
-  }
-
-  // balance history
-  const balanceHistory: BalanceHistory = {}
   let transferFromPointer = 0
   let transferToPointer = 0
   let balance = fromBigNumber(await getERC20Contract(lyra.provider, tokenAddress).balanceOf(owner), tokenDecimals)
-  const currentTimestamp = Math.floor(new Date().getTime() / 1000)
-  balanceHistory[currentTimestamp] = balance
+  const balanceHistory: BalanceHistory = []
+  balanceHistory.push({
+    blockNumber: lyra.provider.blockNumber,
+    balance,
+  })
   while (transferFromPointer < transferFromEvents.length || transferToPointer < transferToEvents.length) {
-    const transferFromBlock = transferFromEvents[transferFromPointer]
-    const transferToBlock = transferToEvents[transferToPointer]
-    const transferFromBlockNum = transferFromBlock?.blockNumber ?? -Infinity
-    const transferToBlockNum = transferToBlock?.blockNumber ?? -Infinity
-    if (transferFromBlockNum < transferToBlockNum) {
-      balance -= fromBigNumber(transferToBlock?.args.value ?? ZERO_BN, tokenDecimals)
-      const transferToTimestamp = blockTimestampsMap[transferToBlockNum] ?? 0
-      balanceHistory[transferToTimestamp] = balance
+    const transferFromEvent = transferFromEvents[transferFromPointer]
+    const transferToEvent = transferToEvents[transferToPointer]
+    const transferFromBlockNumber = transferFromEvent?.blockNumber ?? -Infinity
+    const transferToBlockNumber = transferToEvent?.blockNumber ?? -Infinity
+    if (transferFromBlockNumber < transferToBlockNumber) {
+      balance -= fromBigNumber(transferToEvent?.args.value ?? ZERO_BN, tokenDecimals)
+      balanceHistory.push({
+        blockNumber: transferToBlockNumber,
+        balance,
+      })
       transferToPointer++
-    } else if (transferFromBlockNum >= transferToBlockNum) {
-      balance += fromBigNumber(transferFromBlock?.args.value ?? ZERO_BN, tokenDecimals)
-      const transferFromTimestamp = blockTimestampsMap[transferFromBlockNum] ?? 0
-      balanceHistory[transferFromTimestamp] = balance
+    } else {
+      balance += fromBigNumber(transferFromEvent?.args.value ?? ZERO_BN, tokenDecimals)
+      balanceHistory.push({
+        blockNumber: transferFromBlockNumber,
+        balance,
+      })
       transferFromPointer++
     }
   }
@@ -66,21 +87,22 @@ export default async function fetchBalanceHistory(
   lyra: Lyra,
   owner: string,
   startTimestamp: number,
-  period: number
+  endTimestamp: number
 ): Promise<AccountBalanceHistory[]> {
-  const [markets, accountBalances, blockTimestamps] = await Promise.all([
+  const [markets, accountBalances, earliestBlock] = await Promise.all([
     lyra.markets(),
     lyra.account(owner).balances(),
-    fetchBlocksFromTimestamp(lyra, startTimestamp),
+    fetchEarliestBlockFromTimestamp(lyra, startTimestamp),
   ])
   const stableAssets = accountBalances.stables.map(stable => stable)
   const baseAssets = accountBalances.bases
+  const fromBlock = parseInt(earliestBlock.number)
   const [stableAssetsBalanceHistory, baseAssetsBalanceHistory, baseAssetsSpotPrice] = await Promise.all([
     Promise.all(
       stableAssets.map(async stableAsset => {
         return {
           symbol: stableAsset.symbol,
-          balances: await getBalanceHistory(lyra, owner, stableAsset.address, stableAsset.decimals, blockTimestamps),
+          balances: await getBalanceHistory(lyra, owner, stableAsset.address, stableAsset.decimals, fromBlock),
         }
       })
     ),
@@ -88,7 +110,7 @@ export default async function fetchBalanceHistory(
       baseAssets.map(async baseAsset => {
         return {
           symbol: baseAsset.symbol,
-          balances: await getBalanceHistory(lyra, owner, baseAsset.address, baseAsset.decimals, blockTimestamps),
+          balances: await getBalanceHistory(lyra, owner, baseAsset.address, baseAsset.decimals, fromBlock),
         }
       })
     ),
@@ -96,46 +118,47 @@ export default async function fetchBalanceHistory(
       markets.map(async market => {
         return {
           symbol: market.baseToken.symbol,
-          spotPrices: await fetchSpotPriceHistory(lyra, market.address.toLowerCase(), startTimestamp, period),
+          spotPrices: await fetchSpotPriceHistory(lyra, market, { startTimestamp, endTimestamp }),
         }
       })
     ),
   ])
-  const accountBalanceHistory = []
-  let currentTimestamp = Math.floor(Date.now() / 1000)
+
+  // create array of blockNumbers and fetch their corresponding timestamps
+  const allBlocks = [...stableAssetsBalanceHistory, ...baseAssetsBalanceHistory]
+    .map(balanceHistory => balanceHistory.balances.map(balanceEvent => balanceEvent.blockNumber))
+    .flat()
+  const blockTimestamps = await fetchTimestampsFromBlocks(lyra, allBlocks)
+
+  // push current blockNumber due to subgraph delay
+  let currentTimestamp = endTimestamp
+  blockTimestamps.push({
+    number: lyra.provider.blockNumber,
+    timestamp: currentTimestamp,
+  })
+  blockTimestamps.sort((a, b) => b.timestamp - a.timestamp)
+
+  const accountBalanceHistory: AccountBalanceHistory[] = []
   while (currentTimestamp > startTimestamp) {
     let currentBalance = 0
     stableAssetsBalanceHistory.forEach(stableAsset => {
-      const stableAssetTimestamps = Object.keys(stableAsset.balances)
-        .map(timestamp => parseInt(timestamp))
-        .sort((a, b) => b - a)
-      const stableAssetTimestamp =
-        stableAssetTimestamps.find(timestamp => timestamp >= currentTimestamp) ?? stableAssetTimestamps[0]
-      const stableAssetBalance = stableAsset.balances[stableAssetTimestamp]
-      currentBalance += stableAssetBalance
+      const closestBlockNumber = getClosestBlockNumber(blockTimestamps, currentTimestamp)
+      const closestBalance = getClosestBalance(stableAsset.balances, closestBlockNumber)
+      currentBalance += closestBalance
     })
     baseAssetsBalanceHistory.forEach(baseAsset => {
-      const baseAssetTimestamps = Object.keys(baseAsset.balances)
-        .map(timestamp => parseInt(timestamp))
-        .sort((a, b) => b - a)
-      const baseAssetTimestamp =
-        baseAssetTimestamps.find(timestamp => timestamp >= currentTimestamp) ?? baseAssetTimestamps[0]
-      const baseAssetSpotPrices =
-        baseAssetsSpotPrice.find(baseAssets => baseAssets.symbol == baseAsset.symbol)?.spotPrices ?? []
-      let baseAssetSpotPrice = ZERO_BN
-      if (baseAssetSpotPrices?.length) {
-        baseAssetSpotPrice =
-          baseAssetSpotPrices.find(spotPrice => spotPrice.timestamp >= currentTimestamp)?.spotPrice ??
-          baseAssetSpotPrices[0].spotPrice
-      }
-      const baseAssetBalance = baseAsset.balances[baseAssetTimestamp]
-      currentBalance += baseAssetBalance * fromBigNumber(baseAssetSpotPrice)
+      const closestBlockNumber = getClosestBlockNumber(blockTimestamps, currentTimestamp)
+      const closestBalance = getClosestBalance(baseAsset.balances, closestBlockNumber)
+      const spotPrices = baseAssetsSpotPrice.find(baseAssets => baseAssets.symbol == baseAsset.symbol)?.spotPrices ?? []
+      const closestSpotPrice = getClosestSpotPrice(spotPrices, currentTimestamp)
+      const baseAssetBalance = closestBalance * fromBigNumber(closestSpotPrice)
+      currentBalance += baseAssetBalance
     })
     accountBalanceHistory.push({
       timestamp: currentTimestamp,
       balance: toBigNumber(currentBalance),
     })
-    currentTimestamp -= period
+    currentTimestamp -= getSnapshotPeriod(startTimestamp, endTimestamp)
   }
   return accountBalanceHistory
 }

@@ -42,7 +42,7 @@ export default function getPositionDataFromSubgraph(position: PositionQueryResul
   return {
     blockNumber,
     owner: position.owner,
-    marketName: position.market.name,
+    marketName: position.market.name.substring(1),
     marketAddress: position.market.id,
     id,
     strikeId,

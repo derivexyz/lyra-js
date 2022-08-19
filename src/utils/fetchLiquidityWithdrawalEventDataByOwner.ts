@@ -5,7 +5,7 @@ import { WithdrawProcessedEvent, WithdrawQueuedEvent } from '../contracts/typech
 import { Market } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
 
-type WithdrawalQueuedOrProcessedEvent = {
+export type WithdrawalQueuedOrProcessedEvent = {
   queued?: WithdrawQueuedEvent
   processed?: WithdrawProcessedEvent
 }

@@ -110,7 +110,7 @@ export class CollateralUpdateEvent {
     )
 
     if (updates.length === 0) {
-      throw new Error('No PositionUpdated events in logs')
+      throw []
     }
 
     const eventsByPositionID: Record<number, PartialCollateralUpdateEventGroup> = {}

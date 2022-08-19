@@ -7,13 +7,17 @@ import {
   CollateralUpdateQueryResult,
   META_QUERY,
   MetaQueryResult,
+  SETTLE_QUERY_FRAGMENT,
+  SettleQueryResult,
   TRADE_QUERY_FRAGMENT,
   TradeQueryResult,
 } from '../constants/queries'
 import Lyra from '../lyra'
+import { SettleEventData } from '../settle_event'
 import { TradeEventData } from '../trade_event'
 import { TransferEvent } from '../transfer_event'
 import getCollateralUpdateDataFromSubgraph from './getCollateralUpdateDataFromSubgraph'
+import getSettleDataFromSubgraph from './getSettleDataFromSubgraph'
 import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 
 // TODO: @earthtojake Handle more than 1k trade queries
@@ -25,6 +29,9 @@ const tradesQuery = gql`
     }
     collateralUpdates(first: 1000, orderBy: timestamp, orderDirection: desc, where: { trader: $trader }) {
       ${COLLATERAL_UPDATE_QUERY_FRAGMENT}
+    }
+    settles(first: 1000, orderBy: timestamp, orderDirection: desc, where: { owner: $trader }) {
+      ${SETTLE_QUERY_FRAGMENT}
     }
   }
 `
@@ -40,11 +47,13 @@ export default async function fetchPositionEventsByOwner(
   trades: TradeEventData[]
   collateralUpdates: CollateralUpdateData[]
   transfers: TransferEvent[]
+  settles: SettleEventData[]
 }> {
   const res = await lyra.subgraphClient.request<
     {
       trades: TradeQueryResult[]
       collateralUpdates: CollateralUpdateQueryResult[]
+      settles: SettleQueryResult[]
       _meta: MetaQueryResult
     },
     TradeVariables
@@ -54,6 +63,7 @@ export default async function fetchPositionEventsByOwner(
   return {
     trades: res.trades.filter(t => BigNumber.from(t.size).gt(0)).map(getTradeDataFromSubgraph),
     collateralUpdates: res.collateralUpdates.map(getCollateralUpdateDataFromSubgraph),
+    settles: res.settles.map(getSettleDataFromSubgraph),
     transfers: [], // TODO: @earthtojake Account for transfers in subgraph
   }
 }

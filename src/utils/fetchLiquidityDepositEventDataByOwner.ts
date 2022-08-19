@@ -5,7 +5,7 @@ import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechai
 import { Market } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
 
-type DepositQueuedOrProcessedEvent = {
+export type DepositQueuedOrProcessedEvent = {
   queued?: DepositQueuedEvent
   processed?: DepositProcessedEvent
 }

@@ -1,20 +1,13 @@
 import { SnapshotPeriod } from '../constants/queries'
+import { SNAPSHOT_RESULT_LIMIT } from './fetchSnapshots'
 
-export default function getSnapshotPeriod(
-  startTimestamp: number,
-  endTimestamp: number,
-  includeFifteenMinutes = false
-): SnapshotPeriod {
+export default function getSnapshotPeriod(startTimestamp: number, endTimestamp: number): SnapshotPeriod {
   const durationSeconds = Math.max(endTimestamp - startTimestamp, 0)
-
-  const periods = includeFifteenMinutes
-    ? [SnapshotPeriod.FifteenMinutes, SnapshotPeriod.OneHour, SnapshotPeriod.OneDay]
-    : [SnapshotPeriod.OneHour, SnapshotPeriod.OneDay]
-
+  const periods = [SnapshotPeriod.FifteenMinutes, SnapshotPeriod.OneHour, SnapshotPeriod.OneDay]
   while (periods.length > 1) {
     const period = periods.shift() as SnapshotPeriod
     const numItems = Math.ceil(durationSeconds / period)
-    if (numItems > 1000) {
+    if (numItems > SNAPSHOT_RESULT_LIMIT) {
       continue
     } else {
       return period

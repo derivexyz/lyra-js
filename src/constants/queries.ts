@@ -107,6 +107,20 @@ collateralUpdates {
 }
 `
 
+export const SETTLE_QUERY_FRAGMENT = `
+id
+blockNumber
+profit
+size
+spotPriceAtExpiry
+timestamp
+transactionHash
+owner
+position {
+  ${POSITION_QUERY_FRAGMENT}
+}
+`
+
 export const META_QUERY = `
 _meta {
   block {
@@ -172,14 +186,14 @@ export const SPOT_PRICE_SNAPSHOT_FRAGMENT = `
   spotPrice
 `
 
-export const POSITIONS_FRAGMENT = `
+export const LONG_OPTION_FRAGMENT = `
   option {
     id
     isCall
     optionPriceAndGreeksHistory(
       first: 1000,
       orderBy: timestamp,
-      orderDirection: asc,
+      orderDirection: desc,
       where: {
         timestamp_gte: $startTimestamp,
         period_gte: $period
@@ -195,12 +209,34 @@ export const POSITIONS_FRAGMENT = `
   closeTimestamp
   size
   collateral
-  trades {
+  trades(
+    first: 1000,
+    orderBy: timestamp,
+    orderDirection: desc,
+  ) {
     timestamp
     isBuy
     size
     premium
     blockNumber
+    transactionHash
+    collateralUpdate {
+      timestamp
+      amount
+    }
+  }
+`
+
+export const SHORT_OPTION_FRAGMENT = `
+  ${LONG_OPTION_FRAGMENT}
+  collateralUpdates(
+    first: 1000,
+    orderBy: timestamp,
+    orderDirection: desc,
+  ) {
+    id
+    timestamp
+    amount
   }
 `
 
@@ -209,14 +245,15 @@ export const OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   optionPrice
 `
 
+export const OPTION_VOLUME_FRAGMENT = `
+  notionalVolume
+  premiumVolume
+  timestamp
+`
+
 export const STRIKE_IV_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   timestamp
   iv
-`
-
-export const MARKET_SPOT_PRICE_SNAPSHOT_FRAGMENT = `
-  spotPrice
-  timestamp
 `
 
 export type MetaQueryResult = {
@@ -266,6 +303,18 @@ export type TradeQueryResult = {
   volTraded: string
   isLiquidation: boolean
   isForceClose: boolean
+}
+
+export type SettleQueryResult = {
+  id: string
+  blockNumber: number
+  profit: string
+  size: string
+  spotPriceAtExpiry: string
+  timestamp: number
+  transactionHash: string
+  owner: string
+  position: PositionQueryResult
 }
 
 export type CollateralUpdateQueryResult = {
@@ -383,14 +432,15 @@ export type MarketPendingLiquiditySnapshotQueryResult = {
   pendingWithdrawalAmount: string
 }
 
-export type SpotPriceSnapshotQueryResult = {
-  timestamp: number
-  spotPrice: string
-}
-
 export type OptionPriceAndGreeksSnapshotQueryResult = {
   timestamp: number
   optionPrice: string
+}
+
+export type OptionVolumeQueryResult = {
+  premiumVolume: string
+  notionalVolume: string
+  timestamp: number
 }
 
 export type StrikeIVAndGreeksSnapshotQueryResult = {
@@ -398,7 +448,7 @@ export type StrikeIVAndGreeksSnapshotQueryResult = {
   iv: string
 }
 
-export type MarketSpotPriceSnapshotQueryResult = {
+export type SpotPriceSnapshotQueryResult = {
   spotPrice: string
   timestamp: number
 }

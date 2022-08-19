@@ -1,12 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from 'ethers'
 
+import { LiquidityDelayReason } from '..'
 import { ZERO_BN } from '../constants/bn'
 import { LyraMarketContractId } from '../constants/contracts'
 import { WithdrawProcessedEvent, WithdrawQueuedEvent } from '../contracts/typechain/LiquidityPool'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
+import fetchLiquidityDelayReason from '../utils/fetchLiquidityDelayReason'
 import fetchLiquidityWithdrawalEventDataByID from '../utils/fetchLiquidityWithdrawalEventDataByID'
 import fetchLiquidityWithdrawalEventDataByOwner from '../utils/fetchLiquidityWithdrawalEventDataByOwner'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
@@ -18,21 +20,20 @@ export class LiquidityWithdrawal {
   __market: Market
   queueId?: number
   beneficiary: string
-  amount: BigNumber
-  tokenPriceAtRequestWithdraw?: BigNumber
-  tokenValueAtRequestWithdraw?: BigNumber
+  balance: BigNumber
   tokenPriceAtWithdraw?: BigNumber
-  tokenValueAtWithdraw?: BigNumber
+  value?: BigNumber
   isPending: boolean
   withdrawalRequestedTimestamp: number
   withdrawalTimestamp: number
-
+  delayReason: LiquidityDelayReason | null
   constructor(
     lyra: Lyra,
     market: Market,
     data: {
       queued?: WithdrawQueuedEvent
       processed?: WithdrawProcessedEvent
+      delayReason: LiquidityDelayReason | null
     }
   ) {
     // Data
@@ -50,11 +51,9 @@ export class LiquidityWithdrawal {
     }
     this.queueId = queuedOrProcessed.args.withdrawalQueueId.toNumber()
     this.beneficiary = queuedOrProcessed.args.beneficiary
-    this.amount = queuedOrProcessed.args.amountWithdrawn
-    this.tokenPriceAtRequestWithdraw = ZERO_BN // TODO: @earthtojake tokenPrice needed to be added at withdraw
-    this.tokenValueAtRequestWithdraw = ZERO_BN
+    this.balance = queued?.args.amountWithdrawn ?? ZERO_BN
     this.tokenPriceAtWithdraw = processed?.args.tokenPrice
-    this.tokenValueAtWithdraw = processed?.args.tokenPrice.mul(processed?.args.amountWithdrawn)
+    this.value = processed?.args.quoteReceived
     this.isPending = !processed
     this.withdrawalRequestedTimestamp = queuedOrProcessed.args.timestamp.toNumber()
     this.withdrawalTimestamp = processed
@@ -63,6 +62,7 @@ export class LiquidityWithdrawal {
       ? queued.args.timestamp.add(market.__marketData.marketParameters.lpParams.withdrawalDelay).toNumber()
       : // Should never happen
         0
+    this.delayReason = data.delayReason
   }
 
   // Getters
@@ -70,8 +70,14 @@ export class LiquidityWithdrawal {
   static async getByOwner(lyra: Lyra, marketAddress: string, owner: string): Promise<LiquidityWithdrawal[]> {
     const market = await Market.get(lyra, marketAddress)
     const { events } = await fetchLiquidityWithdrawalEventDataByOwner(lyra, market, owner)
-    const liquidityWithdrawals: LiquidityWithdrawal[] = events.map(
-      event => new LiquidityWithdrawal(lyra, market, event)
+    const liquidityWithdrawals: LiquidityWithdrawal[] = await Promise.all(
+      events.map(async event => {
+        const delayReason = (await fetchLiquidityDelayReason(lyra, market, event)) as LiquidityDelayReason | null
+        return new LiquidityWithdrawal(lyra, market, {
+          ...event,
+          delayReason,
+        })
+      })
     )
     return liquidityWithdrawals
   }
@@ -79,7 +85,11 @@ export class LiquidityWithdrawal {
   static async getByQueueId(lyra: Lyra, marketAddress: string, id: string): Promise<LiquidityWithdrawal> {
     const market = await Market.get(lyra, marketAddress)
     const event = await fetchLiquidityWithdrawalEventDataByID(lyra, market, id)
-    return new LiquidityWithdrawal(lyra, market, event)
+    const delayReason = (await fetchLiquidityDelayReason(lyra, market, event)) as LiquidityDelayReason | null
+    return new LiquidityWithdrawal(lyra, market, {
+      ...event,
+      delayReason,
+    })
   }
 
   // Initiate Withdraw

@@ -6,6 +6,7 @@ import { parseBytes32String } from '@ethersproject/strings'
 import { Board } from '../board'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, LyraMarketContractId } from '../constants/contracts'
+import { SnapshotOptions } from '../constants/snapshots'
 import { OptionGreekCache, OptionMarketPricer, OptionMarketViewer, OptionToken } from '../contracts/typechain'
 import { PoolHedger } from '../contracts/typechain/ShortPoolHedger'
 import { LiquidityDeposit } from '../liquidity_deposit'
@@ -16,10 +17,10 @@ import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
 import { Trade, TradeOptions } from '../trade'
 import buildTx from '../utils/buildTx'
-import fetchLiquidityHistoryDataByMarket from '../utils/fetchLiquidityHistoryDataByMarket'
-import fetchNetGreeksHistoryDataByMarket from '../utils/fetchNetGreeksHistoryDataByMarket'
-import fetchSpotPriceHistoryDataByMarket from '../utils/fetchSpotPriceHistoryDataByMarket'
-import fetchTradingVolumeHistoryDataByMarket from '../utils/fetchTradingVolumeHistoryDataByMarket'
+import fetchLiquidityHistory from '../utils/fetchLiquidityHistory'
+import fetchNetGreeksHistory from '../utils/fetchNetGreeksHistory'
+import fetchSpotPriceHistory from '../utils/fetchSpotPriceHistory'
+import fetchTradingVolumeHistory from '../utils/fetchTradingVolumeHistory'
 import fromBigNumber from '../utils/fromBigNumber'
 import getBoardView from '../utils/getBoardView'
 import getBoardViewForStrikeId from '../utils/getBoardViewForStrikeId'
@@ -207,16 +208,21 @@ export type AddStrikeReturn = {
 
 export type MarketTradeOptions = Omit<TradeOptions, 'minOrMaxPremium' | 'premiumSlippage'>
 
-export type MarketHistoryOptions = {
-  startTimestamp?: number
+export type GlobalCache = {
+  minUpdatedAt: BigNumber
+  minUpdatedAtPrice: BigNumber
+  maxUpdatedAtPrice: BigNumber
+  maxSkewVariance: BigNumber
+  maxIvVariance: BigNumber
+  netGreeks: OptionGreekCache.NetGreeksStruct
+  isGlobalCacheStale: boolean
 }
 
 export class Market {
   private lyra: Lyra
-  private block: Block
   __source = DataSource.ContractCall
   __marketData: OptionMarketViewer.MarketViewWithBoardsStructOutput
-  __blockNumber: number
+  block: Block
   address: string
   name: string
   quoteToken: MarketToken
@@ -236,11 +242,11 @@ export class Market {
     this.lyra = lyra
     this.block = block
     this.__marketData = marketView
-    this.__blockNumber = block.number
     this.marketParameters = marketView.marketParameters
 
     const fields = Market.getFields(marketView, block)
     this.address = fields.address
+
     this.isPaused = fields.isPaused
     this.spotPrice = fields.spotPrice
     this.quoteToken = fields.quoteToken
@@ -451,24 +457,6 @@ export class Market {
 
   // Dynamic fields
 
-  async liquidityHistory(options?: MarketHistoryOptions): Promise<MarketLiquidityHistory[]> {
-    const { startTimestamp = 0 } = options ?? {}
-    const liquidityHistory = await fetchLiquidityHistoryDataByMarket(
-      this.lyra,
-      this,
-      startTimestamp,
-      this.block.timestamp
-    )
-    const latestSnapshot = liquidityHistory[liquidityHistory.length - 1]
-    const res = mergeAndSortSnapshots(liquidityHistory, 'timestamp', {
-      ...this.liquidity,
-      pendingDeposits: latestSnapshot ? latestSnapshot.pendingDeposits : ZERO_BN,
-      pendingWithdrawals: latestSnapshot ? latestSnapshot.pendingWithdrawals : ZERO_BN,
-      timestamp: this.block.timestamp,
-    })
-    return res
-  }
-
   // TODO: @earthtojake Add pool + hedger net delta to viewer, make sync
   async netGreeks(): Promise<MarketNetGreeks> {
     const poolHedger = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.ShortPoolHedger)
@@ -479,6 +467,7 @@ export class Market {
     ])
     const baseBalance = lockedCollateral.base
     const netStdVega = this.__marketData.globalNetGreeks.netStdVega
+    const poolNetStdVega = netStdVega.mul(-1)
     const optionsNetDelta = this.__marketData.globalNetGreeks.netDelta.mul(-1)
     const poolNetDelta = optionsNetDelta.add(baseBalance)
     const netDelta = poolNetDelta.add(hedgerNetDelta)
@@ -486,36 +475,36 @@ export class Market {
       netDelta,
       poolNetDelta,
       hedgerNetDelta,
-      netStdVega,
+      netStdVega: poolNetStdVega,
       timestamp: this.block.timestamp,
     }
   }
 
-  async netGreeksHistory(options?: MarketHistoryOptions): Promise<MarketNetGreeks[]> {
-    const { startTimestamp = 0 } = options ?? {}
+  async liquidityHistory(options?: SnapshotOptions): Promise<MarketLiquidityHistory[]> {
+    const liquidityHistory = await fetchLiquidityHistory(this.lyra, this, options)
+    const res = mergeAndSortSnapshots(liquidityHistory, 'timestamp', {
+      ...this.liquidity,
+      pendingDeposits: this.__marketData.totalQueuedDeposits ?? ZERO_BN,
+      pendingWithdrawals: this.__marketData.totalQueuedWithdrawals ?? ZERO_BN,
+      timestamp: this.block.timestamp,
+    })
+    return res
+  }
+
+  async netGreeksHistory(options?: SnapshotOptions): Promise<MarketNetGreeks[]> {
     const [netGreeks, netGreeksHistory] = await Promise.all([
       this.netGreeks(),
-      fetchNetGreeksHistoryDataByMarket(this.lyra, this, startTimestamp, this.block.timestamp),
+      fetchNetGreeksHistory(this.lyra, this, options),
     ])
     return mergeAndSortSnapshots(netGreeksHistory, 'timestamp', netGreeks)
   }
 
-  async tradingVolumeHistory(options?: MarketHistoryOptions): Promise<MarketTradingVolumeHistory[]> {
-    const { startTimestamp = 0 } = options ?? {}
-    return mergeAndSortSnapshots(
-      await fetchTradingVolumeHistoryDataByMarket(this.lyra, this, startTimestamp, this.block.timestamp),
-      'endTimestamp'
-    )
+  async tradingVolumeHistory(options?: SnapshotOptions): Promise<MarketTradingVolumeHistory[]> {
+    return mergeAndSortSnapshots(await fetchTradingVolumeHistory(this.lyra, this, options), 'endTimestamp')
   }
 
-  async spotPriceHistory(options?: MarketHistoryOptions): Promise<MarketSpotPrice[]> {
-    const { startTimestamp = 0 } = options ?? {}
-    const spotPriceHistory = await fetchSpotPriceHistoryDataByMarket(
-      this.lyra,
-      this,
-      startTimestamp,
-      this.block.timestamp
-    )
+  async spotPriceHistory(options?: SnapshotOptions): Promise<MarketSpotPrice[]> {
+    const spotPriceHistory = await fetchSpotPriceHistory(this.lyra, this, options)
     return mergeAndSortSnapshots(spotPriceHistory, 'timestamp', {
       spotPrice: this.spotPrice,
       timestamp: this.block.timestamp,
@@ -524,6 +513,19 @@ export class Market {
 
   async owner(): Promise<string> {
     return await getMarketOwner(this.lyra, this.contractAddresses)
+  }
+
+  async getGlobalCache(): Promise<GlobalCache> {
+    const optionGreekCache = getLyraMarketContract(
+      this.lyra,
+      this.contractAddresses,
+      LyraMarketContractId.OptionGreekCache
+    )
+    const [isGlobalCacheStale, globalCache] = await Promise.all([
+      optionGreekCache.isGlobalCacheStale(this.spotPrice),
+      optionGreekCache.getGlobalCache(),
+    ])
+    return { ...globalCache, isGlobalCacheStale }
   }
 
   // Transactions
@@ -798,5 +800,21 @@ export class Market {
     const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
     tx.gasLimit = BigNumber.from(10_000_000)
     return { params: toParams, tx }
+  }
+
+  processDepositQueue(account: string, limit: number): PopulatedTransaction {
+    const liquidityPool = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.LiquidityPool)
+    const calldata = liquidityPool.interface.encodeFunctionData('processDepositQueue', [limit])
+    const tx = buildTx(this.lyra, liquidityPool.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return tx
+  }
+
+  processWithdrawalQueue(account: string, limit: number): PopulatedTransaction {
+    const liquidityPool = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.LiquidityPool)
+    const calldata = liquidityPool.interface.encodeFunctionData('processWithdrawalQueue', [limit])
+    const tx = buildTx(this.lyra, liquidityPool.address, account, calldata)
+    tx.gasLimit = BigNumber.from(10_000_000)
+    return tx
   }
 }

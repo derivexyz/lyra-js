@@ -4,32 +4,39 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { GraphQLClient } from 'graphql-request'
 
 import { Account } from './account'
+import { AccountRewardEpoch } from './account_reward_epoch'
 import { Admin } from './admin'
 import { Board } from './board'
 import { CollateralUpdateEvent } from './collateral_update_event'
+import { DEFAULT_API_URI } from './constants/api'
 import { Deployment } from './constants/contracts'
+import { GlobalRewardEpoch } from './global_reward_epoch'
 import { LiquidityDeposit } from './liquidity_deposit'
 import { LiquidityWithdrawal } from './liquidity_withdrawal'
+import { LyraStaking } from './lyra_staking'
 import { Market, MarketTradeOptions } from './market'
 import { Option } from './option'
 import { Position } from './position'
 import { Quote, QuoteOptions } from './quote'
 import getQuoteBoard from './quote/getQuoteBoard'
-import { RewardEpoch } from './reward_epoch'
-import { Staking } from './staking'
+import { SettleEvent } from './settle_event'
+import { Stake } from './stake'
 import { Strike } from './strike'
 import { Trade } from './trade'
 import { TradeEvent, TradeEventListener, TradeEventListenerCallback, TradeEventListenerOptions } from './trade_event'
+import { Unstake } from './unstake'
 import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
 import getLyraDeploymentOptimismBlockSubgraphURI from './utils/getLyraDeploymentOptimismBlockSubgraphURI'
 import getLyraDeploymentProvider from './utils/getLyraDeploymentProvider'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
+import getMarketAddresses from './utils/getMarketAddresses'
 import { SortEventOptions } from './utils/sortEvents'
 
 export type LyraConfig = {
   provider: JsonRpcProvider
   subgraphUri?: string
   blockSubgraphUri?: string
+  apiUri?: string
 }
 
 export { Deployment } from './constants/contracts'
@@ -41,6 +48,7 @@ export default class Lyra {
   subgraphClient: GraphQLClient
   blockSubgraphUri: string
   blockSubgraphClient: GraphQLClient
+  apiUri: string
   constructor(config: LyraConfig | Deployment | number = Deployment.Mainnet) {
     if (typeof config === 'object') {
       // Config
@@ -49,18 +57,21 @@ export default class Lyra {
       this.deployment = getLyraDeploymentForChainId(this.provider.network.chainId)
       this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.deployment)
       this.blockSubgraphUri = configObj?.blockSubgraphUri ?? getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
+      this.apiUri = configObj?.apiUri ?? DEFAULT_API_URI
     } else if (typeof config === 'number') {
       // Chain ID
       this.deployment = getLyraDeploymentForChainId(config)
       this.provider = getLyraDeploymentProvider(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
       this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
+      this.apiUri = DEFAULT_API_URI
     } else {
       // String
       this.deployment = config
       this.provider = getLyraDeploymentProvider(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
       this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
+      this.apiUri = DEFAULT_API_URI
     }
 
     this.subgraphClient = new GraphQLClient(this.subgraphUri)
@@ -124,6 +135,10 @@ export default class Lyra {
     return await Market.getAll(this)
   }
 
+  async marketAddresses(): Promise<string[]> {
+    return (await getMarketAddresses(this)).map(({ optionMarket }) => optionMarket)
+  }
+
   async market(marketAddressOrName: string): Promise<Market> {
     return await Market.get(this, marketAddressOrName)
   }
@@ -156,6 +171,10 @@ export default class Lyra {
 
   async collateralUpdates(owner: string, options?: SortEventOptions): Promise<CollateralUpdateEvent[]> {
     return await CollateralUpdateEvent.getByOwner(this, owner, options)
+  }
+
+  async settles(owner: string, options?: SortEventOptions): Promise<SettleEvent[]> {
+    return await SettleEvent.getByOwner(this, owner, options)
   }
 
   async position(marketAddressOrName: string, positionId: number): Promise<Position> {
@@ -227,17 +246,39 @@ export default class Lyra {
   }
 
   // Admin
+
   admin(): Admin {
     return Admin.get(this)
   }
 
-  // Staking
-  async staking(): Promise<Staking> {
-    return await Staking.get(this)
+  // Rewards
+
+  async lyraStaking(): Promise<LyraStaking> {
+    return await LyraStaking.get(this)
   }
 
-  // Reward Epoch
-  async rewardEpochs(account: string): Promise<RewardEpoch[]> {
-    return await RewardEpoch.getByOwner(this, account)
+  async stake(address: string, amount: BigNumber): Promise<Stake> {
+    return await Stake.get(this, address, amount)
+  }
+
+  async requestUnstake(address: string): Promise<PopulatedTransaction> {
+    const account = this.account(address)
+    return await account.requestUnstake()
+  }
+
+  async unstake(address: string, amount: BigNumber): Promise<Unstake> {
+    return await Unstake.get(this, address, amount)
+  }
+
+  async globalRewardEpochs(): Promise<GlobalRewardEpoch[]> {
+    return await GlobalRewardEpoch.getAll(this)
+  }
+
+  async latestGlobalRewardEpoch(): Promise<GlobalRewardEpoch> {
+    return await GlobalRewardEpoch.getLatest(this)
+  }
+
+  async accountRewardEpochs(address: string): Promise<AccountRewardEpoch[]> {
+    return await AccountRewardEpoch.getByOwner(this, address)
   }
 }

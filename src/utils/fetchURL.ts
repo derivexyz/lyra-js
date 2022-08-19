@@ -1,14 +1,6 @@
 import fetch from 'node-fetch'
 
-export default async function fetchURL(url: string): Promise<any> {
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
-    return await res.json()
-  } catch (e) {
-    return null
-  }
+export default async function fetchURL<Data>(url: string): Promise<Data> {
+  const res = await fetch(url)
+  return await res.json()
 }

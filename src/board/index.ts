@@ -14,16 +14,14 @@ import buildTx from '../utils/buildTx'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export class Board {
-  // TODO: Use variables
-  lyra: Lyra
-  block: Block
+  private lyra: Lyra
   private __market: Market
   __source = DataSource.ContractCall
   __boardData: OptionMarketViewer.BoardViewStructOutput
-  __blockNumber: number
-  __blockTimestamp: number
+  block: Block
   id: number
   expiryTimestamp: number
+  tradingCutoffTimestamp: number
   isExpired: boolean
   timeToExpiry: number
   spotPriceAtExpiry?: BigNumber
@@ -35,8 +33,7 @@ export class Board {
     this.block = block
     this.__market = market
     this.__boardData = boardView
-    this.__blockNumber = block.number
-    this.__blockTimestamp = block.timestamp
+    this.block = block
 
     const fields = Board.getFields(boardView, block)
     this.id = fields.id
@@ -46,6 +43,8 @@ export class Board {
     this.baseIv = fields.baseIv
     this.spotPriceAtExpiry = fields.spotPriceAtExpiry
     this.isPaused = fields.isPaused
+    this.tradingCutoffTimestamp =
+      this.expiryTimestamp - market.__marketData.marketParameters.tradeLimitParams.tradingCutoff.toNumber()
   }
 
   // TODO: @earthtojake Remove getFields
@@ -84,7 +83,7 @@ export class Board {
 
   strikes(): Strike[] {
     return this.__boardData.strikes.map(strikeView => {
-      return new Strike(this, strikeView.strikeId.toNumber())
+      return new Strike(this.lyra, this, strikeView.strikeId.toNumber(), this.block)
     })
   }
 

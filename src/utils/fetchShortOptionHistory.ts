@@ -2,9 +2,11 @@ import { BigNumber } from 'ethers'
 import { gql } from 'graphql-request'
 
 import { AccountShortOptionHistory } from '..'
-import { UNIT, ZERO_BN } from '../constants/bn'
-import { POSITIONS_FRAGMENT } from '../constants/queries'
+import { UNIT } from '../constants/bn'
+import { PositionState } from '../constants/contracts'
+import { SHORT_OPTION_FRAGMENT } from '../constants/queries'
 import Lyra from '../lyra'
+import getSnapshotPeriod from './getSnapshotPeriod'
 
 type OptionPriceAndGreeksHistory = {
   id: string
@@ -12,13 +14,13 @@ type OptionPriceAndGreeksHistory = {
   optionPrice: string
 }
 
-type PortfolioCollateralUpdates = {
+type PositionCollateralUpdates = {
   id: string
   timestamp: number
   amount: string
 }
 
-type PortfolioTrade = {
+type PositionTrades = {
   timestamp: number
   isBuy: boolean
   size: string
@@ -28,6 +30,7 @@ type PortfolioTrade = {
     timestamp: number
     amount: string
   }
+  transactionHash: string
 }
 
 type PortfolioOption = {
@@ -40,6 +43,7 @@ type ShortOptionHistoryVariables = {
   owner: string
   startTimestamp: number
   period: number
+  state: number
 }
 
 type Position = {
@@ -53,24 +57,23 @@ type Position = {
   closeTimestamp: number | null
   size: string
   collateral: string
-  trades: PortfolioTrade[]
-  collateralUpdates: PortfolioCollateralUpdates[]
+  trades: PositionTrades[]
+  collateralUpdates: PositionCollateralUpdates[]
 }
 
 const positionQuery = gql`
   query shortOptionHistory(
-    $owner: String, $startTimestamp: Int, $period: Int
+    $owner: String, $startTimestamp: Int, $period: Int, $state: Int
   ) {
     positions(
       first: 1000,
-      orderBy: openTimestamp,
-      orderDirection: asc,
       where: {
         owner: $owner,
-        isLong: false
+        isLong: false,
+        state: $state
       }
     ) {
-      ${POSITIONS_FRAGMENT}
+      ${SHORT_OPTION_FRAGMENT}
     }
   }
 `
@@ -79,56 +82,74 @@ export default async function fetchShortOptionHistory(
   lyra: Lyra,
   owner: string,
   startTimestamp: number,
-  period: number
+  endTimestamp: number
 ): Promise<AccountShortOptionHistory[]> {
-  const historicalPositions = await lyra.subgraphClient.request<{ positions: Position[] }, ShortOptionHistoryVariables>(
+  const shortOptions = await lyra.subgraphClient.request<{ positions: Position[] }, ShortOptionHistoryVariables>(
     positionQuery,
     {
       owner,
       startTimestamp,
-      period,
+      period: getSnapshotPeriod(startTimestamp, endTimestamp),
+      state: PositionState.Active,
     }
   )
-  const shortOptionsHistory = historicalPositions.positions.reduce(
+  const shortOptionsHistory = shortOptions.positions.reduce(
     (shortOptionsHistory: Record<number, AccountShortOptionHistory>, position) => {
-      const closeTimestamp = position.closeTimestamp ?? Infinity
-      if (closeTimestamp < startTimestamp) {
-        return shortOptionsHistory
-      }
-
-      const tradeEvents = position.trades.reduce((tradeEvents: Record<number, PortfolioTrade>, trade) => {
-        const closestTimestamp =
-          position?.option.optionPriceAndGreeksHistory.find(
-            optionPriceAndGreeksHistory => optionPriceAndGreeksHistory.timestamp >= trade.timestamp
-          )?.timestamp ?? Infinity
-        tradeEvents[closestTimestamp] = trade
+      const tradeEvents = position.trades.reduce((tradeEvents: Record<number, PositionTrades>, trade) => {
+        const closestTimestamp = position.option.optionPriceAndGreeksHistory.find(
+          optionPriceAndGreeksHistory => trade.timestamp >= optionPriceAndGreeksHistory.timestamp
+        )?.timestamp
+        if (closestTimestamp) {
+          tradeEvents[closestTimestamp] = trade
+        }
         return tradeEvents
       }, {})
 
-      let currentPositionSize = ZERO_BN
-      let currentPositionValue = ZERO_BN
-      let currentPositionCollateral = ZERO_BN
+      const collateralUpdateEvents = position?.collateralUpdates?.reduce(
+        (collateralUpdateEvents: Record<number, PositionCollateralUpdates>, collateralUpdate) => {
+          const closestTimestamp = position.option.optionPriceAndGreeksHistory.find(
+            optionPriceAndGreeksHistory => collateralUpdate.timestamp >= optionPriceAndGreeksHistory.timestamp
+          )?.timestamp
+          if (closestTimestamp) {
+            collateralUpdateEvents[closestTimestamp] = collateralUpdate
+          }
+          return collateralUpdateEvents
+        },
+        {}
+      )
+      let currentPositionSize = BigNumber.from(position.size)
+      let currentPositionValue = BigNumber.from(position.option.optionPriceAndGreeksHistory[0]?.optionPrice ?? 0)
+        .mul(currentPositionSize)
+        .div(UNIT)
+      let currentPositionCollateral = BigNumber.from(position.collateral)
       position.option.optionPriceAndGreeksHistory.forEach(optionPriceAndGreeksHistory => {
-        const timestamp = optionPriceAndGreeksHistory.timestamp
-        if (tradeEvents[timestamp]) {
-          const trade = tradeEvents[timestamp]
-          currentPositionCollateral = BigNumber.from(trade?.collateralUpdate?.amount ?? '0')
+        let optionPriceTimestamp = optionPriceAndGreeksHistory.timestamp
+        if (tradeEvents[optionPriceTimestamp]) {
+          const trade = tradeEvents[optionPriceTimestamp]
+          optionPriceTimestamp = trade.timestamp // enforces exact timestamp on a trade event instead of nearest timestamp
+          currentPositionCollateral = BigNumber.from(trade.collateralUpdate.amount ?? 0)
           if (trade.isBuy) {
             currentPositionSize = currentPositionSize.add(trade.size)
           } else {
             currentPositionSize = currentPositionSize.sub(trade.size)
           }
-          currentPositionValue = currentPositionSize.mul(optionPriceAndGreeksHistory.optionPrice).div(UNIT)
         }
-        if (!shortOptionsHistory[timestamp]) {
-          shortOptionsHistory[timestamp] = {
-            timestamp: timestamp,
+        if (collateralUpdateEvents && collateralUpdateEvents[optionPriceTimestamp]) {
+          const collateralUpdate = collateralUpdateEvents[optionPriceTimestamp]
+          currentPositionCollateral = BigNumber.from(collateralUpdate?.amount ?? 0)
+        }
+        currentPositionValue = currentPositionSize.mul(optionPriceAndGreeksHistory.optionPrice).div(UNIT)
+        if (!shortOptionsHistory[optionPriceTimestamp]) {
+          shortOptionsHistory[optionPriceTimestamp] = {
+            timestamp: optionPriceTimestamp,
             optionValue: currentPositionValue,
             collateralValue: currentPositionCollateral,
           }
         } else {
-          shortOptionsHistory[timestamp].optionValue.add(currentPositionValue)
-          shortOptionsHistory[timestamp].collateralValue.add(currentPositionCollateral)
+          shortOptionsHistory[optionPriceTimestamp].optionValue =
+            shortOptionsHistory[optionPriceTimestamp].optionValue.add(currentPositionValue)
+          shortOptionsHistory[optionPriceTimestamp].collateralValue =
+            shortOptionsHistory[optionPriceTimestamp].collateralValue.add(currentPositionCollateral)
         }
       })
       return shortOptionsHistory

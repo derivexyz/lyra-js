@@ -2,6 +2,7 @@ import { BigNumber } from 'ethers'
 
 import { AccountPortfolioBalance } from '../account'
 import Lyra from '../lyra'
+import { Position } from '../position'
 import fromBigNumber from '../utils/fromBigNumber'
 
 export default async function getPortfolioBalance(lyra: Lyra, account: string): Promise<AccountPortfolioBalance> {
@@ -10,6 +11,7 @@ export default async function getPortfolioBalance(lyra: Lyra, account: string): 
     lyra.account(account).balances(),
     lyra.markets(),
   ])
+
   const longOptionValue = positions
     .filter(position => position.isLong)
     .map(position => {
@@ -24,19 +26,21 @@ export default async function getPortfolioBalance(lyra: Lyra, account: string): 
 
   const shortOptionValue = positions
     .filter(position => !position.isLong)
-    .map(position => {
+    .reduce((total: number, position: Position) => {
       const size = fromBigNumber(position.size)
       const pricePerOption = fromBigNumber(position.pricePerOption)
-      const value = size * pricePerOption
-      let collateralValue = 0
+      const shortOptionValue = size * pricePerOption
+      return total + shortOptionValue
+    }, 0)
+
+  const collateralValue = positions
+    .filter(position => !position.isLong)
+    .reduce((collateralValue: number, position: Position) => {
       const collateral = position.collateral
       if (collateral) {
-        collateralValue = fromBigNumber(collateral.amount)
+        collateralValue += fromBigNumber(collateral.amount)
       }
-      return value + collateralValue
-    })
-    .reduce((total: number, position: number) => {
-      return total + position
+      return collateralValue
     }, 0)
 
   const stableBalances = balances.stables.reduce((total, balance) => {
@@ -56,7 +60,8 @@ export default async function getPortfolioBalance(lyra: Lyra, account: string): 
   return {
     longOptionValue,
     shortOptionValue,
+    collateralValue,
     balance: stableBalances + baseBalances,
-    total: stableBalances + baseBalances + longOptionValue - shortOptionValue,
+    total: stableBalances + baseBalances + longOptionValue + collateralValue - shortOptionValue,
   }
 }

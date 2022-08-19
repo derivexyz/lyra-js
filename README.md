@@ -80,7 +80,7 @@ const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, tru
 })
 
 // Check if trade is disabled
-if (!trade.tx) {
+if (trade.disabledReason) {
   throw new Error(`Trade is disabled: ${trade.disabledReason}`)
 }
 

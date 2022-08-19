@@ -3,16 +3,19 @@ import { gql } from 'graphql-request'
 
 import Lyra from '..'
 import { MARKET_GREEKS_SNAPSHOT_FRAGMENT, MarketGreeksSnapshotQueryResult } from '../constants/queries'
+import { SnapshotOptions } from '../constants/snapshots'
 import { Market, MarketNetGreeks } from '../market'
+import fetchSnapshots from './fetchSnapshots'
 import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketGreeksSnapshotsQuery = gql`
   query marketGreeksSnapshots(
-    $market: String, $startTimestamp: Int, $period: Int
+    $market: String!, $startTimestamp: Int!, $endTimestamp: Int! $period: Int!
   ) {
     marketGreeksSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { market: $market, 
       timestamp_gte: $startTimestamp, 
-      period_gte: $period 
+      timestamp_lte: $endTimestamp,
+      period_gte: $period
     }) {
       ${MARKET_GREEKS_SNAPSHOT_FRAGMENT}
     }
@@ -21,36 +24,31 @@ const marketGreeksSnapshotsQuery = gql`
 
 type MarketGreeksSnapshotVariables = {
   market: string
-  startTimestamp: number
-  period: number
 }
 
-export default async function fetchNetGreeksHistoryDataByMarket(
+export default async function fetchNetGreeksHistory(
   lyra: Lyra,
   market: Market,
-  startTimestamp: number,
-  endTimestamp: number
+  options?: SnapshotOptions
 ): Promise<MarketNetGreeks[]> {
-  const { marketGreeksSnapshots } = await lyra.subgraphClient.request<
+  const startTimestamp = options?.startTimestamp ?? 0
+  const endTimestamp = options?.endTimestamp ?? market.block.timestamp
+  const data = await fetchSnapshots<MarketGreeksSnapshotQueryResult, MarketGreeksSnapshotVariables>(
+    lyra,
+    marketGreeksSnapshotsQuery,
+    'marketGreeksSnapshots',
     {
-      marketGreeksSnapshots: MarketGreeksSnapshotQueryResult[]
-    },
-    MarketGreeksSnapshotVariables
-  >(marketGreeksSnapshotsQuery, {
-    market: market.address.toLowerCase(),
-    startTimestamp,
-    period: getSnapshotPeriod(startTimestamp, endTimestamp),
-  })
-
-  return marketGreeksSnapshots.map(marketGreeksSnapshot => {
-    // Pool net delta = greek cache (options) net delta + base balance
+      market: market.address.toLowerCase(),
+      startTimestamp,
+      endTimestamp,
+      period: getSnapshotPeriod(startTimestamp, endTimestamp),
+    }
+  )
+  return data.map(marketGreeksSnapshot => {
     const poolNetDelta = BigNumber.from(marketGreeksSnapshot.poolNetDelta)
-
     const hedgerNetDelta = BigNumber.from(marketGreeksSnapshot.hedgerNetDelta)
-
     const netDelta = BigNumber.from(marketGreeksSnapshot.netDelta)
     const netStdVega = BigNumber.from(marketGreeksSnapshot.netStdVega)
-
     return {
       poolNetDelta,
       hedgerNetDelta,

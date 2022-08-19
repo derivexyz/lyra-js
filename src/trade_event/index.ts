@@ -166,8 +166,9 @@ export class TradeEvent {
   static getByLogsSync(lyra: Lyra, market: Market, logs: Log[]): TradeEvent[] {
     const trades = parsePartialTradeEventsFromLogs(logs)
     if (trades.length === 0) {
-      throw new Error('No Trade events in logs')
+      return []
     }
+
     const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
     const transfers = parsePartialTransferEventsFromLogs(logs)
 
