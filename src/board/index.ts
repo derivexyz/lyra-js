@@ -16,6 +16,7 @@ import getLyraMarketContract from '../utils/getLyraMarketContract'
 export class Board {
   private lyra: Lyra
   private __market: Market
+  private liveStrikeMap: Record<number, OptionMarketViewer.StrikeViewStructOutput>
   __source = DataSource.ContractCall
   __boardData: OptionMarketViewer.BoardViewStructOutput
   block: Block
@@ -45,9 +46,16 @@ export class Board {
     this.isPaused = fields.isPaused
     this.tradingCutoffTimestamp =
       this.expiryTimestamp - market.__marketData.marketParameters.tradeLimitParams.tradingCutoff.toNumber()
+    this.liveStrikeMap = boardView.strikes.reduce(
+      (map, strikeView) => ({
+        ...map,
+        [strikeView.strikeId.toNumber()]: strikeView,
+      }),
+      {}
+    )
   }
 
-  // TODO: @earthtojake Remove getFields
+  // TODO: @dappbeast Remove getFields
   private static getFields(boardView: OptionMarketViewer.BoardViewStructOutput, block: Block) {
     const id = boardView.boardId.toNumber()
     const expiryTimestamp = boardView.expiry.toNumber()
@@ -88,11 +96,11 @@ export class Board {
   }
 
   strike(strikeId: number): Strike {
-    const strike = this.strikes().find(strike => strike.id === strikeId)
-    if (!strike) {
+    const strikeView = this.liveStrikeMap[strikeId]
+    if (!strikeView) {
       throw new Error('Strike does not exist for board')
     }
-    return strike
+    return new Strike(this.lyra, this, strikeId, this.block)
   }
 
   option(strikeId: number, isCall: boolean): Option {

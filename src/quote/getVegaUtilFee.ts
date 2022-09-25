@@ -23,7 +23,7 @@ export default function getVegaUtilFee(
   }
   const liquidity = market.__marketData.liquidity
   const pricingParams = market.__marketData.marketParameters.pricingParams
-  const vegaUtil = volTraded.mul(postTradeAmmNetStdVega).div(liquidity.NAV)
+  const vegaUtil = liquidity.NAV.gt(0) ? volTraded.mul(postTradeAmmNetStdVega).div(liquidity.NAV) : ZERO_BN
   const _vegaUtilFee = pricingParams.vegaFeeCoefficient.mul(vegaUtil).div(UNIT).mul(size).div(UNIT)
   const vegaUtilFee = _vegaUtilFee.lt(0) ? ZERO_BN : _vegaUtilFee
   return {

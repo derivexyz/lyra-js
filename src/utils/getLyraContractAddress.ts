@@ -22,6 +22,8 @@ const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Reco
         : {}
     case LyraContractId.LyraStakingModuleProxy:
     case LyraContractId.MultiDistributor:
+    case LyraContractId.ArrakisPool:
+    case LyraContractId.WethLyraStakingRewards:
       return deployment === Deployment.Kovan
         ? kovanMiscAddressMap
         : deployment === Deployment.Mainnet

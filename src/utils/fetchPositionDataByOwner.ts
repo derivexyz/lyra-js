@@ -1,27 +1,19 @@
-import { DataSource } from '../constants/contracts'
-import { PositionEventData } from '../constants/events'
 import Lyra from '../lyra'
 import { PositionData } from '../position'
-import fetchHistoricalPositionDataByOwner from './fetchHistoricalPositionDataByOwner'
+import fetchAllPositionDataByOwner from './fetchAllPositionDataByOwner'
 import fetchOpenPositionDataByOwner from './fetchOpenPositionDataByOwner'
 import getUniqueBy from './getUniqueBy'
 
-export default async function fetchPositionDataByOwner(
-  lyra: Lyra,
-  owner: string
-): Promise<
-  ({
-    position: PositionData
-    source: DataSource
-  } & PositionEventData)[]
-> {
-  const [openPositions, closedPositions] = await Promise.all([
-    fetchOpenPositionDataByOwner(lyra, owner),
-    fetchHistoricalPositionDataByOwner(lyra, owner),
+export default async function fetchPositionDataByOwner(lyra: Lyra, owner: string): Promise<PositionData[]> {
+  const markets = await lyra.markets()
+  const [openPositions, allPositions] = await Promise.all([
+    // Contract (realtime) data
+    fetchOpenPositionDataByOwner(lyra, owner, markets),
+    // Subgraph data
+    fetchAllPositionDataByOwner(lyra, owner, markets),
   ])
-  const positions = openPositions
-    .map(p => ({ ...p, source: DataSource.ContractCall, positionId: p.position.id }))
-    .concat(closedPositions.map(p => ({ ...p, source: DataSource.Subgraph, positionId: p.position.id })))
-  // Remove duplicates, prefer open positions
-  return getUniqueBy(positions, p => p.positionId)
+
+  const positions = openPositions.concat(allPositions)
+  // Prefer position struct data over position subgrpah data
+  return getUniqueBy(positions, p => p.id)
 }

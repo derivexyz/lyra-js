@@ -18,8 +18,9 @@ import mergeAndSortSnapshots from '../utils/mergeAndSortSnapshots'
 import toBigNumber from '../utils/toBigNumber'
 
 export type OptionPriceHistory = {
-  optionPrice: BigNumber
   timestamp: number
+  blockNumber: number
+  optionPrice: BigNumber
 }
 
 export type OptionTradingVolume = {
@@ -57,7 +58,7 @@ export class Option {
     this.isInTheMoney = fields.isInTheMoney
   }
 
-  // TODO: @earthtojake Remove getFields
+  // TODO: @dappbeast Remove getFields
   static getFields(
     strike: Strike,
     isCall: boolean
@@ -163,6 +164,6 @@ export class Option {
   }
 
   async priceHistory(options?: SnapshotOptions): Promise<OptionPriceHistory[]> {
-    return mergeAndSortSnapshots(await fetchOptionPriceHistory(this.lyra, this, options), 'timestamp')
+    return await fetchOptionPriceHistory(this.lyra, this, options)
   }
 }

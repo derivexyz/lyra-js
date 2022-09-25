@@ -21,7 +21,7 @@ export default async function syncAddresses(_argv: string[]): Promise<void> {
   }).argv
   const deployment: Deployment = argv.deployment as unknown as Deployment
   const deploymentsDir = path.join(__dirname, '../../../../lyra/deployments', getLyraDeploymentDirectory(deployment))
-  // TODO: @earthtojake account for other envs
+  // TODO: @dappbeast account for other envs
   const lyraFileName = getLyraDeploymentFileName(deployment)
   const lyraFilePath = path.join(deploymentsDir, lyraFileName)
   const addressesDir = path.join(__dirname, '../contracts/addresses')

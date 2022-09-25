@@ -1,6 +1,7 @@
 import { CollateralUpdateData } from '../collateral_update_event'
 import { TradeEvent } from '../contracts/typechain/OptionMarket'
 import { PositionUpdatedEvent, TransferEvent } from '../contracts/typechain/OptionToken'
+import { SettleEventData } from '../settle_event'
 import { TradeEventData } from '../trade_event'
 import { TransferEventData } from '../transfer_event'
 
@@ -41,8 +42,8 @@ export type PartialTradeEventGroup = {
 }
 
 export type PositionEventData = {
-  positionId: number
   trades: TradeEventData[]
   collateralUpdates: CollateralUpdateData[]
   transfers: TransferEventData[]
+  settle: SettleEventData | null
 }

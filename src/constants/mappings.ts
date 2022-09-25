@@ -1,4 +1,5 @@
 import {
+  ArrakisPool,
   LiquidityPool,
   LiquidityToken,
   LyraRegistry,
@@ -11,6 +12,7 @@ import {
   OptionToken,
   ShortCollateral,
   ShortPoolHedger,
+  StakingRewards,
   SynthetixAdapter,
   TestFaucet,
 } from '../contracts/typechain'
@@ -25,6 +27,8 @@ export type LyraContractReturnType = {
   [LyraContractId.LyraStakingModuleProxy]: LyraStakingModule
   [LyraContractId.MultiDistributor]: MultiDistributor
   [LyraContractId.LyraRegistry]: LyraRegistry
+  [LyraContractId.ArrakisPool]: ArrakisPool
+  [LyraContractId.WethLyraStakingRewards]: StakingRewards
 }
 
 export type LyraMarketContractReturnType = {

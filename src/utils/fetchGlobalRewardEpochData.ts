@@ -1,7 +1,9 @@
-import Lyra, { Deployment } from '../lyra'
-import fetchURL from './fetchURL'
+import { get, ref } from 'firebase/database'
 
-const GLOBAL_URL = '/stake/globalRewards'
+import { FirebaseCollections } from '../constants/collections'
+import Lyra, { Deployment } from '../lyra'
+import connectToFirebaseDatabase from './connectToFirebaseDatabase'
+
 const GLOBAL_EPOCH_CACHE_LIFE = 60
 const GLOBAL_EPOCH_CACHE: { lastUpdated: number; epochs: Promise<GlobalRewardEpochData[]> | null } = {
   lastUpdated: 0,
@@ -9,6 +11,8 @@ const GLOBAL_EPOCH_CACHE: { lastUpdated: number; epochs: Promise<GlobalRewardEpo
 }
 
 export type TradingRewardsConfig = {
+  useRebateTable: boolean
+  rebateRateTable: { cutoff: number; returnRate: number }[]
   maxRebatePercentage: number
   netVerticalStretch: number // param a // netVerticalStretch
   verticalShift: number // param b // verticalShift
@@ -22,6 +26,11 @@ export type TradingRewardsConfig = {
     lyraPortion: number // % split of rebates in stkLyra vs OP (in dollar terms)
     fixedLyraPrice: number // override market rate after epoch is over, if 0 just use market rate
     fixedOpPrice: number
+  }
+  shortCollatRewards: {
+    tenDeltaRebatePerOptionDay: number
+    ninetyDeltaRebatePerOptionDay: number
+    longDatedPenalty: number
   }
 }
 
@@ -67,13 +76,18 @@ export default async function fetchGlobalRewardEpochData(
   lyra: Lyra,
   blockTimestamp: number
 ): Promise<GlobalRewardEpochData[]> {
+  if (lyra.deployment !== Deployment.Mainnet) {
+    throw new Error('GlobalRewardEpoch only supported on mainnet')
+  }
   if (blockTimestamp > GLOBAL_EPOCH_CACHE.lastUpdated + GLOBAL_EPOCH_CACHE_LIFE || !GLOBAL_EPOCH_CACHE.epochs) {
-    GLOBAL_EPOCH_CACHE.epochs = fetchURL<GlobalRewardEpochData[]>(
-      `${lyra.apiUri}${GLOBAL_URL}?deployment=${
-        lyra.deployment === Deployment.Kovan ? 'kovan-ovm-avalon' : 'mainnet-ovm-avalon'
-      }`
-    )
+    const database = connectToFirebaseDatabase()
+    const collectionReference = ref(database, FirebaseCollections.AvalonGlobalRewardsEpoch)
+    const epochPromise = async (): Promise<GlobalRewardEpochData[]> => {
+      const snapshot = await get(collectionReference)
+      return Object.values(snapshot.val())
+    }
+    GLOBAL_EPOCH_CACHE.epochs = epochPromise()
     GLOBAL_EPOCH_CACHE.lastUpdated = blockTimestamp
   }
-  return GLOBAL_EPOCH_CACHE.epochs
+  return await GLOBAL_EPOCH_CACHE.epochs
 }

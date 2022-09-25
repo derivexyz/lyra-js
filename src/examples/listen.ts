@@ -25,7 +25,7 @@ export default async function listen(argv: string[]) {
         isBuy: trade.isBuy,
         isLong: trade.isLong,
         premium: trade.premium,
-        setCollateralTo: trade.setCollateralTo,
+        collateral: trade.collateralValue,
         isLiquidation: trade.isLiquidation,
       })
     },

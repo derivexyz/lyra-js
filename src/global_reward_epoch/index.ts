@@ -2,7 +2,8 @@ import { Block } from '@ethersproject/providers'
 
 import { Market } from '..'
 import { AccountRewardEpoch } from '../account_reward_epoch'
-import { SECONDS_IN_DAY, SECONDS_IN_YEAR } from '../constants/time'
+import { Deployment } from '../constants/contracts'
+import { SECONDS_IN_DAY, SECONDS_IN_WEEK, SECONDS_IN_YEAR } from '../constants/time'
 import Lyra from '../lyra'
 import { LyraStaking } from '../lyra_staking'
 import fetchGlobalRewardEpochData, { GlobalRewardEpochData } from '../utils/fetchGlobalRewardEpochData'
@@ -24,9 +25,15 @@ export type GlobalRewardEpochTokens = {
   op: number
 }
 
+export type GlobalRewardEpochTradingFeeRebateTier = {
+  stakedLyraCutoff: number
+  feeRebate: number
+}
+
 export class GlobalRewardEpoch {
   private lyra: Lyra
   private epoch: GlobalRewardEpochData
+  id: number
   progressDays: number
   markets: Market[]
   staking: LyraStaking
@@ -44,9 +51,11 @@ export class GlobalRewardEpoch {
   totalStakingRewards: GlobalRewardEpochTokens
   tradingRewardsCap: GlobalRewardEpochTokens
   prices: GlobalRewardEpochTokens
+  tradingFeeRebateTiers: GlobalRewardEpochTradingFeeRebateTier[]
 
   constructor(
     lyra: Lyra,
+    id: number,
     epoch: GlobalRewardEpochData,
     prices: GlobalRewardEpochTokens,
     markets: Market[],
@@ -54,8 +63,15 @@ export class GlobalRewardEpoch {
     block: Block
   ) {
     this.lyra = lyra
+    this.id = id
     this.epoch = epoch
     this.prices = prices
+    this.tradingFeeRebateTiers = epoch.tradingRewardConfig?.rebateRateTable?.map(tier => {
+      return {
+        stakedLyraCutoff: tier?.cutoff ?? 0,
+        feeRebate: tier?.returnRate ?? 0,
+      }
+    })
     this.blockTimestamp = block.timestamp
     this.startTimestamp = epoch.startTimestamp
     this.lastUpdatedTimestamp = epoch.lastUpdated
@@ -108,6 +124,9 @@ export class GlobalRewardEpoch {
   // Getters
 
   static async getAll(lyra: Lyra): Promise<GlobalRewardEpoch[]> {
+    if (lyra.deployment !== Deployment.Mainnet) {
+      throw Error('Reward epochs only supported on mainnet')
+    }
     const block = await lyra.provider.getBlock('latest')
     const [epochs, lyraPrice, opPrice, markets, staking] = await Promise.all([
       fetchGlobalRewardEpochData(lyra, block.timestamp),
@@ -119,11 +138,14 @@ export class GlobalRewardEpoch {
 
     const prices = { lyra: lyraPrice, op: opPrice }
     return epochs
-      .map(epoch => new GlobalRewardEpoch(lyra, epoch, prices, markets, staking, block))
+      .map((epoch, idx) => new GlobalRewardEpoch(lyra, idx + 1, epoch, prices, markets, staking, block))
       .sort((a, b) => a.endTimestamp - b.endTimestamp)
   }
 
   static async getLatest(lyra: Lyra): Promise<GlobalRewardEpoch> {
+    if (lyra.deployment !== Deployment.Mainnet) {
+      throw Error('Reward epochs only supported on mainnet')
+    }
     const epochs = await this.getAll(lyra)
     const latestEpoch = epochs.find(r => !r.isComplete) ?? epochs[epochs.length - 1]
     if (!latestEpoch) {
@@ -133,6 +155,9 @@ export class GlobalRewardEpoch {
   }
 
   static async getByStartTimestamp(lyra: Lyra, startTimestamp: number): Promise<GlobalRewardEpoch> {
+    if (lyra.deployment !== Deployment.Mainnet) {
+      throw Error('Reward epochs only supported on mainnet')
+    }
     const epochs = await this.getAll(lyra)
     const epoch = epochs.find(epoch => epoch.startTimestamp === startTimestamp)
     if (!epoch) {
@@ -246,10 +271,19 @@ export class GlobalRewardEpoch {
   }
 
   tradingFeeRebate(stakedLyraBalance: number): number {
-    const { maxRebatePercentage, netVerticalStretch, verticalShift, vertIntercept, stretchiness } =
-      this.epoch.tradingRewardConfig
+    const {
+      useRebateTable,
+      rebateRateTable,
+      maxRebatePercentage,
+      netVerticalStretch,
+      verticalShift,
+      vertIntercept,
+      stretchiness,
+    } = this.epoch.tradingRewardConfig
     return getEffectiveTradingFeeRebate(
       stakedLyraBalance,
+      useRebateTable,
+      rebateRateTable,
       maxRebatePercentage,
       netVerticalStretch,
       verticalShift,
@@ -272,6 +306,55 @@ export class GlobalRewardEpoch {
     const opRewards = (feesRebated * (1 - lyraPortion)) / opPrice
 
     return { lyra: lyraRewards, op: opRewards }
+  }
+
+  shortCollateralRewards(shortCollateralRebate: number): GlobalRewardEpochTokens {
+    const { lyraPortion, fixedLyraPrice, fixedOpPrice, floorTokenPriceLyra, floorTokenPriceOP } =
+      this.epoch.tradingRewardConfig.rewards
+
+    const lyraPrice = this.isComplete ? fixedLyraPrice : Math.max(this.prices.lyra, floorTokenPriceLyra)
+    const opPrice = this.isComplete ? fixedOpPrice : Math.max(this.prices.op, floorTokenPriceOP)
+
+    const lyraRewards = (shortCollateralRebate * lyraPortion) / lyraPrice
+    const opRewards = (shortCollateralRebate * (1 - lyraPortion)) / opPrice
+    return { lyra: lyraRewards, op: opRewards }
+  }
+
+  shortCollateralYieldPerDay(contracts: number, delta: number, expiryTimestamp: number): GlobalRewardEpochTokens {
+    const timeToExpiry = Math.max(0, expiryTimestamp - this.blockTimestamp)
+    const { longDatedPenalty, tenDeltaRebatePerOptionDay, ninetyDeltaRebatePerOptionDay } =
+      this.epoch.tradingRewardConfig.shortCollatRewards
+    const { lyraPortion, floorTokenPriceLyra, floorTokenPriceOP } = this.epoch.tradingRewardConfig.rewards
+
+    if (delta < 0.1 || delta > 0.9 || this.isComplete) {
+      return {
+        lyra: 0,
+        op: 0,
+      }
+    }
+
+    const timeDiscount = timeToExpiry >= SECONDS_IN_WEEK * 4 ? longDatedPenalty : 1
+
+    const rebatePerDay =
+      tenDeltaRebatePerOptionDay +
+      (ninetyDeltaRebatePerOptionDay - tenDeltaRebatePerOptionDay) *
+        ((delta - 0.1) / (0.9 - 0.1)) *
+        contracts *
+        timeDiscount
+
+    const lyraPrice = Math.max(this.prices.lyra, floorTokenPriceLyra)
+    const opPrice = Math.max(this.prices.op, floorTokenPriceOP)
+
+    const lyraRebatePerDay = lyraPortion * rebatePerDay
+    const opRebatePerDay = (1 - lyraPortion) * rebatePerDay
+
+    const lyraRewards = lyraPrice > 0 ? lyraRebatePerDay / lyraPrice : 0
+    const opRewards = opPrice > 0 ? opRebatePerDay / opPrice : 0
+
+    return {
+      lyra: lyraRewards,
+      op: opRewards,
+    }
   }
 
   // Edge

@@ -9,15 +9,15 @@ import {
 import { SnapshotOptions } from '../constants/snapshots'
 import { Option, OptionPriceHistory } from '../option'
 import fetchSnapshots from './fetchSnapshots'
-import getSnapshotPeriod from './getSnapshotPeriod'
+import groupTimeSnapshots from './groupTimeSnapshots'
 
 const optionPriceAndGreeksSnapshotsQuery = gql`
-  query optionPriceAndGreeksSnapshots($optionId: String!, $startTimestamp: Int!, $endTimestamp: Int!, $period: Int!) {
+  query optionPriceAndGreeksSnapshots($optionId: String!, $min: Int!, $max: Int!, $period: Int!) {
     optionPriceAndGreeksSnapshots(
       first: 1000
       orderBy: timestamp
       orderDirection: asc
-      where: { option: $optionId, optionPrice_gt: 0, timestamp_gte: $startTimestamp, timestamp_lte: $endTimestamp, period_gte: $period }
+      where: { option: $optionId, timestamp_gte: $min, timestamp_lte: $max, period_gte: $period }
     ) {
       ${OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT}
     }
@@ -34,23 +34,36 @@ export default async function fetchOptionPriceHistory(
   options?: SnapshotOptions
 ): Promise<OptionPriceHistory[]> {
   const board = option.board()
-  const startTimestamp = options?.startTimestamp ?? 0
-  const endOrExpiryTimestamp = board.isExpired ? board.expiryTimestamp : board.block.timestamp
+  const blockTimestamp = option.block.timestamp
+  const endTimestamp = Math.min(board.expiryTimestamp, options?.endTimestamp ?? blockTimestamp)
+
   const data = await fetchSnapshots<OptionPriceAndGreeksSnapshotQueryResult, OptionPriceAndGreeksSnapshotVariables>(
     lyra,
     optionPriceAndGreeksSnapshotsQuery,
-    'optionPriceAndGreeksSnapshots',
     {
       optionId: `${option.market().address.toLowerCase()}-${option.strike().id}-${option.isCall ? 'call' : 'put'}`,
-      startTimestamp,
-      endTimestamp: endOrExpiryTimestamp,
-      period: getSnapshotPeriod(startTimestamp, endOrExpiryTimestamp),
+    },
+    {
+      ...options,
+      endTimestamp,
     }
   )
-  return data.map((snapshot: OptionPriceAndGreeksSnapshotQueryResult) => {
-    return {
-      optionPrice: BigNumber.from(snapshot.optionPrice),
-      timestamp: snapshot.timestamp,
-    }
-  })
+  const subgraphSnapshots: OptionPriceHistory[] = data.map((snapshot: OptionPriceAndGreeksSnapshotQueryResult) => ({
+    optionPrice: BigNumber.from(snapshot.optionPrice),
+    blockNumber: snapshot.blockNumber,
+    timestamp: snapshot.timestamp,
+  }))
+
+  const currSnapshot: OptionPriceHistory = {
+    optionPrice: option.price,
+    blockNumber: option.block.number,
+    timestamp: endTimestamp,
+  }
+
+  const snapshots =
+    subgraphSnapshots.length && currSnapshot.timestamp > subgraphSnapshots[subgraphSnapshots.length - 1].timestamp
+      ? [...subgraphSnapshots, currSnapshot]
+      : subgraphSnapshots
+
+  return groupTimeSnapshots(snapshots, endTimestamp)
 }

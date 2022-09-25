@@ -8,25 +8,21 @@ export default function getAverageCostPerOption(trades: (Trade | TradeEvent)[]):
   if (trades.length === 0) {
     return ZERO_BN
   }
-  if (trades.length === 1) {
-    const trade = trades[0]
-    return trade.pricePerOption
-  }
-  let currOpenSize = ZERO_BN
-  let averageCostPerOption = ZERO_BN
 
-  // When opening, keep tally of open size + total cost
-  // When closing,
+  let currOpenSize = trades[0].size
+  let averageCostPerOption = trades[0].pricePerOption
 
-  for (const trade of trades) {
+  for (const trade of trades.slice(1)) {
     const prevOpenSize = currOpenSize
     const { size, premium, isOpen } = trade
-    // Add or remove amount from position
+    // Add or remove size from position
     currOpenSize = isOpen ? currOpenSize.add(size) : currOpenSize.sub(size)
-    // Update rolling average if adding to position
     if (isOpen && currOpenSize.gt(0)) {
-      averageCostPerOption = averageCostPerOption.mul(prevOpenSize).div(UNIT).add(premium).mul(UNIT).div(currOpenSize)
+      const prevTotalCost = averageCostPerOption.mul(prevOpenSize).div(UNIT)
+      const newTotalCost = prevTotalCost.add(premium)
+      averageCostPerOption = newTotalCost.mul(UNIT).div(currOpenSize)
     }
   }
+
   return averageCostPerOption
 }

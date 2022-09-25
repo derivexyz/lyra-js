@@ -654,7 +654,7 @@ export interface OptionToken extends BaseContract {
       trade: OptionMarket.TradeParametersStruct,
       strikeId: BigNumberish,
       trader: string,
-      positionId: BigNumberish,
+      _positionId: BigNumberish,
       optionCost: BigNumberish,
       setCollateralTo: BigNumberish,
       isOpen: boolean,
@@ -707,7 +707,7 @@ export interface OptionToken extends BaseContract {
     ): Promise<[OptionToken.OptionPositionStructOutput[]]>;
 
     getOwnerPositions(
-      target: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<[OptionToken.OptionPositionStructOutput[]]>;
 
@@ -890,7 +890,7 @@ export interface OptionToken extends BaseContract {
     trade: OptionMarket.TradeParametersStruct,
     strikeId: BigNumberish,
     trader: string,
-    positionId: BigNumberish,
+    _positionId: BigNumberish,
     optionCost: BigNumberish,
     setCollateralTo: BigNumberish,
     isOpen: boolean,
@@ -939,7 +939,7 @@ export interface OptionToken extends BaseContract {
   ): Promise<OptionToken.OptionPositionStructOutput[]>;
 
   getOwnerPositions(
-    target: string,
+    owner: string,
     overrides?: CallOverrides
   ): Promise<OptionToken.OptionPositionStructOutput[]>;
 
@@ -1114,7 +1114,7 @@ export interface OptionToken extends BaseContract {
       trade: OptionMarket.TradeParametersStruct,
       strikeId: BigNumberish,
       trader: string,
-      positionId: BigNumberish,
+      _positionId: BigNumberish,
       optionCost: BigNumberish,
       setCollateralTo: BigNumberish,
       isOpen: boolean,
@@ -1163,7 +1163,7 @@ export interface OptionToken extends BaseContract {
     ): Promise<OptionToken.OptionPositionStructOutput[]>;
 
     getOwnerPositions(
-      target: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<OptionToken.OptionPositionStructOutput[]>;
 
@@ -1404,7 +1404,7 @@ export interface OptionToken extends BaseContract {
       trade: OptionMarket.TradeParametersStruct,
       strikeId: BigNumberish,
       trader: string,
-      positionId: BigNumberish,
+      _positionId: BigNumberish,
       optionCost: BigNumberish,
       setCollateralTo: BigNumberish,
       isOpen: boolean,
@@ -1453,7 +1453,7 @@ export interface OptionToken extends BaseContract {
     ): Promise<BigNumber>;
 
     getOwnerPositions(
-      target: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1617,7 +1617,7 @@ export interface OptionToken extends BaseContract {
       trade: OptionMarket.TradeParametersStruct,
       strikeId: BigNumberish,
       trader: string,
-      positionId: BigNumberish,
+      _positionId: BigNumberish,
       optionCost: BigNumberish,
       setCollateralTo: BigNumberish,
       isOpen: boolean,
@@ -1669,7 +1669,7 @@ export interface OptionToken extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getOwnerPositions(
-      target: string,
+      owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -4,6 +4,7 @@ import { Block } from '@ethersproject/providers'
 import { Board } from '../board'
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
+import { SnapshotOptions } from '../constants/snapshots'
 import { OptionMarketViewer } from '../contracts/typechain'
 import Lyra from '../lyra'
 import { Market } from '../market'
@@ -20,7 +21,7 @@ export type StrikeHistoryOptions = {
 }
 
 export type StrikeIVHistory = {
-  iv: BigNumber
+  iv: number
   timestamp: number
 }
 
@@ -81,13 +82,17 @@ export class Strike {
       const ivNum = fromBigNumber(iv)
       const spotPrice = fromBigNumber(board.market().spotPrice)
       const strikePriceNum = fromBigNumber(strikePrice)
-      const rate = fromBigNumber(board.market().__marketData.marketParameters.greekCacheParams.rateAndCarry)
+      const rate = fromBigNumber(board.market().__marketData.marketParameters.greekCacheParams.rateAndCarry) ?? 0
       const vega =
-        ivNum > 0 ? toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate)) : ZERO_BN
+        ivNum > 0 && spotPrice > 0
+          ? toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
+          : ZERO_BN
       const gamma =
-        ivNum > 0 ? toBigNumber(getGamma(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate)) : ZERO_BN
+        ivNum > 0 && spotPrice > 0
+          ? toBigNumber(getGamma(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
+          : ZERO_BN
       const callDelta =
-        ivNum > 0
+        ivNum > 0 && spotPrice > 0
           ? toBigNumber(getDelta(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate, true))
           : ZERO_BN
       const minDelta = board.market().__marketData.marketParameters.tradeLimitParams.minDelta
@@ -109,6 +114,12 @@ export class Strike {
   static async get(lyra: Lyra, marketAddressOrName: string, strikeId: number): Promise<Strike> {
     const market = await Market.get(lyra, marketAddressOrName)
     return await market.strike(strikeId)
+  }
+
+  // Dynamic Fields
+
+  async ivHistory(lyra: Lyra, options?: SnapshotOptions): Promise<StrikeIVHistory[]> {
+    return await fetchStrikeIVHistory(lyra, this, options)
   }
 
   // Edges
@@ -137,14 +148,5 @@ export class Strike {
 
   async quote(isCall: boolean, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
     return await this.market().quote(this.id, isCall, isBuy, size, options)
-  }
-
-  // Implied Volatility History
-
-  async ivHistory(lyra: Lyra, options?: StrikeHistoryOptions): Promise<StrikeIVHistory[]> {
-    const { startTimestamp = 0 } = options ?? {}
-    const marketAddress = this.market().address
-    const strikeId = `${marketAddress.toLowerCase()}-${this.id}`
-    return await fetchStrikeIVHistory(lyra, strikeId, startTimestamp, this.block.timestamp)
   }
 }

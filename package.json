@@ -38,11 +38,10 @@
     "@ethersproject/strings": "^5.6.0",
     "@ethersproject/units": "^5.6.0",
     "@ethersproject/wallet": "^5.6.0",
-    "@types/node-fetch": "^2.6.1",
     "ethers": "^5.6.0",
+    "firebase": "^9.9.4",
     "graphql": "^16.4.0",
-    "graphql-request": "^4.2.0",
-    "node-fetch": "^2.6.1"
+    "graphql-request": "^4.2.0"
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^9.0.0",

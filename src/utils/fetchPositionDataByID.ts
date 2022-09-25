@@ -1,37 +1,25 @@
 import { LyraMarketContractId } from '../constants/contracts'
-import { PositionEventData } from '../constants/events'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
-import fetchPositionEventsByIDs from './fetchPositionEventsByIDs'
+import fetchPositionEventDataByIDs from './fetchPositionEventDataByIDs'
 import getIsCall from './getIsCall'
 import getLyraMarketContract from './getLyraMarketContract'
-import getPositionDataFromStruct from './getPositionDataFromStruct'
+import getOpenPositionDataFromStruct from './getOpenPositionDataFromStruct'
 
 export default async function fetchPositionDataByID(
   lyra: Lyra,
   market: Market,
   positionId: number
-): Promise<
-  {
-    position: PositionData
-  } & PositionEventData
-> {
+): Promise<PositionData> {
   const optionToken = getLyraMarketContract(lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
-  const [positionStruct, [{ trades, collateralUpdates, transfers }]] = await Promise.all([
+  const [positionStruct, eventsByPositionID] = await Promise.all([
     optionToken.getOptionPosition(positionId),
-    fetchPositionEventsByIDs(lyra, market, [positionId]),
+    fetchPositionEventDataByIDs(lyra, market, [positionId]),
   ])
-  const option = await market.option(positionStruct.strikeId.toNumber(), getIsCall(positionStruct.optionType))
-  const lastTransfer = transfers.length > 0 ? transfers[transfers.length - 1] : null
-  const lastTrade = trades[trades.length - 1]
-  const owner = lastTransfer ? lastTransfer.to : lastTrade.trader
-  const position = getPositionDataFromStruct(owner, option, positionStruct)
-  return {
-    positionId: position.id,
-    position,
-    trades,
-    collateralUpdates,
-    transfers,
-  }
+  const { trades, transfers, collateralUpdates, settle } = eventsByPositionID[positionId]
+  const strikeId = positionStruct.strikeId.toNumber()
+  const isCall = getIsCall(positionStruct.optionType)
+  const option = await market.option(strikeId, isCall)
+  return getOpenPositionDataFromStruct(positionStruct, option, trades, collateralUpdates, transfers, settle)
 }

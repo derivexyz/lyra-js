@@ -57,21 +57,6 @@ export default async function positionTrade(argv: string[]) {
     return
   }
 
-  // Uncomment to read min collateral from contracts
-  // const greekCache = getLyraMarketContract(
-  //   lyra.provider,
-  //   market.__marketData.marketAddresses,
-  //   LyraMarketContractId.OptionGreekCache
-  // )
-  // const shortCollat = await greekCache.getMinCollateral(
-  //   trade.__params.optionType,
-  //   position.strikePrice,
-  //   BigNumber.from(position.expiryTimestamp),
-  //   market.spotPrice,
-  //   trade.newSize
-  // )
-  // console.log({ contractMinCollat: fromBigNumber(shortCollat), newSize: fromBigNumber(trade.newSize) })
-
   printObject('Quote', {
     premium: trade.quoted,
     fee: trade.fee,
@@ -82,22 +67,6 @@ export default async function positionTrade(argv: string[]) {
     collateral: trade.collateral,
   })
 
-  // Uncomment to read premium + fees from contracts
-  // const optionMarketWrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
-  // const ret = await optionMarketWrapper.connect(signer).callStatic.closePosition(
-  //   {
-  //     ...trade.__params,
-  //     minCost: toBigNumber(20),
-  //     stableAmount: toBigNumber(20),
-  //   },
-  //   { blockTag: trade.market().block.number }
-  // )
-  // console.log('contract quote', {
-  //   premium: fromBigNumber(ret.totalCost),
-  //   base: fromBigNumber(ret.totalCost.sub(ret.totalFee)),
-  //   totalFee: fromBigNumber(ret.totalFee),
-  // })
-
   if (trade.disabledReason) {
     console.log('disabled:', trade.disabledReason)
     return
@@ -106,7 +75,7 @@ export default async function positionTrade(argv: string[]) {
   const response = await signer.sendTransaction(trade.tx)
   const receipt = await response.wait()
   console.log('tx', response.hash)
-  const tradeEvent = TradeEvent.getByLogsSync(lyra, market, receipt.logs)[0]
+  const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
 
   printObject('Result', {
     positionId: tradeEvent.positionId,
@@ -114,7 +83,7 @@ export default async function positionTrade(argv: string[]) {
     premium: tradeEvent.premium,
     fee: tradeEvent.fee,
     feeComponents: tradeEvent.feeComponents,
-    setCollateralTo: tradeEvent.setCollateralTo,
+    collateral: tradeEvent.collateralValue,
   })
 
   console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')

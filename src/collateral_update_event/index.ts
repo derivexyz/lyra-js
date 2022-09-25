@@ -1,28 +1,22 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { Log } from '@ethersproject/providers'
+import { TransactionReceipt } from '@ethersproject/providers'
 
 import { Board } from '../board'
-import { DataSource, POSITION_UPDATED_TYPES, PositionUpdatedType } from '../constants/contracts'
-import { PartialCollateralUpdateEventGroup } from '../constants/events'
+import { UNIT, ZERO_BN } from '../constants/bn'
+import { DataSource } from '../constants/contracts'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Position } from '../position'
 import { Strike } from '../strike'
 import { TradeEvent, TradeEventData } from '../trade_event'
-import fetchPositionEventsByOwner from '../utils/fetchPositionEventsByOwner'
-import getCollateralUpdateDataFromEvent from '../utils/getCollateralUpdateDataFromEvent'
-import getIsCall from '../utils/getIsCall'
-import getIsLong from '../utils/getIsLong'
-import getMarketAddresses from '../utils/getMarketAddresses'
-import getTradeDataFromEvent from '../utils/getTradeDataFromEvent'
-import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
-import parsePartialTradeEventFromLogs from '../utils/parsePartialTradeEventsFromLogs'
-import parsePartialTransferEventsFromLogs from '../utils/parsePartialTransferEventsFromLogs'
-import sortEvents, { SortEventOptions } from '../utils/sortEvents'
+import fetchPositionEventDataByHash from '../utils/fetchPositionEventDataByHash'
+import getAverageCollateralSpotPrice from '../utils/getAverageCollateralSpotPrice'
+import getCollateralUpdatePnl from '../utils/getCollateralUpdatePnl'
 
 export type CollateralUpdateData = {
   owner: string
+  source: DataSource
   timestamp: number
   transactionHash: string
   positionId: number
@@ -32,9 +26,14 @@ export type CollateralUpdateData = {
   strikeId: number
   strikePrice: BigNumber
   blockNumber: number
-  setCollateralTo: BigNumber
+  amount: BigNumber
+  value: BigNumber
   isBaseCollateral: boolean
   isCall: boolean
+  spotPrice: BigNumber
+  swap?: {
+    address: string
+  }
 }
 
 export class CollateralUpdateEvent {
@@ -52,16 +51,21 @@ export class CollateralUpdateEvent {
   strikePrice: BigNumber
   expiryTimestamp: number
   blockNumber: number
-  setCollateralTo: BigNumber
+  amount: BigNumber
+  value: BigNumber
   isBaseCollateral: boolean
   isCall: boolean
   isAdjustment: boolean
+  swap?: {
+    address: string
+  }
+  spotPrice: BigNumber
 
-  constructor(lyra: Lyra, source: DataSource, update: CollateralUpdateData, trade?: TradeEventData) {
+  constructor(lyra: Lyra, update: CollateralUpdateData, trade?: TradeEventData) {
     this.lyra = lyra
     this.__collateralUpdateData = update
     this.__tradeData = trade
-    this.__source = source
+    this.__source = update.source
     this.owner = update.owner
     this.timestamp = update.timestamp
     this.transactionHash = update.transactionHash
@@ -69,95 +73,62 @@ export class CollateralUpdateEvent {
     this.blockNumber = update.blockNumber
     this.marketAddress = update.marketAddress
     this.expiryTimestamp = update.expiryTimestamp
-    this.setCollateralTo = update.setCollateralTo
+    this.amount = update.amount
+    this.value = update.value
     this.marketName = update.marketName
     this.strikeId = update.strikeId
     this.strikePrice = update.strikePrice
     this.isCall = update.isCall
     this.isBaseCollateral = update.isBaseCollateral
+    this.spotPrice = update.spotPrice
     this.isAdjustment = !trade
+    this.swap = update.swap
   }
 
   // Getters
 
-  static async getByHash(lyra: Lyra, transactionHash: string): Promise<CollateralUpdateEvent[]> {
-    const receipt = await lyra.provider.getTransactionReceipt(transactionHash)
-    const collateralAdjustedEvent = parsePartialPositionUpdatedEventsFromLogs(receipt.logs).find(
-      e => e.args.updatedType === PositionUpdatedType.Adjusted
-    )
-    if (!collateralAdjustedEvent) {
-      throw new Error('No CollateralUpdate event in transaction')
-    }
-    const { address } = collateralAdjustedEvent
-    const marketAddresses = (await getMarketAddresses(lyra)).find(
-      marketAddresses => marketAddresses.optionToken === address
-    )
-    if (!marketAddresses) {
-      throw new Error('Transaction hash does not exist for OptionToken contract')
-    }
-    const marketAddress = marketAddresses.optionMarket
-    const market = await Market.get(lyra, marketAddress)
-    const option = await market.option(
-      collateralAdjustedEvent.args.position.strikeId.toNumber(),
-      getIsCall(collateralAdjustedEvent.args.position.optionType)
-    )
-    return CollateralUpdateEvent.getByLogsSync(lyra, option, receipt.logs)
+  static async getByHash(
+    lyra: Lyra,
+    transactionHashOrReceipt: string | TransactionReceipt
+  ): Promise<CollateralUpdateEvent[]> {
+    const { collateralUpdates } = await fetchPositionEventDataByHash(lyra, transactionHashOrReceipt)
+    return collateralUpdates
   }
 
-  static getByLogsSync(lyra: Lyra, option: Option, logs: Log[]): CollateralUpdateEvent[] {
-    const updates = parsePartialPositionUpdatedEventsFromLogs(logs).filter(
-      u => !getIsLong(u.args.position.optionType) && POSITION_UPDATED_TYPES.includes(u.args.updatedType)
-    )
+  // Dynamic Fields
 
-    if (updates.length === 0) {
-      throw []
-    }
-
-    const eventsByPositionID: Record<number, PartialCollateralUpdateEventGroup> = {}
-
-    const trades = parsePartialTradeEventFromLogs(logs)
-    const transfers = parsePartialTransferEventsFromLogs(logs)
-
-    updates.forEach(collateralUpdate => {
-      const id = collateralUpdate.args.positionId.toNumber()
-      eventsByPositionID[id] = { collateralUpdate, transfers: [] }
-    })
-    transfers.forEach(transfer => {
-      const id = transfer.args.tokenId.toNumber()
-      if (eventsByPositionID[id]) {
-        eventsByPositionID[id].transfers.push(transfer)
-      }
-    })
-    trades.forEach(trade => {
-      const id = trade.args.positionId.toNumber()
-      if (eventsByPositionID[id]) {
-        eventsByPositionID[id].trade = trade
-      }
-    })
-
-    return Object.values(eventsByPositionID).map(
-      ({ collateralUpdate: collateralUpdateEvent, trade: tradeEvent, transfers: transferEvents }) => {
-        const update = getCollateralUpdateDataFromEvent(collateralUpdateEvent, option, transferEvents)
-        const trade = tradeEvent ? getTradeDataFromEvent(option.market(), tradeEvent, transferEvents) : undefined
-        return new CollateralUpdateEvent(lyra, DataSource.Log, update, trade)
-      }
-    )
+  pnl(position: Position): BigNumber {
+    return getCollateralUpdatePnl(position, this)
   }
 
-  static async getByOwner(lyra: Lyra, owner: string, options?: SortEventOptions): Promise<CollateralUpdateEvent[]> {
-    const events = await fetchPositionEventsByOwner(lyra, owner)
-    return sortEvents(
-      events.collateralUpdates.map(
-        collateralUpdate =>
-          new CollateralUpdateEvent(
-            lyra,
-            DataSource.Subgraph,
-            collateralUpdate,
-            events.trades.find(t => t.transactionHash === collateralUpdate.transactionHash)
-          )
-      ),
-      options
-    )
+  prevAmount(position: Position): BigNumber {
+    const prevCollateralUpdates = position.collateralUpdates().filter(c => c.blockNumber < this.blockNumber)
+    const prevCollateralUpdate = prevCollateralUpdates.length
+      ? prevCollateralUpdates[prevCollateralUpdates.length - 1]
+      : null
+    return prevCollateralUpdate?.amount ?? ZERO_BN
+  }
+
+  changeAmount(position: Position): BigNumber {
+    const prevAmount = this.prevAmount(position)
+    return this.amount.sub(prevAmount)
+  }
+
+  changeValue(position: Position): BigNumber {
+    const changeAmount = this.changeAmount(position)
+    return this.isBaseCollateral ? changeAmount.mul(this.spotPrice).div(UNIT) : changeAmount
+  }
+
+  newAverageCollateralSpotPrice(position: Position): BigNumber {
+    // Include this event by block number
+    const collateralUpdates = position.collateralUpdates().filter(c => c.blockNumber <= this.blockNumber)
+    return getAverageCollateralSpotPrice(position, collateralUpdates)
+  }
+
+  prevAverageCollateralSpotPrice(position: Position): BigNumber {
+    // Exclude this event by block number
+    const collateralUpdates = position.collateralUpdates().filter(c => c.blockNumber < this.blockNumber)
+    return getAverageCollateralSpotPrice(position, collateralUpdates)
   }
 
   // Edges
@@ -166,7 +137,7 @@ export class CollateralUpdateEvent {
     if (!this.__tradeData) {
       return null
     }
-    return new TradeEvent(this.lyra, this.__source, this.__tradeData, this.__collateralUpdateData)
+    return new TradeEvent(this.lyra, this.__tradeData, this.__collateralUpdateData)
   }
 
   async position(): Promise<Position> {

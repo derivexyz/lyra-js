@@ -1,15 +1,16 @@
 import { BigNumber } from 'ethers'
 
 import { AccountLiquidityTokenBalance } from '../account'
-import { LyraContractId } from '../constants/contracts'
+import { Deployment, LyraContractId } from '../constants/contracts'
 import { SECONDS_IN_SIX_MONTHS } from '../constants/time'
+import { ClaimAddedEvent } from '../contracts/typechain/MultiDistributor'
 import { GlobalRewardEpoch } from '../global_reward_epoch'
 import Lyra from '../lyra'
 import fetchAccountRewardEpochData, { AccountRewardEpochData } from '../utils/fetchAccountRewardEpochData'
 import findMarket from '../utils/findMarket'
 import fromBigNumber from '../utils/fromBigNumber'
 import getLyraContract from '../utils/getLyraContract'
-import getClaimAddedTags from '../utils/getRewardsClaimAddedTags'
+import parseClaimAddedTags from './parseClaimAddedTags'
 
 export type AccountRewardEpochAPY = {
   lyra: number
@@ -36,6 +37,7 @@ export class AccountRewardEpoch {
   stakingRewardsUnlockTimestamp: AccountRewardEpochTokens
   totalVaultRewards: AccountRewardEpochTokens
   tradingRewards: AccountRewardEpochTokens
+  shortCollateralRewards: AccountRewardEpochTokens
   constructor(
     lyra: Lyra,
     account: string,
@@ -43,7 +45,7 @@ export class AccountRewardEpoch {
     globalEpoch: GlobalRewardEpoch,
     vaultTokenBalances: AccountLiquidityTokenBalance[],
     stakedLyraBalance: BigNumber,
-    isPendingRewards: boolean
+    claimAddedEvents: ClaimAddedEvent[]
   ) {
     this.lyra = lyra
     this.account = account
@@ -79,13 +81,39 @@ export class AccountRewardEpoch {
     )
     this.tradingFeeRebate = this.globalEpoch.tradingFeeRebate(this.stakedLyraBalance)
     this.tradingFees = this.accountEpoch.tradingRewards.tradingFees
+
     this.tradingRewards = this.globalEpoch.tradingRewards(this.tradingFees, this.stakedLyraBalance)
-    this.isPendingRewards = isPendingRewards
+    this.shortCollateralRewards = this.globalEpoch.shortCollateralRewards(
+      this.accountEpoch.tradingRewards.totalCollatRebateDollars
+    )
+
+    const claimAddedTags = parseClaimAddedTags(claimAddedEvents)
+
+    const isTradingPending =
+      (this.tradingRewards.lyra + this.shortCollateralRewards.lyra > 0 && !claimAddedTags.tradingRewards.LYRA) ||
+      (this.tradingRewards.op + this.shortCollateralRewards.op > 0 && !claimAddedTags.tradingRewards.OP)
+
+    // ignore lyra rewards due to 6mo lock
+    const isStakingPending = this.stakingRewards.op > 0 && !claimAddedTags.stakingRewards.OP
+
+    const isVaultsPending = globalEpoch.markets.every(market => {
+      const vaultRewards = this.vaultRewards(market.address)
+      const marketKey = market.baseToken.symbol
+      return (
+        (vaultRewards.lyra > 0 && !claimAddedTags.vaultRewards[marketKey]?.LYRA) ||
+        (vaultRewards.op > 0 && !claimAddedTags.vaultRewards[marketKey]?.OP)
+      )
+    })
+
+    this.isPendingRewards = !this.globalEpoch.isComplete || isTradingPending || isStakingPending || isVaultsPending
   }
 
   // Getters
 
   static async getByOwner(lyra: Lyra, address: string): Promise<AccountRewardEpoch[]> {
+    if (lyra.deployment !== Deployment.Mainnet) {
+      throw Error('Reward epochs only supported on mainnet')
+    }
     const distributorContract = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.MultiDistributor)
     const [block, markets] = await Promise.all([lyra.provider.getBlock('latest'), lyra.markets()])
     const [accountEpochDatas, globalEpochs, { balance: stakedLyraBalance }, lpTokenBalances, claimAddedEvents] =
@@ -111,24 +139,9 @@ export class AccountRewardEpoch {
           throw new Error('Missing corresponding global epoch for account epoch')
         }
         // Find claims added for or after epoch
-        const epochClaimAddedEvents = claimAddedEvents.filter(claimAdded =>
-          claimAdded.args.epochTimestamp.gte(globalEpoch.startTimestamp)
+        const epochClaimAddedEvents = claimAddedEvents.filter(
+          claimAdded => claimAdded.args.epochTimestamp.toNumber() === globalEpoch.startTimestamp
         )
-        const claimAddedTags = getClaimAddedTags(
-          accountEpochData.MMVRewards,
-          accountEpochData.tradingRewards,
-          accountEpochData.inflationaryRewards
-        )
-        let isPendingRewards = false
-        // Set isPending if no claimAdded events or waiting on events for all programs
-        if (epochClaimAddedEvents.length > 0) {
-          epochClaimAddedEvents.forEach(claimAdded => {
-            claimAddedTags[claimAdded.args.tag] = true
-          })
-          isPendingRewards = !Object.values(claimAddedTags).every(val => val)
-        } else {
-          isPendingRewards = true
-        }
         return new AccountRewardEpoch(
           lyra,
           address,
@@ -136,7 +149,7 @@ export class AccountRewardEpoch {
           globalEpoch,
           lpTokenBalances,
           stakedLyraBalance,
-          isPendingRewards
+          epochClaimAddedEvents
         )
       })
       .sort((a, b) => a.globalEpoch.endTimestamp - b.globalEpoch.endTimestamp)
@@ -147,6 +160,9 @@ export class AccountRewardEpoch {
     address: string,
     startTimestamp: number
   ): Promise<AccountRewardEpoch | null> {
+    if (lyra.deployment !== Deployment.Mainnet) {
+      throw Error('Reward epochs only supported on mainnet')
+    }
     const epochs = await AccountRewardEpoch.getByOwner(lyra, address)
     const epoch = epochs.find(epoch => epoch.globalEpoch.startTimestamp === startTimestamp)
     return epoch ?? null
@@ -175,7 +191,11 @@ export class AccountRewardEpoch {
   vaultTokenBalance(marketAddressOrName: string): number {
     const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
-    const boostedLpDays = this.accountEpoch.boostedLpDays[marketKey] ?? 0
+    const boostedLpDays = this.accountEpoch.boostedLpDays
+      ? this.accountEpoch.boostedLpDays[marketKey]
+        ? this.accountEpoch.boostedLpDays[marketKey]
+        : 0
+      : 0
     const avgVaultTokenBalance = this.globalEpoch.progressDays > 0 ? boostedLpDays / this.globalEpoch.progressDays : 0
     const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalances[marketKey].balance)
     // Uses average for historical epochs, realtime for current epoch
@@ -186,7 +206,11 @@ export class AccountRewardEpoch {
   vaultRewards(marketAddressOrName: string): AccountRewardEpochTokens {
     const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
-    const mmvRewards = this.accountEpoch.MMVRewards[marketKey]
+    const mmvRewards = this.accountEpoch.MMVRewards
+      ? this.accountEpoch.MMVRewards[marketKey]
+        ? this.accountEpoch.MMVRewards[marketKey]
+        : null
+      : null
     if (!mmvRewards) {
       return {
         lyra: 0,

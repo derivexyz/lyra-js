@@ -1,31 +1,15 @@
 import Lyra from '..'
-import { SnapshotPeriod } from '../constants/queries'
-
-export const SNAPSHOT_RESULT_LIMIT = 1000
-
-type TimeVariables = { startTimestamp: number; endTimestamp: number; period: SnapshotPeriod }
+import { MAX_END_TIMESTAMP, MIN_START_TIMESTAMP } from '../constants/queries'
+import { SnapshotOptions } from '../constants/snapshots'
+import getSnapshotPeriod from './getSnapshotPeriod'
+import subgraphRequestWithLoop from './subgraphRequestWithLoop'
 
 export default async function fetchSnapshots<
-  Snapshot extends { timestamp: number },
+  Snapshot extends Record<string, any>,
   Variables extends Record<string, any>
->(lyra: Lyra, query: string, key: string, variables: Variables & TimeVariables): Promise<Snapshot[]> {
-  let allFound = false
-  let data: Snapshot[] = []
-  let startTimestamp = variables.startTimestamp
-  while (!allFound) {
-    const vars = {
-      ...variables,
-      startTimestamp,
-    }
-    const res = await lyra.subgraphClient.request<{ [key: string]: Snapshot[] }, Variables & TimeVariables>(query, vars)
-    const newData = res[key]
-    data = [...data, ...newData]
-    if (!newData.length || newData.length < SNAPSHOT_RESULT_LIMIT) {
-      allFound = true
-    } else {
-      // Set skip to last timestamp
-      startTimestamp = newData[newData.length - 1].timestamp + 1
-    }
-  }
-  return data
+>(lyra: Lyra, query: string, variables: Variables, options?: SnapshotOptions): Promise<Snapshot[]> {
+  const min = options?.startTimestamp ?? MIN_START_TIMESTAMP
+  const max = options?.endTimestamp ?? MAX_END_TIMESTAMP
+  const period = options?.period ?? getSnapshotPeriod(min, max)
+  return subgraphRequestWithLoop<Snapshot, Variables>(lyra, query, { ...variables, min, max, period }, 'timestamp')
 }

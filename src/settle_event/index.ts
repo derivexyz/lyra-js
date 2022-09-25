@@ -1,94 +1,96 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { TransactionReceipt } from '@ethersproject/providers'
 
-import Lyra, { CollateralUpdateData, Position, PositionData, TradeEventData } from '..'
+import Lyra, { Position } from '..'
 import { DataSource } from '../constants/contracts'
-import { PositionQueryResult } from '../constants/queries'
-import getPositionSettlePnl from '../position/getPositionSettlePnl'
-import fetchPositionEventsByOwner from '../utils/fetchPositionEventsByOwner'
-import getCollateralUpdateDataFromSubgraph from '../utils/getCollateralUpdateDataFromSubgraph'
-import getPositionDataFromSubgraph from '../utils/getPositionDataFromSubgraph'
-import getTradeDataFromSubgraph from '../utils/getTradeDataFromSubgraph'
-import sortEvents, { SortEventOptions } from '../utils/sortEvents'
+import fetchPositionEventDataByHash from '../utils/fetchPositionEventDataByHash'
 
 export type SettleEventData = {
+  source: DataSource
   blockNumber: number
-  positionId: number
-  pnl: BigNumber
-  size: BigNumber
-  spotPriceAtExpiry: BigNumber
   timestamp: number
   transactionHash: string
+  positionId: number
+  spotPriceAtExpiry: BigNumber
   owner: string
+  size: BigNumber
   marketName: string
   marketAddress: string
   expiryTimestamp: number
-  isCall: boolean
   strikePrice: BigNumber
-  position: PositionQueryResult
+  isCall: boolean
+  isLong: boolean
+  isBaseCollateral: boolean
+  settlement: BigNumber
+  returnedCollateralAmount: BigNumber
+  returnedCollateralValue: BigNumber
+  isInTheMoney: boolean
 }
 
 export class SettleEvent {
   private lyra: Lyra
   private __settleData: SettleEventData
-
-  position: Position
   __source: DataSource
   blockNumber: number
   positionId: number
-  size: BigNumber
   spotPriceAtExpiry: BigNumber
   timestamp: number
   transactionHash: string
   owner: string
+  size: BigNumber
   marketName: string
   marketAddress: string
-  strikePrice: BigNumber
   expiryTimestamp: number
+  strikePrice: BigNumber
   isCall: boolean
+  isLong: boolean
+  isBaseCollateral: boolean
+  settlement: BigNumber
+  returnedCollateralAmount: BigNumber
+  returnedCollateralValue: BigNumber
+  isInTheMoney: boolean
 
-  constructor(
-    lyra: Lyra,
-    source: DataSource,
-    settle: SettleEventData,
-    position: PositionData,
-    trades: TradeEventData[],
-    collateralUpdates: CollateralUpdateData[]
-  ) {
+  constructor(lyra: Lyra, settle: SettleEventData) {
     this.lyra = lyra
-    this.__source = source
     this.__settleData = settle
+    this.__source = settle.source
     this.blockNumber = settle.blockNumber
     this.positionId = settle.positionId
-
-    this.size = settle.size
     this.spotPriceAtExpiry = settle.spotPriceAtExpiry
     this.timestamp = settle.timestamp
     this.transactionHash = settle.transactionHash
     this.owner = settle.owner
+    this.size = settle.size
     this.marketName = settle.marketName
     this.blockNumber = settle.blockNumber
     this.marketAddress = settle.marketAddress
     this.expiryTimestamp = settle.expiryTimestamp
     this.isCall = settle.isCall
+    this.isLong = settle.isLong
+    this.isBaseCollateral = settle.isBaseCollateral
     this.strikePrice = settle.strikePrice
-    this.position = new Position(lyra, source, position, trades, collateralUpdates, [])
+    this.settlement = settle.settlement
+    this.returnedCollateralAmount = settle.returnedCollateralAmount
+    this.returnedCollateralValue = settle.returnedCollateralValue
+    this.isInTheMoney = settle.isInTheMoney
   }
 
-  static async getByOwner(lyra: Lyra, owner: string, options?: SortEventOptions): Promise<SettleEvent[]> {
-    const events = await fetchPositionEventsByOwner(lyra, owner)
+  // Getters
 
-    return sortEvents(
-      events.settles.map(settle => {
-        const trades = settle.position.trades.map(getTradeDataFromSubgraph)
-        const collateralUpdates = settle.position.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
-        const positionData = getPositionDataFromSubgraph(settle.position, settle.blockNumber)
-        return new SettleEvent(lyra, DataSource.Subgraph, settle, positionData, trades, collateralUpdates)
-      }),
-      options
-    )
+  static async getByHash(lyra: Lyra, transactionHashOrReceipt: string | TransactionReceipt): Promise<SettleEvent[]> {
+    const { settles } = await fetchPositionEventDataByHash(lyra, transactionHashOrReceipt)
+    return settles
   }
 
-  realizedPnl(): BigNumber {
-    return getPositionSettlePnl(this.position)
+  // Dynamic Fields
+
+  pnl(position: Position): BigNumber {
+    return position.pnl().settlementPnl
+  }
+
+  // Edges
+
+  async position(): Promise<Position> {
+    return await this.lyra.position(this.marketAddress, this.positionId)
   }
 }

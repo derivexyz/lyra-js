@@ -31,32 +31,6 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "BaseTransferFailed",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "thrower",
-        type: "address",
-      },
-      {
         internalType: "uint256",
         name: "pendingBase",
         type: "uint256",
@@ -425,17 +399,17 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "int256",
-        name: "totalAssetValue",
-        type: "int256",
+        internalType: "uint256",
+        name: "totalAssetCalue",
+        type: "uint256",
       },
       {
         internalType: "int256",
-        name: "optionValueDebt",
+        name: "optionValue",
         type: "int256",
       },
     ],
-    name: "OptionValueDebtExceedsTotalAssets",
+    name: "OptionValueExceedsTotalAssets",
     type: "error",
   },
   {

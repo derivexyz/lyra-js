@@ -260,37 +260,46 @@ export class Quote {
       )
     )
 
-    const gamma = toBigNumber(
-      getGamma(
-        timeToExpiryAnnualized,
-        fromBigNumber(fairIv),
-        fromBigNumber(spotPrice),
-        fromBigNumber(strikePrice),
-        fromBigNumber(rate)
-      )
-    )
+    const gamma =
+      fairIv.gt(0) && spotPrice.gt(0)
+        ? toBigNumber(
+            getGamma(
+              timeToExpiryAnnualized,
+              fromBigNumber(fairIv),
+              fromBigNumber(spotPrice),
+              fromBigNumber(strikePrice),
+              fromBigNumber(rate)
+            )
+          )
+        : ZERO_BN
 
-    const theta = toBigNumber(
-      getTheta(
-        timeToExpiryAnnualized,
-        fromBigNumber(fairIv),
-        fromBigNumber(spotPrice),
-        fromBigNumber(strikePrice),
-        fromBigNumber(rate),
-        isCall
-      )
-    )
+    const theta =
+      fairIv.gt(0) && spotPrice.gt(0)
+        ? toBigNumber(
+            getTheta(
+              timeToExpiryAnnualized,
+              fromBigNumber(fairIv),
+              fromBigNumber(spotPrice),
+              fromBigNumber(strikePrice),
+              fromBigNumber(rate),
+              isCall
+            )
+          )
+        : ZERO_BN
 
-    const rho = toBigNumber(
-      getRho(
-        timeToExpiryAnnualized,
-        fromBigNumber(fairIv),
-        fromBigNumber(spotPrice),
-        fromBigNumber(strikePrice),
-        fromBigNumber(rate),
-        isCall
-      )
-    )
+    const rho =
+      fairIv.gt(0) && spotPrice.gt(0)
+        ? toBigNumber(
+            getRho(
+              timeToExpiryAnnualized,
+              fromBigNumber(fairIv),
+              fromBigNumber(spotPrice),
+              fromBigNumber(strikePrice),
+              fromBigNumber(rate),
+              isCall
+            )
+          )
+        : ZERO_BN
 
     const premium = iterations.reduce((sum, quote) => sum.add(quote.premium), ZERO_BN)
 

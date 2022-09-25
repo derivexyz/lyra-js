@@ -18,7 +18,7 @@ export default async function getLiquidityTokenBalance(
     value: market.liquidity.tokenPrice.mul(liquidityTokenBalance.balance).div(UNIT),
     tokenPrice: market.liquidity.tokenPrice,
     allowance: liquidityTokenBalance.allowance,
-    // TODO: @earthtojake Add symbol and decimals to getLiquidityBalancesAndAllowances
+    // TODO: @dappbeast Add symbol and decimals to getLiquidityBalancesAndAllowances
     symbol: `Ly${market.name}LP`,
     decimals: 18,
   }

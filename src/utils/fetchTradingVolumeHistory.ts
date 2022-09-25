@@ -5,7 +5,8 @@ import Lyra from '..'
 import {
   MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT,
   MarketVolumeAndFeesSnapshotQueryResult,
-  SnapshotPeriod,
+  MAX_END_TIMESTAMP,
+  MIN_START_TIMESTAMP,
 } from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
 import { Market, MarketTradingVolumeHistory } from '../market'
@@ -14,12 +15,12 @@ import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketVolumeAndFeesSnapshotsQuery = gql`
   query marketVolumeAndFeesSnapshots(
-    $market: String!, $startTimestamp: Int!, $endTimestamp: Int!, $period: Int!
+    $market: String!, $min: Int!, $max: Int!, $period: Int!
   ) {
     marketVolumeAndFeesSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: {
       market: $market, 
-      timestamp_gte: $startTimestamp, 
-      timestamp_lte: $endTimestamp, 
+      timestamp_gte: $min, 
+      timestamp_lte: $max, 
       period: $period
     }) {
       ${MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT}
@@ -32,18 +33,16 @@ export default async function fetchTradingVolumeHistory(
   market: Market,
   options?: SnapshotOptions
 ): Promise<MarketTradingVolumeHistory[]> {
-  const startTimestamp = options?.startTimestamp ?? 0
-  const endTimestamp = options?.endTimestamp ?? market.block.timestamp
+  const startTimestamp = options?.startTimestamp ?? MIN_START_TIMESTAMP
+  const endTimestamp = options?.endTimestamp ?? MAX_END_TIMESTAMP
+  const period = getSnapshotPeriod(startTimestamp, endTimestamp)
   const data = await fetchSnapshots<MarketVolumeAndFeesSnapshotQueryResult, { market: string }>(
     lyra,
     marketVolumeAndFeesSnapshotsQuery,
-    'marketVolumeAndFeesSnapshots',
     {
       market: market.address.toLowerCase(),
-      startTimestamp,
-      endTimestamp,
-      period: SnapshotPeriod.OneHour,
-    }
+    },
+    options
   )
   return data.map((marketVolumeAndFeesSnapshot: MarketVolumeAndFeesSnapshotQueryResult) => {
     return {
@@ -59,7 +58,7 @@ export default async function fetchTradingVolumeHistory(
       liquidatorFees: BigNumber.from(marketVolumeAndFeesSnapshot.liquidatorFees),
       smLiquidationFees: BigNumber.from(marketVolumeAndFeesSnapshot.smLiquidationFees),
       lpLiquidationFees: BigNumber.from(marketVolumeAndFeesSnapshot.lpLiquidationFees),
-      startTimestamp: marketVolumeAndFeesSnapshot.timestamp - getSnapshotPeriod(startTimestamp, endTimestamp),
+      startTimestamp: marketVolumeAndFeesSnapshot.timestamp - period,
       endTimestamp: marketVolumeAndFeesSnapshot.timestamp,
     }
   })

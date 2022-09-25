@@ -4,6 +4,13 @@ import getLyra from './utils/getLyra'
 
 export default async function optionTradingVolume(argv: string[]) {
   const lyra = getLyra()
+  /*
+    example args: {
+      market: 0x1d42a98848e022908069c2c545ae44cc78509bc8
+      strikeId: 100
+      isCall: true
+    }
+  */
   const args = await yargs(argv).options({
     market: { type: 'string', alias: 'm', require: true },
     strikeId: { type: 'number', alias: 's', require: true },

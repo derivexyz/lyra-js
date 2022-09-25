@@ -1,4 +1,10 @@
+import { BigNumber } from 'ethers'
+
 import { PositionState } from './contracts'
+
+export const MIN_START_TIMESTAMP = 0
+export const MAX_END_TIMESTAMP = 2147483647
+export const SNAPSHOT_RESULT_LIMIT = 1000
 
 export const TRADE_QUERY_FRAGMENT = `
 timestamp
@@ -50,6 +56,7 @@ blockNumber
 transactionHash
 amount
 isBaseCollateral
+spotPrice
 strike {
   strikeId
   strikePrice
@@ -71,6 +78,48 @@ position {
 }
 `
 
+export const SETTLE_QUERY_FRAGMENT = `
+id
+blockNumber
+profit
+size
+spotPriceAtExpiry
+timestamp
+transactionHash
+owner
+settleAmount
+position {
+  positionId
+  isBaseCollateral
+  isLong
+  strike {
+    strikeId
+    strikePrice
+  }
+  board {
+    expiryTimestamp
+  }
+  market {
+    name
+    id
+    latestSpotPrice
+  }
+  option {
+    isCall
+  }
+}
+`
+
+export const TRANSFER_QUERY_FRAGMENT = `
+  oldOwner
+  newOwner
+  transactionHash
+  blockNumber
+  position {
+    positionId
+  }
+`
+
 export const POSITION_QUERY_FRAGMENT = `
 id
 positionId
@@ -80,11 +129,14 @@ isLong
 collateral
 isBaseCollateral
 state
+openTimestamp
+closeTimestamp
 strike {
   strikeId
   strikePrice
 }
 board {
+  boardId
   expiryTimestamp
   spotPriceAtExpiry
 }
@@ -99,35 +151,25 @@ option {
     optionPrice
   }
 }
-trades {
+trades(orderBy: timestamp, orderDirection: asc) {
   ${TRADE_QUERY_FRAGMENT}
 }
-collateralUpdates {
+collateralUpdates(orderBy: timestamp, orderDirection: asc) {
   ${COLLATERAL_UPDATE_QUERY_FRAGMENT}
 }
-`
-
-export const SETTLE_QUERY_FRAGMENT = `
-id
-blockNumber
-profit
-size
-spotPriceAtExpiry
-timestamp
-transactionHash
-owner
-position {
-  ${POSITION_QUERY_FRAGMENT}
+transfers(orderBy: timestamp, orderDirection: asc) {
+  ${TRANSFER_QUERY_FRAGMENT}
+}
+settle {
+  ${SETTLE_QUERY_FRAGMENT}
 }
 `
 
-export const META_QUERY = `
-_meta {
-  block {
-    number
-  }
+export type PartialPositionQueryResult = {
+  positionId: number
+  isLong: boolean
+  isBaseCollateral: boolean
 }
-`
 
 export const MARKET_TOTAL_VALUE_SNAPSHOT_FRAGMENT = `
   id
@@ -184,6 +226,7 @@ export const MARKET_PENDING_LIQUIDITY_SNAPSHOT_FRAGMENT = `
 export const SPOT_PRICE_SNAPSHOT_FRAGMENT = `
   timestamp
   spotPrice
+  blockNumber
 `
 
 export const LONG_OPTION_FRAGMENT = `
@@ -243,6 +286,11 @@ export const SHORT_OPTION_FRAGMENT = `
 export const OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   timestamp
   optionPrice
+  id
+  blockNumber
+  option {
+    id
+  }
 `
 
 export const OPTION_VOLUME_FRAGMENT = `
@@ -255,12 +303,6 @@ export const STRIKE_IV_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   timestamp
   iv
 `
-
-export type MetaQueryResult = {
-  block: {
-    number: number
-  }
-}
 
 export type TradeQueryResult = {
   timestamp: number
@@ -303,6 +345,17 @@ export type TradeQueryResult = {
   volTraded: string
   isLiquidation: boolean
   isForceClose: boolean
+  externalSwapAddress: string
+}
+
+export type TransferQueryResult = {
+  oldOwner: string
+  newOwner: string
+  transactionHash: string
+  blockNumber: number
+  position: {
+    positionId: number
+  }
 }
 
 export type SettleQueryResult = {
@@ -314,7 +367,27 @@ export type SettleQueryResult = {
   timestamp: number
   transactionHash: string
   owner: string
-  position: PositionQueryResult
+  settleAmount: string
+  position: {
+    positionId: number
+    isBaseCollateral: boolean
+    isLong: boolean
+    strike: {
+      strikeId: string
+      strikePrice: string
+    }
+    board: {
+      expiryTimestamp: number
+    }
+    market: {
+      name: string
+      id: string
+      latestSpotPrice: string
+    }
+    option: {
+      isCall: boolean
+    }
+  }
 }
 
 export type CollateralUpdateQueryResult = {
@@ -324,6 +397,7 @@ export type CollateralUpdateQueryResult = {
   amount: string
   trader: string
   isBaseCollateral: boolean
+  spotPrice: string
   strike: {
     strikeId: string
     strikePrice: string
@@ -343,6 +417,9 @@ export type CollateralUpdateQueryResult = {
     isLong: boolean
     isBaseCollateral: boolean
   }
+  externalSwapFees: string
+  externalSwapAddress: string
+  externalSwapAmount: string
 }
 
 export type PositionQueryResult = {
@@ -354,11 +431,14 @@ export type PositionQueryResult = {
   collateral: string | null
   isBaseCollateral: boolean
   state: PositionState
+  openTimestamp: number
+  closeTimestamp: number
   strike: {
     strikeId: string
     strikePrice: string
   }
   board: {
+    boardId: string
     expiryTimestamp: number
     spotPriceAtExpiry: string | null
   }
@@ -373,11 +453,10 @@ export type PositionQueryResult = {
       optionPrice: string
     }
   }
-  position: {
-    positionId: string
-  }
   trades: TradeQueryResult[]
   collateralUpdates: CollateralUpdateQueryResult[]
+  transfers: TransferQueryResult[]
+  settle: SettleQueryResult
 }
 
 export type MarketTotalValueSnapshotQueryResult = {
@@ -434,7 +513,12 @@ export type MarketPendingLiquiditySnapshotQueryResult = {
 
 export type OptionPriceAndGreeksSnapshotQueryResult = {
   timestamp: number
+  blockNumber: number
   optionPrice: string
+  id: string
+  option: {
+    id: string
+  }
 }
 
 export type OptionVolumeQueryResult = {
@@ -451,10 +535,30 @@ export type StrikeIVAndGreeksSnapshotQueryResult = {
 export type SpotPriceSnapshotQueryResult = {
   spotPrice: string
   timestamp: number
+  blockNumber: number
 }
 
 export enum SnapshotPeriod {
-  FifteenMinutes = 900,
   OneHour = 3600,
   OneDay = 86400,
+}
+
+export type TokenTransferResult = {
+  amount: string
+  timestamp: number
+  blockNumber: number
+  from: string
+  to: string
+  token: {
+    id: string
+  }
+}
+
+export type TokenTransfer = {
+  amount: BigNumber
+  timestamp: number
+  blockNumber: number
+  from: string
+  to: string
+  tokenAddress: string
 }

@@ -2,7 +2,8 @@ import { getAddress } from '@ethersproject/address'
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
-import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
+import { CollateralUpdateEvent } from '../collateral_update_event'
+import { MAX_BN, ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
 import {
   Deployment,
   LYRA_OPTIMISM_KOVAN_ADDRESS,
@@ -13,59 +14,131 @@ import {
   STAKED_LYRA_OPTIMISM_ADDRESS,
   STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS,
 } from '../constants/contracts'
+import { TokenTransfer } from '../constants/queries'
 import { LiquidityDeposit } from '../liquidity_deposit'
 import { LiquidityWithdrawal } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
+import { LyraStake } from '../lyra_stake'
 import { LyraStaking } from '../lyra_staking'
+import { LyraUnstake } from '../lyra_unstake'
 import { Market } from '../market'
-import { Stake } from '../stake'
-import { Unstake } from '../unstake'
+import { Position } from '../position'
+import { SettleEvent } from '../settle_event'
+import { TradeEvent } from '../trade_event'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
 import getLyraContractAddress from '../utils/getLyraContractAddress'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
+import fetchPortfolioBalance from './fetchPortfolioBalance'
+import fetchPortfolioHistory from './fetchPortfolioHistory'
 import getAccountBalancesAndAllowances from './getAccountBalancesAndAllowances'
 import getAverageCostPerLPToken from './getAverageCostPerLPToken'
 import getLiquidityDepositBalance from './getLiquidityDepositBalance'
 import getLiquidityTokenBalance from './getLiquidityTokenBalance'
-import getPortfolioBalance from './getPortfolioBalance'
-import getPortfolioHistory from './getPortfolioHistory'
-
-export type AccountPortfolioHistorySnapshot = {
-  timestamp: number
-  longOptionValue: number
-  shortOptionValue: number
-  collateralValue: number
-  balance: number
-  total: number
-}
 
 export type AccountPortfolioBalance = {
   longOptionValue: number
   shortOptionValue: number
-  collateralValue: number
+  baseCollateralValue: number
+  baseAccountValue: number
+  stableCollateralValue: number
+  stableAccountValue: number
+  totalValue: number
+  baseAccountBalances: {
+    marketAddress: string
+    address: string
+    symbol: string
+    decimals: number
+    balance: BigNumber
+    spotPrice: BigNumber
+    value: BigNumber
+  }[]
+  stableAccountBalances: {
+    address: string
+    symbol: string
+    decimals: number
+    balance: BigNumber
+  }[]
+  positions: Position[]
+}
+
+export type AccountPortfolioSnapshot = {
+  timestamp: number
+  blockNumber: number
+  longOptionValue: number
+  shortOptionValue: number
+  baseCollateralValue: number
+  baseAccountValue: number
+  stableCollateralValue: number
+  stableAccountValue: number
+  totalValue: number
+  baseAccountBalances: {
+    marketAddress: string
+    address: string
+    symbol: string
+    decimals: number
+    balance: BigNumber
+    spotPrice: BigNumber
+    value: BigNumber
+  }[]
+  stableAccountBalances: {
+    address: string
+    symbol: string
+    decimals: number
+    balance: BigNumber
+  }[]
+  trades: TradeEvent[]
+  collateralUpdates: CollateralUpdateEvent[]
+  settles: SettleEvent[]
+  transfers: TokenTransfer[]
+}
+
+export type StableBalanceSnapshot = {
+  blockNumber: number
+  timestamp: number
   balance: number
-  total: number
+  accountBalance: number
+  collateralBalance: number
+  accountBalances: {
+    symbol: string
+    address: string
+    decimals: number
+    balance: BigNumber
+  }[]
+  trades: TradeEvent[]
+  collateralUpdates: CollateralUpdateEvent[]
+  settles: SettleEvent[]
 }
 
-export type AccountBalanceHistory = {
+export type BaseBalanceSnapshot = {
+  blockNumber: number
   timestamp: number
+  symbol: string
+  address: string
+  decimals: number
+  marketAddress: string
   balance: BigNumber
-}
-
-export type AccountShortOptionHistory = {
-  timestamp: number
-  optionValue: BigNumber
+  value: BigNumber
+  accountBalance: BigNumber
+  accountValue: BigNumber
+  collateralBalance: BigNumber
   collateralValue: BigNumber
+  spotPrice: BigNumber
+  trades: TradeEvent[]
+  collateralUpdates: CollateralUpdateEvent[]
+  settles: SettleEvent[]
 }
 
-export type AccountLongOptionHistory = {
+export type AccountPositionSnapshot = {
+  blockNumber: number
   timestamp: number
-  optionValue: BigNumber
+  longOptionValue: BigNumber
+  shortOptionValue: BigNumber
+  trades: TradeEvent[]
+  collateralUpdates: CollateralUpdateEvent[]
+  settles: SettleEvent[]
 }
-
-export type AccountPortfolioHistory = AccountPortfolioHistorySnapshot[]
 
 export type AccountStableBalance = {
   address: string
@@ -73,6 +146,7 @@ export type AccountStableBalance = {
   decimals: number
   balance: BigNumber
   allowance: BigNumber
+  id: number
 }
 
 export type AccountBaseBalance = {
@@ -82,12 +156,14 @@ export type AccountBaseBalance = {
   decimals: number
   balance: BigNumber
   allowance: BigNumber
+  id: number
 }
 
 export type AccountOptionTokenBalance = {
   marketAddress: string
   address: string
   isApprovedForAll: boolean
+  id: number
 }
 
 export type AccountLiquidityTokenBalance = {
@@ -101,9 +177,12 @@ export type AccountLiquidityTokenBalance = {
   allowance: BigNumber
 }
 
-export type AccountLiquidityProfitAndLoss = {
+export type AccountLiquidityDepositBalance = {
+  address: string
+  symbol: string
+  decimals: number
   balance: BigNumber
-  averageTokenPrice: BigNumber
+  allowance: BigNumber
 }
 
 export type AccountBalances = {
@@ -123,6 +202,13 @@ export type AccountLyraStaking = {
   isInCooldown: boolean
   unstakeWindowStartTimestamp: number | null
   unstakeWindowEndTimestamp: number | null
+}
+
+export type AccountWethLyraStaking = {
+  unstakedLPTokenBalance: BigNumber
+  stakedLPTokenBalance: BigNumber
+  rewards: BigNumber
+  allowance: BigNumber
 }
 
 export type AccountLyraBalance = {
@@ -202,7 +288,7 @@ export class Account {
     }
   }
 
-  async liquidityDepositBalance(marketAddressOrName: string): Promise<AccountStableBalance> {
+  async liquidityDepositBalance(marketAddressOrName: string): Promise<AccountLiquidityDepositBalance> {
     const market = await this.lyra.market(marketAddressOrName)
     return await getLiquidityDepositBalance(this.lyra, this.address, market)
   }
@@ -407,20 +493,82 @@ export class Account {
     }
   }
 
-  async approveStake(): Promise<PopulatedTransaction> {
-    return await Stake.approve(this.lyra, this.address)
+  async wethLyraStaking(): Promise<AccountWethLyraStaking> {
+    const [gelatoPoolContract, wethLyraStakingRewardsContract] = await Promise.all([
+      getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.ArrakisPool),
+      getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.WethLyraStakingRewards),
+    ])
+    const [unstakedLPTokenBalance, allowance, stakedLPTokenBalance, rewards] = await Promise.all([
+      gelatoPoolContract.balanceOf(this.address),
+      gelatoPoolContract.allowance(this.address, wethLyraStakingRewardsContract.address),
+      wethLyraStakingRewardsContract.balanceOf(this.address),
+      wethLyraStakingRewardsContract.earned(this.address),
+    ])
+    return {
+      unstakedLPTokenBalance,
+      allowance,
+      stakedLPTokenBalance,
+      rewards,
+    }
   }
 
-  async stake(amount: BigNumber): Promise<Stake> {
-    return await Stake.get(this.lyra, this.address, amount)
+  async approveStake(): Promise<PopulatedTransaction> {
+    return await LyraStake.approve(this.lyra, this.address)
+  }
+
+  async stake(amount: BigNumber): Promise<LyraStake> {
+    return await LyraStake.get(this.lyra, this.address, amount)
   }
 
   async requestUnstake(): Promise<PopulatedTransaction> {
-    return await Unstake.requestUnstake(this.lyra, this.address)
+    return await LyraUnstake.requestUnstake(this.lyra, this.address)
   }
 
-  async unstake(amount: BigNumber): Promise<Unstake> {
-    return await Unstake.get(this.lyra, this.address, amount)
+  async unstake(amount: BigNumber): Promise<LyraUnstake> {
+    return await LyraUnstake.get(this.lyra, this.address, amount)
+  }
+
+  async stakeWethLyra(amount: BigNumber): Promise<PopulatedTransaction> {
+    const wethLyraStakingRewardsContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.WethLyraStakingRewards
+    )
+    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('stake', [amount])
+    return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
+  }
+
+  async unstakeWethLyra(amount: BigNumber) {
+    const wethLyraStakingRewardsContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.WethLyraStakingRewards
+    )
+    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('withdraw', [amount])
+    return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
+  }
+
+  async approveWethLyraTokens(): Promise<PopulatedTransaction> {
+    const gelatoPoolContract = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.ArrakisPool)
+    const wethLyraStakingRewardsContractAddress = getLyraContractAddress(
+      this.lyra.deployment,
+      LyraContractId.WethLyraStakingRewards
+    )
+    const calldata = gelatoPoolContract.interface.encodeFunctionData('approve', [
+      wethLyraStakingRewardsContractAddress,
+      MAX_BN,
+    ])
+    return await buildTxWithGasEstimate(this.lyra, gelatoPoolContract.address, this.address, calldata)
+  }
+
+  async claimWethLyraRewards() {
+    const wethLyraStakingRewardsContract = getLyraContract(
+      this.lyra.provider,
+      this.lyra.deployment,
+      LyraContractId.WethLyraStakingRewards
+    )
+    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('getReward')
+    return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
   }
 
   // Edges
@@ -433,12 +581,11 @@ export class Account {
     return await this.lyra.liquidityWithdrawals(marketAddressOrName, this.address)
   }
 
-  async portfolioHistory(startTimestamp: number): Promise<AccountPortfolioHistory> {
-    const endTimestamp = (await this.lyra.provider.getBlock('latest')).timestamp
-    return await getPortfolioHistory(this.lyra, this.address, startTimestamp, endTimestamp)
+  async portfolioHistory(startTimestamp: number): Promise<AccountPortfolioSnapshot[]> {
+    return await fetchPortfolioHistory(this.lyra, this.address, startTimestamp)
   }
 
   async portfolioBalance(): Promise<AccountPortfolioBalance> {
-    return await getPortfolioBalance(this.lyra, this.address)
+    return await fetchPortfolioBalance(this.lyra, this.address)
   }
 }

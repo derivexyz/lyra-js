@@ -37,7 +37,10 @@ export default function getTradeDisabledReason(quote: Quote, trade: Trade): Trad
     }
   }
 
-  if (((trade.isOpen && !trade.isBuy) || (position && !position.isLong)) && !trade.collateral) {
+  if (
+    ((trade.isOpen && !trade.isBuy) || (position && !position.isLong)) &&
+    (!trade.collateral || (position && !trade.isBuy && trade.newSize.isZero() && trade.collateral.amount.isZero()))
+  ) {
     return TradeDisabledReason.EmptyCollateral
   } else if (trade.newSize.gt(0) && trade.collateral && trade.collateral.amount.lt(trade.collateral.min)) {
     return TradeDisabledReason.NotEnoughCollateral

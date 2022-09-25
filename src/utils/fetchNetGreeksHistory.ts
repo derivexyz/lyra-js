@@ -6,15 +6,14 @@ import { MARKET_GREEKS_SNAPSHOT_FRAGMENT, MarketGreeksSnapshotQueryResult } from
 import { SnapshotOptions } from '../constants/snapshots'
 import { Market, MarketNetGreeks } from '../market'
 import fetchSnapshots from './fetchSnapshots'
-import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketGreeksSnapshotsQuery = gql`
   query marketGreeksSnapshots(
-    $market: String!, $startTimestamp: Int!, $endTimestamp: Int! $period: Int!
+    $market: String!, $min: Int!, $max: Int! $period: Int!
   ) {
     marketGreeksSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { market: $market, 
-      timestamp_gte: $startTimestamp, 
-      timestamp_lte: $endTimestamp,
+      timestamp_gte: $min, 
+      timestamp_lte: $max,
       period_gte: $period
     }) {
       ${MARKET_GREEKS_SNAPSHOT_FRAGMENT}
@@ -22,27 +21,18 @@ const marketGreeksSnapshotsQuery = gql`
   }
 `
 
-type MarketGreeksSnapshotVariables = {
-  market: string
-}
-
 export default async function fetchNetGreeksHistory(
   lyra: Lyra,
   market: Market,
   options?: SnapshotOptions
 ): Promise<MarketNetGreeks[]> {
-  const startTimestamp = options?.startTimestamp ?? 0
-  const endTimestamp = options?.endTimestamp ?? market.block.timestamp
-  const data = await fetchSnapshots<MarketGreeksSnapshotQueryResult, MarketGreeksSnapshotVariables>(
+  const data = await fetchSnapshots<MarketGreeksSnapshotQueryResult, { market: string }>(
     lyra,
     marketGreeksSnapshotsQuery,
-    'marketGreeksSnapshots',
     {
       market: market.address.toLowerCase(),
-      startTimestamp,
-      endTimestamp,
-      period: getSnapshotPeriod(startTimestamp, endTimestamp),
-    }
+    },
+    options
   )
   return data.map(marketGreeksSnapshot => {
     const poolNetDelta = BigNumber.from(marketGreeksSnapshot.poolNetDelta)

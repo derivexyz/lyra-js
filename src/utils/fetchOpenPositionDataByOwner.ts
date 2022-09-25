@@ -1,77 +1,52 @@
-import { CollateralUpdateData } from '../collateral_update_event'
 import { LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
-import { TradeEventData } from '../trade_event'
-import { TransferEventData } from '../transfer_event'
-import fetchPositionEventsByIDs from './fetchPositionEventsByIDs'
-import filterNulls from './filterNulls'
+import fetchPositionEventDataByIDs from './fetchPositionEventDataByIDs'
 import getIsCall from './getIsCall'
 import getLyraContract from './getLyraContract'
-import getPositionDataFromStruct from './getPositionDataFromStruct'
+import getOpenPositionDataFromStruct from './getOpenPositionDataFromStruct'
 
 export default async function fetchOpenPositionDataByOwner(
   lyra: Lyra,
-  owner: string
-): Promise<
-  {
-    position: PositionData
-    trades: TradeEventData[]
-    collateralUpdates: CollateralUpdateData[]
-    transfers: TransferEventData[]
-  }[]
-> {
+  owner: string,
+  markets: Market[]
+): Promise<PositionData[]> {
   // Fetch all owner positions across all markets
   const positionsByMarketAddress = await getLyraContract(
     lyra.provider,
     lyra.deployment,
     LyraContractId.OptionMarketViewer
   ).getOwnerPositions(owner)
-  // Fetch open position market data
-  const markets = await Market.getMany(
-    lyra,
-    positionsByMarketAddress.map(({ market }) => market)
+
+  const marketsByAddress: Record<string, Market> = markets.reduce(
+    (dict, market) => ({ ...dict, [market.address]: market }),
+    {} as Record<string, Market>
   )
-  const positionsByMarket = positionsByMarketAddress.map(({ positions }, idx) => ({
-    positions,
-    market: markets[idx],
-  }))
-  // Fetch historical data for each open position
-  return (
+
+  const positionStructsByMarket = positionsByMarketAddress.map(
+    ({ positions: positionStructs, market: marketAddress }) => ({
+      positionStructs,
+      market: marketsByAddress[marketAddress],
+    })
+  )
+
+  const positions = (
     await Promise.all(
-      positionsByMarket.map(async ({ market, positions }) => {
-        const positionDatas = filterNulls(
-          positions.map(positionStruct => {
-            try {
-              // Throws if option is not live (e.g. position is expired but not settled by a bot)
-              const option = market.liveOption(positionStruct.strikeId.toNumber(), getIsCall(positionStruct.optionType))
-              // TODO: @earthtojake Handle gas limits with a fallback
-              return getPositionDataFromStruct(owner, option, positionStruct)
-            } catch (e) {
-              return null
-            }
-          })
-        )
-        const positionIds = Array.from(new Set(positionDatas.map(p => p.id)))
-        // TODO: @earthtojake Parallelize trade fetching across markets
-        const positionTradeData = await fetchPositionEventsByIDs(lyra, market, positionIds)
-
-        // Map of position IDs to position datas
-        const positionMap: Record<number, PositionData> = {}
-        positionDatas.forEach(position => {
-          positionMap[position.id] = position
-        })
-
-        return positionTradeData.map(({ positionId, trades, collateralUpdates, transfers }) => {
-          return {
-            position: positionMap[positionId],
-            trades,
-            collateralUpdates,
-            transfers,
-          }
+      positionStructsByMarket.map(async ({ market, positionStructs }) => {
+        const positionIds = positionStructs.map(p => p.positionId.toNumber())
+        const eventsByPositionID = await fetchPositionEventDataByIDs(lyra, market, positionIds)
+        return positionStructs.map(positionStruct => {
+          const positionId = positionStruct.positionId.toNumber()
+          const strikeId = positionStruct.strikeId.toNumber()
+          const isCall = getIsCall(positionStruct.optionType)
+          const { trades, collateralUpdates, transfers, settle } = eventsByPositionID[positionId]
+          const option = market.liveOption(strikeId, isCall)
+          return getOpenPositionDataFromStruct(positionStruct, option, trades, collateralUpdates, transfers, settle)
         })
       })
     )
   ).flat()
+
+  return positions
 }

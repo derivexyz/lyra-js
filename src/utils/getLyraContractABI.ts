@@ -1,6 +1,7 @@
 import { ContractInterface } from '@ethersproject/contracts'
 
 import { LyraContractId, LyraMarketContractId } from '../constants/contracts'
+import ARRAKIS_POOL_ABI from '../contracts/abis/ArrakisPool.json'
 import LIQUIDITY_POOL_ABI from '../contracts/abis/LiquidityPool.json'
 import LIQUIDITY_TOKEN_ABI from '../contracts/abis/LiquidityToken.json'
 import LYRA_REGISTRY_ABI from '../contracts/abis/LyraRegistry.json'
@@ -14,6 +15,7 @@ import OPTION_MARKET_WRAPPER_ABI from '../contracts/abis/OptionMarketWrapper.jso
 import OPTION_TOKEN_ABI from '../contracts/abis/OptionToken.json'
 import SHORT_COLLATERAL_ABI from '../contracts/abis/ShortCollateral.json'
 import SHORT_POOL_HEDGER_ABI from '../contracts/abis/ShortPoolHedger.json'
+import STAKING_REWARDS_ABI from '../contracts/abis/StakingRewards.json'
 import SYNTHETIX_ADAPTER_ABI from '../contracts/abis/SynthetixAdapter.json'
 import TEST_FAUCET_ABI from '../contracts/abis/TestFaucet.json'
 
@@ -49,5 +51,9 @@ export default function getLyraContractABI(contractId: LyraContractId | LyraMark
       return LYRA_REGISTRY_ABI
     case LyraContractId.MultiDistributor:
       return MULTIDISTRIBUTOR_ABI
+    case LyraContractId.ArrakisPool:
+      return ARRAKIS_POOL_ABI
+    case LyraContractId.WethLyraStakingRewards:
+      return STAKING_REWARDS_ABI
   }
 }

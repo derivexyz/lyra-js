@@ -9,6 +9,8 @@ export enum LyraContractId {
   LyraStakingModuleProxy = 'LyraStakingModuleProxy',
   LyraRegistry = 'LyraRegistry',
   MultiDistributor = 'MultiDistributor',
+  ArrakisPool = 'ArrakisPool',
+  WethLyraStakingRewards = 'WethLyraStakingRewards',
 }
 
 // Per-market contract name mappings
@@ -95,5 +97,6 @@ export const STAKED_LYRA_OPTIMISM_ADDRESS = '0xde48b1b5853cc63b1d05e507414d3e028
 export const STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS = '0xd16d254c42a03ad72d77b4226d086afcc0b2e43e'
 export const ONE_INCH_ORACLE_OPTIMISM_MAINNET_ADDRESS = '0x11DEE30E710B8d4a8630392781Cc3c0046365d4c'
 export const USDC_OPTIMISM_MAINNET_ADDRESS = '0x7F5c764cBc14f9669B88837ca1490cCa17c31607'
+export const WETH_OPTIMISM_MAINNET_ADDRESS = '0x4200000000000000000000000000000000000006'
 export const USDC_OPTIMISM_MAINNET_DECIMALS = 6
 export const VAULTS_UTILIZATION_THRESHOLD = 0.99

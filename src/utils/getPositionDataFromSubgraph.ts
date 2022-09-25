@@ -1,14 +1,30 @@
+import { getAddress } from '@ethersproject/address'
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { ZERO_BN } from '../constants/bn'
-import { PositionState } from '../constants/contracts'
+import { CollateralUpdateData } from '../collateral_update_event'
+import { UNIT, ZERO_BN } from '../constants/bn'
+import { DataSource, PositionState } from '../constants/contracts'
 import { PositionQueryResult } from '../constants/queries'
+import { Market } from '../market'
+import { Option } from '../option'
 import { PositionData } from '../position'
+import getPositionCollateral, { PositionCollateral } from '../position/getPositionCollateral'
+import { SettleEventData } from '../settle_event'
+import { TradeEventData } from '../trade_event'
+import { TransferEventData } from '../transfer_event'
 import getMaxCollateral from './getMaxCollateral'
 
-export default function getPositionDataFromSubgraph(position: PositionQueryResult, blockNumber: number): PositionData {
+export default function getPositionDataFromSubgraph(
+  position: PositionQueryResult,
+  market: Market,
+  trades: TradeEventData[],
+  collateralUpdates: CollateralUpdateData[],
+  transfers: TransferEventData[],
+  settle: SettleEventData | null
+): PositionData {
   const id = position.positionId
   const strikeId = parseInt(position.strike.strikeId)
+  const boardId = parseInt(position.board.boardId)
   const isCall = position.option.isCall
   const isLong = position.isLong
   const state = position.state
@@ -18,36 +34,62 @@ export default function getPositionDataFromSubgraph(position: PositionQueryResul
   const size = [PositionState.Closed, PositionState.Liquidated].includes(state)
     ? ZERO_BN
     : BigNumber.from(position.size)
-  const pricePerOption = isOpen ? BigNumber.from(position.option.latestOptionPriceAndGreeks.optionPrice) : ZERO_BN
+
+  let liveOption: Option | null
+  // Try get live board
+  try {
+    liveOption = boardId ? market.liveBoard(boardId).strike(strikeId).option(isCall) : null
+  } catch {
+    liveOption = null
+  }
+  const pricePerOption = liveOption ? liveOption.price : ZERO_BN
   const strikePrice = BigNumber.from(position.strike.strikePrice)
-  const isBase = isCall ? !!position.isBaseCollateral : false
-  // We do not calculate realtime collateral data for closed positions
-  const collateral =
-    !isLong && position.collateral
-      ? {
-          amount: BigNumber.from(position.collateral),
-          max: getMaxCollateral(isCall, strikePrice, size, isBase),
-          isBase,
-          // TODO: @earthtojake Populate liquidation price with subgraph data
-          liquidationPrice: null,
-          // TODO: @earthtojake Populate min collateral with subgraph data
-          min: ZERO_BN,
-        }
-      : undefined
+  const isBaseCollateral = isCall ? !!position.isBaseCollateral : false
+
   const spotPriceAtExpiry = position.board.spotPriceAtExpiry
     ? BigNumber.from(position.board.spotPriceAtExpiry)
     : undefined
-  const spotPrice = spotPriceAtExpiry ?? BigNumber.from(position.market.latestSpotPrice)
-  const isInTheMoney = isCall ? spotPrice.gt(strikePrice) : spotPrice.lt(strikePrice)
+  const spotPrice = market.spotPrice
+  const spotPriceOrAtExpiry = spotPriceAtExpiry ?? spotPrice
+  const isInTheMoney = isCall ? spotPriceOrAtExpiry.gt(strikePrice) : spotPriceOrAtExpiry.lt(strikePrice)
+
+  // TODO: @dappbeast Fix subgraph to maintain last collateral amount on settle
+  const collateralAmount =
+    isOpen || isSettled ? collateralUpdates[collateralUpdates.length - 1]?.amount ?? ZERO_BN : ZERO_BN
+
+  const collateral: PositionCollateral | undefined = !isLong
+    ? liveOption
+      ? getPositionCollateral(liveOption, size, collateralAmount, isBaseCollateral)
+      : {
+          amount: collateralAmount,
+          value: isBaseCollateral ? collateralAmount.mul(spotPrice).div(UNIT) : collateralAmount,
+          min: ZERO_BN,
+          max: getMaxCollateral(isCall, strikePrice, size, isBaseCollateral),
+          isBase: isBaseCollateral,
+          liquidationPrice: null,
+        }
+    : undefined
+
+  const marketName = market.name
+  const marketAddress = getAddress(market.address)
+  const owner = getAddress(position.owner)
+  const expiryTimestamp = position.board.expiryTimestamp
+
+  const openTimestamp = trades[0].timestamp
+  const closeTimestamp = isSettled && settle ? settle.timestamp : !isOpen ? trades[trades.length - 1].timestamp : null
+
   return {
-    blockNumber,
-    owner: position.owner,
-    marketName: position.market.name.substring(1),
-    marketAddress: position.market.id,
     id,
+    market,
+    source: DataSource.Subgraph,
+    blockNumber: market.block.number,
+    delta: liveOption?.delta ?? ZERO_BN,
+    owner,
+    marketName,
+    marketAddress,
     strikeId,
     strikePrice,
-    expiryTimestamp: position.board.expiryTimestamp,
+    expiryTimestamp,
     isCall,
     isLong,
     state,
@@ -59,5 +101,11 @@ export default function getPositionDataFromSubgraph(position: PositionQueryResul
     pricePerOption,
     spotPriceAtExpiry,
     isInTheMoney,
+    openTimestamp,
+    closeTimestamp,
+    trades,
+    collateralUpdates,
+    transfers,
+    settle,
   }
 }

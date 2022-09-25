@@ -1,6 +1,8 @@
+import { getAddress } from '@ethersproject/address'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
+import { DataSource } from '../constants/contracts'
 import { TradeQueryResult } from '../constants/queries'
 import { TradeEventData } from '../trade_event'
 
@@ -14,24 +16,30 @@ export default function getTradeDataFromSubgraph(trade: TradeQueryResult): Trade
   const varianceFee = BigNumber.from(trade.varianceFee)
   const swapFee = BigNumber.from(trade.externalSwapFees ?? 0)
   const strikePrice = BigNumber.from(trade.strike.strikePrice)
-  const setCollateralTo = !trade.position.isLong
+  const collateralAmount = !trade.position.isLong
     ? trade.setCollateralTo
       ? BigNumber.from(trade.setCollateralTo)
       : ZERO_BN
     : undefined
   const isBaseCollateral = !trade.position.isLong ? trade.position.isBaseCollateral : undefined
+  const collateralValue = collateralAmount
+    ? isBaseCollateral
+      ? collateralAmount.mul(spotPrice).div(UNIT)
+      : collateralAmount
+    : undefined
   return {
     timestamp: trade.timestamp,
+    source: DataSource.Subgraph,
     positionId: trade.position.positionId,
     blockNumber: trade.blockNumber,
     marketName: trade.market.name.substring(1),
-    marketAddress: trade.market.id,
+    marketAddress: getAddress(trade.market.id),
     isCall: trade.option.isCall,
     strikeId: parseInt(trade.strike.strikeId),
     strikePrice,
     expiryTimestamp: trade.board.expiryTimestamp,
     transactionHash: trade.transactionHash,
-    trader: trade.trader,
+    trader: getAddress(trade.trader),
     size,
     isOpen: trade.isOpen,
     isBuy: trade.isBuy,
@@ -50,11 +58,16 @@ export default function getTradeDataFromSubgraph(trade: TradeQueryResult): Trade
     baseIv: BigNumber.from(trade.newBaseIv),
     skew: BigNumber.from(trade.newSkew),
     volTraded: BigNumber.from(trade.volTraded),
-    setCollateralTo,
+    collateralAmount,
+    collateralValue,
     isBaseCollateral,
     isForceClose: trade.isForceClose,
     isLiquidation: trade.isLiquidation,
-    // TODO(MICHAEL): Fix this
-    externalSwapFee: ZERO_BN,
+    swap: trade.externalSwapFees
+      ? {
+          fee: BigNumber.from(trade.externalSwapFees),
+          address: trade.externalSwapAddress,
+        }
+      : undefined,
   }
 }

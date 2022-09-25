@@ -8,18 +8,17 @@ import { SnapshotOptions } from '../constants/snapshots'
 import { Market, MarketLiquidityHistory } from '../market'
 import fetchSnapshots from './fetchSnapshots'
 import fromBigNumber from './fromBigNumber'
-import getSnapshotPeriod from './getSnapshotPeriod'
 
 const marketTotalValueSnapshotsQuery = gql`
   query marketTotalValueSnapshots(
-    $market: String!, $startTimestamp: Int!, $endTimestamp: Int! $period: Int!
+    $market: String!, $min: Int!, $max: Int! $period: Int!
   ) {
     marketTotalValueSnapshots(
       first: 1000, orderBy: timestamp, orderDirection: asc, where: { 
         market: $market, 
         NAV_gt: 0
-        timestamp_gte: $startTimestamp, 
-        timestamp_lte: $endTimestamp,
+        timestamp_gte: $min, 
+        timestamp_lte: $max,
         period: $period 
       }
     ) {
@@ -33,19 +32,19 @@ export default async function fetchLiquidityHistory(
   market: Market,
   options?: SnapshotOptions
 ): Promise<MarketLiquidityHistory[]> {
-  const startTimestamp = options?.startTimestamp ?? 0
-  const endTimestamp = options?.endTimestamp ?? market.block.timestamp
   const data = await fetchSnapshots<
     MarketTotalValueSnapshotQueryResult,
     {
       market: string
     }
-  >(lyra, marketTotalValueSnapshotsQuery, 'marketTotalValueSnapshots', {
-    market: market.address.toLowerCase(),
-    startTimestamp,
-    endTimestamp,
-    period: getSnapshotPeriod(startTimestamp, endTimestamp),
-  })
+  >(
+    lyra,
+    marketTotalValueSnapshotsQuery,
+    {
+      market: market.address.toLowerCase(),
+    },
+    options
+  )
   const marketLiquidity = data.map(marketTotalValueSnapshot => {
     const freeLiquidityBN = BigNumber.from(marketTotalValueSnapshot.freeLiquidity)
     const burnableLiquidityBN = BigNumber.from(marketTotalValueSnapshot.burnableLiquidity)

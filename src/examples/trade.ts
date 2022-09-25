@@ -77,7 +77,7 @@ export default async function trade(argv: string[]) {
   const response = await signer.sendTransaction(trade.tx)
   const receipt = await response.wait()
   console.log('tx', receipt.transactionHash)
-  const tradeEvent = TradeEvent.getByLogsSync(lyra, market, receipt.logs)[0]
+  const [tradeEvent] = await TradeEvent.getByHash(lyra, receipt.transactionHash)
 
   printObject('Result', {
     timestamp: tradeEvent.timestamp,
@@ -86,7 +86,7 @@ export default async function trade(argv: string[]) {
     premium: tradeEvent.premium,
     fee: tradeEvent.fee,
     feeComponents: tradeEvent.feeComponents,
-    setCollateralTo: tradeEvent.setCollateralTo,
+    collateral: tradeEvent.collateralValue,
   })
 
   console.log('Slippage', 100 * (fromBigNumber(trade.quoted.mul(UNIT).div(tradeEvent.premium)) - 1), '%')

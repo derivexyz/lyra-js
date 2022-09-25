@@ -29,6 +29,8 @@ import getMarketOwner from '../utils/getMaketOwner'
 import getMarketAddresses from '../utils/getMarketAddresses'
 import getMarketView from '../utils/getMarketView'
 import getMarketViews from '../utils/getMarketViews'
+import getOptionWrapperMarketId from '../utils/getOptionWrapperMarketId'
+import getOptionWrapperMarketIds from '../utils/getOptionWrapperMarketIds'
 import mergeAndSortSnapshots from '../utils/mergeAndSortSnapshots'
 
 export type MarketToken = {
@@ -108,6 +110,7 @@ export type MarketPendingLiquidityHistory = {
 export type MarketSpotPrice = {
   timestamp: number
   spotPrice: BigNumber
+  blockNumber: number
 }
 
 export type GreekCacheParams = {
@@ -220,8 +223,10 @@ export type GlobalCache = {
 
 export class Market {
   private lyra: Lyra
+  private liveBoardsMap: Record<number, OptionMarketViewer.BoardViewStructOutput>
   __source = DataSource.ContractCall
   __marketData: OptionMarketViewer.MarketViewWithBoardsStructOutput
+  __wrapperMarketId: number
   block: Block
   address: string
   name: string
@@ -238,10 +243,16 @@ export class Market {
   contractAddresses: MarketContractAddresses
   marketParameters: OptionMarketViewer.MarketParametersStructOutput
 
-  constructor(lyra: Lyra, marketView: OptionMarketViewer.MarketViewWithBoardsStructOutput, block: Block) {
+  constructor(
+    lyra: Lyra,
+    marketView: OptionMarketViewer.MarketViewWithBoardsStructOutput,
+    wrapperMarketId: number,
+    block: Block
+  ) {
     this.lyra = lyra
     this.block = block
     this.__marketData = marketView
+    this.__wrapperMarketId = wrapperMarketId
     this.marketParameters = marketView.marketParameters
 
     const fields = Market.getFields(marketView, block)
@@ -266,9 +277,16 @@ export class Market {
     this.depositDelay = fields.depositDelay
     this.withdrawalDelay = fields.withdrawalDelay
     this.liquidity = fields.liquidity
+    this.liveBoardsMap = marketView.liveBoards.reduce(
+      (map, boardView) => ({
+        ...map,
+        [boardView.boardId.toNumber()]: boardView,
+      }),
+      {}
+    )
   }
 
-  // TODO: @earthtojake Remove getFields
+  // TODO: @dappbeast Remove getFields
   private static getFields(marketView: OptionMarketViewer.MarketViewWithBoardsStructOutput, block: Block) {
     const address = marketView.marketAddresses.optionMarket
     const isPaused = marketView.isPaused
@@ -316,6 +334,7 @@ export class Market {
         symbol: baseKey,
         decimals: 18,
       },
+      // TODO: Make liquidity async to acquire accurate hedged NAV
       liquidity: {
         freeLiquidity,
         burnableLiquidity,
@@ -344,16 +363,21 @@ export class Market {
       getMarketView(lyra, marketAddressOrName),
       lyra.provider.getBlock('latest'),
     ])
-    return new Market(lyra, marketView, block)
+    const marketId = await getOptionWrapperMarketId(lyra, marketView.marketAddresses.optionMarket)
+    if (!marketId) {
+      throw new Error('Market ID not found')
+    }
+    return new Market(lyra, marketView, marketId, block)
   }
 
   static async getMany(lyra: Lyra, marketAddresses: string[]): Promise<Market[]> {
-    const [marketViews, block] = await Promise.all([
+    const [marketViews, marketsToId, block] = await Promise.all([
       getMarketViews(lyra, marketAddresses),
+      getOptionWrapperMarketIds(lyra),
       lyra.provider.getBlock('latest'),
     ])
     return marketViews.map(marketView => {
-      return new Market(lyra, marketView, block)
+      return new Market(lyra, marketView, marketsToId[marketView.marketAddresses.optionMarket], block)
     })
   }
 
@@ -367,19 +391,21 @@ export class Market {
 
   // Edges
 
-  // TODO: @earthtojake Make async
+  // TODO: @dappbeast Make async
   liveBoards(): Board[] {
-    return this.__marketData.liveBoards.map(boardView => {
-      return new Board(this.lyra, this, boardView, this.block)
-    })
+    return this.__marketData.liveBoards
+      .map(boardView => {
+        return new Board(this.lyra, this, boardView, this.block)
+      })
+      .sort((a, b) => a.expiryTimestamp - b.expiryTimestamp)
   }
 
   liveBoard(boardId: number): Board {
-    const board = this.liveBoards().find(board => board.id === boardId)
-    if (!board) {
+    const boardView = this.liveBoardsMap[boardId]
+    if (!boardView) {
       throw new Error('Board is expired or does not exist for market')
     }
-    return board
+    return new Board(this.lyra, this, boardView, this.block)
   }
 
   async board(boardId: number): Promise<Board> {
@@ -434,7 +460,7 @@ export class Market {
     size: BigNumber,
     options?: QuoteOptions
   ): Promise<Quote> {
-    // TODO: @earthtojake Make async
+    // TODO: @dappbeast Make async
     const strike = this.liveStrike(strikeId)
     const option = strike.option(isCall)
     return Quote.get(option, isBuy, size, options)
@@ -457,7 +483,7 @@ export class Market {
 
   // Dynamic fields
 
-  // TODO: @earthtojake Add pool + hedger net delta to viewer, make sync
+  // TODO: @dappbeast Add pool + hedger net delta to viewer, make sync
   async netGreeks(): Promise<MarketNetGreeks> {
     const poolHedger = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.ShortPoolHedger)
     const liquidityPool = getLyraMarketContract(this.lyra, this.contractAddresses, LyraMarketContractId.LiquidityPool)
@@ -482,12 +508,7 @@ export class Market {
 
   async liquidityHistory(options?: SnapshotOptions): Promise<MarketLiquidityHistory[]> {
     const liquidityHistory = await fetchLiquidityHistory(this.lyra, this, options)
-    const res = mergeAndSortSnapshots(liquidityHistory, 'timestamp', {
-      ...this.liquidity,
-      pendingDeposits: this.__marketData.totalQueuedDeposits ?? ZERO_BN,
-      pendingWithdrawals: this.__marketData.totalQueuedWithdrawals ?? ZERO_BN,
-      timestamp: this.block.timestamp,
-    })
+    const res = mergeAndSortSnapshots(liquidityHistory, 'timestamp')
     return res
   }
 
@@ -504,10 +525,11 @@ export class Market {
   }
 
   async spotPriceHistory(options?: SnapshotOptions): Promise<MarketSpotPrice[]> {
-    const spotPriceHistory = await fetchSpotPriceHistory(this.lyra, this, options)
+    const spotPriceHistory = await fetchSpotPriceHistory(this.lyra, this.address, options)
     return mergeAndSortSnapshots(spotPriceHistory, 'timestamp', {
       spotPrice: this.spotPrice,
       timestamp: this.block.timestamp,
+      blockNumber: this.block.number,
     })
   }
 
