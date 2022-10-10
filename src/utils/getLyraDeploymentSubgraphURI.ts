@@ -6,6 +6,8 @@ const getLyraDeploymentSubgraphURI = (deployment: Deployment): string => {
       return 'http://127.0.0.1:8080'
     case Deployment.Kovan:
       return 'https://api.thegraph.com/subgraphs/name/lyra-finance/kovan'
+    case Deployment.Goerli:
+      return 'https://api.thegraph.com/subgraphs/name/lyra-finance/testnet'
     case Deployment.Mainnet:
       return 'https://api.thegraph.com/subgraphs/name/lyra-finance/mainnet'
   }

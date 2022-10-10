@@ -6,6 +6,8 @@ const getLyraDeploymentRPCURL = (deployment: Deployment): string => {
       return 'http://127.0.0.1:8545'
     case Deployment.Kovan:
       return 'https://kovan.optimism.io'
+    case Deployment.Goerli:
+      return 'https://goerli.optimism.io'
     case Deployment.Mainnet:
       return 'https://mainnet.optimism.io'
   }

@@ -6,6 +6,8 @@ const getLyraDeploymentOptimismBlockSubgraphURI = (deployment: Deployment): stri
       return 'http://127.0.0.1:8081'
     case Deployment.Kovan:
       return 'https://api.thegraph.com/subgraphs/name/lyra-finance/optimism-kovan-blocks'
+    case Deployment.Goerli:
+      return 'https://api.thegraph.com/subgraphs/name/lyra-finance/optimism-testnet-blocks'
     case Deployment.Mainnet:
       return 'https://api.thegraph.com/subgraphs/name/lyra-finance/optimism-mainnet-blocks'
   }
