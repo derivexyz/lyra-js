@@ -325,8 +325,9 @@ export class GlobalRewardEpoch {
     const { longDatedPenalty, tenDeltaRebatePerOptionDay, ninetyDeltaRebatePerOptionDay } =
       this.epoch.tradingRewardConfig.shortCollatRewards
     const { lyraPortion, floorTokenPriceLyra, floorTokenPriceOP } = this.epoch.tradingRewardConfig.rewards
+    const absDelta = Math.abs(delta)
 
-    if (delta < 0.1 || delta > 0.9 || this.isComplete) {
+    if (absDelta < 0.1 || absDelta > 0.9 || this.isComplete) {
       return {
         lyra: 0,
         op: 0,
@@ -336,18 +337,16 @@ export class GlobalRewardEpoch {
     const timeDiscount = timeToExpiry >= SECONDS_IN_WEEK * 4 ? longDatedPenalty : 1
 
     const rebatePerDay =
-      tenDeltaRebatePerOptionDay +
-      (ninetyDeltaRebatePerOptionDay - tenDeltaRebatePerOptionDay) *
-        ((delta - 0.1) / (0.9 - 0.1)) *
-        contracts *
-        timeDiscount
+      (tenDeltaRebatePerOptionDay +
+        (ninetyDeltaRebatePerOptionDay - tenDeltaRebatePerOptionDay) *
+          ((absDelta - 0.1) / (0.9 - 0.1)) *
+          timeDiscount) *
+      contracts
 
     const lyraPrice = Math.max(this.prices.lyra, floorTokenPriceLyra)
     const opPrice = Math.max(this.prices.op, floorTokenPriceOP)
-
     const lyraRebatePerDay = lyraPortion * rebatePerDay
     const opRebatePerDay = (1 - lyraPortion) * rebatePerDay
-
     const lyraRewards = lyraPrice > 0 ? lyraRebatePerDay / lyraPrice : 0
     const opRewards = opPrice > 0 ? opRebatePerDay / opPrice : 0
 

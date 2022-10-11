@@ -20,7 +20,8 @@ export default function getPositionDataFromSubgraph(
   trades: TradeEventData[],
   collateralUpdates: CollateralUpdateData[],
   transfers: TransferEventData[],
-  settle: SettleEventData | null
+  settle: SettleEventData | null,
+  ignoreLiquidationPrice?: boolean
 ): PositionData {
   const id = position.positionId
   const strikeId = parseInt(position.strike.strikeId)
@@ -58,7 +59,7 @@ export default function getPositionDataFromSubgraph(
     isOpen || isSettled ? collateralUpdates[collateralUpdates.length - 1]?.amount ?? ZERO_BN : ZERO_BN
 
   const collateral: PositionCollateral | undefined = !isLong
-    ? liveOption
+    ? liveOption && !ignoreLiquidationPrice
       ? getPositionCollateral(liveOption, size, collateralAmount, isBaseCollateral)
       : {
           amount: collateralAmount,

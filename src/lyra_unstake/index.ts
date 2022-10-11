@@ -1,5 +1,5 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
-import { BigNumber } from 'ethers'
 
 import { Account, AccountLiquidityTokenBalance, AccountLyraStaking } from '..'
 import { ZERO_BN } from '../constants/bn'

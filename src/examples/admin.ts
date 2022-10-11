@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 import yargs from 'yargs'
 
 import fromBigNumber from '../utils/fromBigNumber'

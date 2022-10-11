@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { getAddress } from '@ethersproject/address'
 import { equalTo, get, orderByChild, query, ref } from 'firebase/database'
 
 import { FirebaseCollections } from '../constants/collections'
@@ -46,7 +46,7 @@ export default async function fetchAccountRewardEpochData(
   if (lyra.deployment !== Deployment.Mainnet) {
     throw new Error('GlobalRewardEpoch only supported on mainnet')
   }
-  const key = ethers.utils.getAddress(account as string)
+  const key = getAddress(account as string)
   if (!ACCOUNT_EPOCH_CACHE[key] || blockTimestamp > ACCOUNT_EPOCH_CACHE[key].lastUpdated + ACCOUNT_EPOCH_CACHE_LIFE) {
     const database = connectToFirebaseDatabase()
     const collectionReference = ref(database, FirebaseCollections.AvalonAccountRewardsEpoch)

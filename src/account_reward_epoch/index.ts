@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { AccountLiquidityTokenBalance } from '../account'
 import { Deployment, LyraContractId } from '../constants/contracts'

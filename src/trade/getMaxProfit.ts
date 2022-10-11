@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { Trade } from '..'
 import { MAX_BN, UNIT } from '../constants/bn'

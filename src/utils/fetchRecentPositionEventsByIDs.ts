@@ -8,7 +8,7 @@ import getCollateralUpdateDataFromRecentEvent from './getCollateralUpdateDataFro
 import getLyraMarketContract from './getLyraMarketContract'
 import getTradeDataFromRecentEvent from './getTradeDataFromRecentEvent'
 
-const BLOCK_LIMIT = 1_000
+const BLOCK_LIMIT = 100
 
 type PositionRecentEventData = Omit<PositionEventData, 'settle' | 'transfers'>
 
@@ -26,7 +26,7 @@ export default async function fetchRecentPositionEventsByIDs(
     return []
   }
 
-  // Approximately last 5 mins of events
+  // Approximately last 1 min of events
   const fromBlockNumber = market.block.number - BLOCK_LIMIT
 
   const [tradeEvents, updateEvents, transferEvents] = await Promise.all([

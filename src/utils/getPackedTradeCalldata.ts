@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import Lyra, { Position, TradeOptions } from '..'
 import { AccountStableBalance } from '..'
@@ -39,6 +39,7 @@ type TradeParams = {
 
 export default function getPackedTradeCalldata(
   lyra: Lyra,
+  wrapperMarketId: number,
   {
     option,
     isOpen,
@@ -64,7 +65,7 @@ export default function getPackedTradeCalldata(
   }
   const stable = stables.find(stable => stable.address === options.inputAsset?.address) ?? stables[0]
   const commonTradeParams = {
-    market: option.market().__wrapperMarketId,
+    market: wrapperMarketId,
     token: stable.id,
     iterations,
     inputAmount: bnToUint32(inputAmount, stable.decimals),

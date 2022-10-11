@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { LiquidityDeposit, LiquidityWithdrawal } from '..'
 import { UNIT, ZERO_BN } from '../constants/bn'

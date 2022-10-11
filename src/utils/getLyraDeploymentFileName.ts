@@ -1,6 +1,6 @@
 import { Deployment } from '../constants/contracts'
 
-const getLyraDeploymentFileName = (deployment: Deployment): string => {
+const getLyraDeploymentFilename = (deployment: Deployment): string => {
   switch (deployment) {
     case Deployment.Local:
       return 'lyra.mockSnx.json'
@@ -11,4 +11,4 @@ const getLyraDeploymentFileName = (deployment: Deployment): string => {
   }
 }
 
-export default getLyraDeploymentFileName
+export default getLyraDeploymentFilename

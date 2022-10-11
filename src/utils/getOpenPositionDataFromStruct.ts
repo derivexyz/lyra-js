@@ -12,7 +12,8 @@ import getIsCall from './getIsCall'
 import getIsLong from './getIsLong'
 
 export default function getOpenPositionDataFromStruct(
-  positionStruct: OptionToken.OptionPositionStructOutput,
+  owner: string,
+  positionStruct: OptionToken.OptionPositionStructOutput | OptionToken.PositionWithOwnerStructOutput,
   option: Option,
   trades: TradeEventData[],
   collateralUpdates: CollateralUpdateData[],
@@ -42,17 +43,17 @@ export default function getOpenPositionDataFromStruct(
   const isInTheMoney = isCall ? spotPriceOrAtExpiry.gt(strikePrice) : spotPriceOrAtExpiry.lt(strikePrice)
 
   // Events
-  const lastTransfer = transfers.length > 0 ? transfers[transfers.length - 1] : null
+  const firstTrade = trades[0]
   const lastTrade = trades[trades.length - 1]
-  // Owner is the last person to trade or be transferred to
-  const owner = lastTransfer ? lastTransfer.to : lastTrade.trader
 
   const market = option.market()
   const strike = option.strike()
   const board = option.board()
 
-  const openTimestamp = trades[0].timestamp
-  const closeTimestamp = isSettled && settle ? settle.timestamp : !isOpen ? trades[trades.length - 1].timestamp : null
+  // HACK: Ensure first trade timestamp is always set
+  const openTimestamp = firstTrade ? firstTrade.timestamp : 0
+  const closeTimestamp =
+    isSettled && settle ? settle.timestamp : !isOpen ? (lastTrade ? lastTrade.timestamp : null) : null
 
   return {
     id,

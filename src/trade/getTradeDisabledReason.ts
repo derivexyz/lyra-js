@@ -22,10 +22,12 @@ export default function getTradeDisabledReason(quote: Quote, trade: Trade): Trad
   }
 
   if (position) {
-    if (position.owner !== trade.owner) {
-      // Not correct owner
-      return TradeDisabledReason.PositionWrongOwner
-    } else if (!position.isOpen) {
+    // HACK (@michaelxuwu): temporarily allow position tx regardless of owner
+    // if (position.owner !== trade.owner) {
+    //   // Not correct owner
+    //   return TradeDisabledReason.PositionWrongOwner
+    // } else
+    if (!position.isOpen) {
       // Position is already closed
       return TradeDisabledReason.PositionClosed
     } else if (!trade.isOpen && trade.size.gt(position.size)) {

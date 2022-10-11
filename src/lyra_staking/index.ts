@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'

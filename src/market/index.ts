@@ -226,7 +226,7 @@ export class Market {
   private liveBoardsMap: Record<number, OptionMarketViewer.BoardViewStructOutput>
   __source = DataSource.ContractCall
   __marketData: OptionMarketViewer.MarketViewWithBoardsStructOutput
-  __wrapperMarketId: number
+  __wrapperMarketId: number | null
   block: Block
   address: string
   name: string
@@ -246,7 +246,7 @@ export class Market {
   constructor(
     lyra: Lyra,
     marketView: OptionMarketViewer.MarketViewWithBoardsStructOutput,
-    wrapperMarketId: number,
+    wrapperMarketId: number | null,
     block: Block
   ) {
     this.lyra = lyra
@@ -365,7 +365,7 @@ export class Market {
     ])
     const marketId = await getOptionWrapperMarketId(lyra, marketView.marketAddresses.optionMarket)
     if (!marketId) {
-      throw new Error('Market ID not found')
+      console.warn(`No market ID found for ${marketAddressOrName}`)
     }
     return new Market(lyra, marketView, marketId, block)
   }

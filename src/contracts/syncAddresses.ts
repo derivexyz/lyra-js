@@ -4,7 +4,7 @@ import yargs from 'yargs/yargs'
 
 import { Deployment, LyraContractId } from '../constants/contracts'
 import getLyraDeploymentDirectory from '../utils/getLyraDeploymentDirectory'
-import getLyraDeploymentFileName from '../utils/getLyraDeploymentFileName'
+import getLyraDeploymentFilename from '../utils/getLyraDeploymentFilename'
 
 const LYRA_TARGETS = [
   LyraContractId.OptionMarketViewer,
@@ -22,7 +22,7 @@ export default async function syncAddresses(_argv: string[]): Promise<void> {
   const deployment: Deployment = argv.deployment as unknown as Deployment
   const deploymentsDir = path.join(__dirname, '../../../../lyra/deployments', getLyraDeploymentDirectory(deployment))
   // TODO: @dappbeast account for other envs
-  const lyraFileName = getLyraDeploymentFileName(deployment)
+  const lyraFileName = getLyraDeploymentFilename(deployment)
   const lyraFilePath = path.join(deploymentsDir, lyraFileName)
   const addressesDir = path.join(__dirname, '../contracts/addresses')
   const lyraTargets = require(lyraFilePath).targets // eslint-disable-line

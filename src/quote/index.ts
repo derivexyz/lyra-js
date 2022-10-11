@@ -215,6 +215,8 @@ export class Quote {
     const iterationSize = size.div(numIterations)
     const iterations = []
 
+    const optionStdVega = strike.__strikeData.cachedGreeks.stdVega.mul(-1)
+
     for (let i = 0; i < numIterations; i++) {
       const quote = getQuoteIteration({
         option,
@@ -222,7 +224,7 @@ export class Quote {
         size: iterationSize,
         baseIv,
         skew,
-        netStdVega: marketView.globalNetGreeks.netStdVega,
+        netStdVega: optionStdVega,
         preTradeAmmNetStdVega,
         isForceClose,
       })

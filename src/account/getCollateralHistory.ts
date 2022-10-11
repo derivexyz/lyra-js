@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { CollateralUpdateEvent } from '..'
 import { PartialBlock } from '../constants/blocks'

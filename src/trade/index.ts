@@ -346,7 +346,9 @@ export class Trade {
     const isSwap = inputAsset && inputAsset.address !== this.market().quoteToken.address
     // Check if input fields (collateral and size) are 8dp
     // For a stable swapped trade, can't pack equivalent rounded inputs (no slippage tolerance for Curve swap)
+    const wrapperMarketId = option.market().__wrapperMarketId
     const isPackable =
+      wrapperMarketId !== null &&
       !isNDecimalPlaces(size, 9) &&
       (!this.collateral || !isNDecimalPlaces(this.collateral.amount, 9)) &&
       (!isSwap || !roundedInputAmount.eq(roundedMaxCost))
@@ -354,6 +356,7 @@ export class Trade {
     this.__calldata = isPackable
       ? getPackedTradeCalldata(
           this.lyra,
+          wrapperMarketId,
           {
             option,
             isOpen: this.isOpen,

@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { ZERO_BN } from '../constants/bn'
 import { Position } from '../position'

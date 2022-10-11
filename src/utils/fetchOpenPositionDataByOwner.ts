@@ -42,7 +42,15 @@ export default async function fetchOpenPositionDataByOwner(
           const isCall = getIsCall(positionStruct.optionType)
           const { trades, collateralUpdates, transfers, settle } = eventsByPositionID[positionId]
           const option = market.liveOption(strikeId, isCall)
-          return getOpenPositionDataFromStruct(positionStruct, option, trades, collateralUpdates, transfers, settle)
+          return getOpenPositionDataFromStruct(
+            owner,
+            positionStruct,
+            option,
+            trades,
+            collateralUpdates,
+            transfers,
+            settle
+          )
         })
       })
     )

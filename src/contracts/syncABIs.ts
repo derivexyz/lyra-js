@@ -5,7 +5,7 @@ import yargs from 'yargs/yargs'
 
 import { Deployment, LyraContractId, LyraMarketContractId } from '../constants/contracts'
 import getLyraDeploymentDirectory from '../utils/getLyraDeploymentDirectory'
-import getLyraDeploymentFileName from '../utils/getLyraDeploymentFileName'
+import getLyraDeploymentFilename from '../utils/getLyraDeploymentFilename'
 
 const LYRA_TARGETS = [
   LyraContractId.OptionMarketViewer,
@@ -30,7 +30,7 @@ export default async function syncABIs(_argv: string[]): Promise<void> {
   }).argv
   const deployment: Deployment = argv.deployment as unknown as Deployment
   const deploymentsDir = path.join(__dirname, '../../../../lyra/deployments', getLyraDeploymentDirectory(deployment))
-  const lyraFileName = getLyraDeploymentFileName(deployment)
+  const lyraFileName = getLyraDeploymentFilename(deployment)
   const lyraFilePath = path.join(deploymentsDir, lyraFileName)
   const abisDir = path.join(__dirname, '../contracts/abis')
   const typechainDir = path.join(__dirname, '../contracts/typechain')

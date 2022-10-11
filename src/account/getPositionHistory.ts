@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { PartialBlock } from '../constants/blocks'
 import { ZERO_BN } from '../constants/bn'

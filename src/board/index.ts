@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 import { Block } from '@ethersproject/providers'
-import { PopulatedTransaction } from 'ethers'
 
 import { ZERO_BN } from '../constants/bn'
 import { DataSource, LyraMarketContractId } from '../constants/contracts'

@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from 'ethers'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { LyraMarketContractId } from '../constants/contracts'
 import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'

@@ -1,5 +1,5 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
-import { BigNumber } from 'ethers'
 
 import Lyra, { LyraRegistry, OptionMarketViewer } from '..'
 import { LyraContractId } from '../constants/contracts'

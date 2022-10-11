@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from 'ethers'
+import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { LiquidityDelayReason } from '..'
 import { ZERO_BN } from '../constants/bn'

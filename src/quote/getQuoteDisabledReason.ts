@@ -73,11 +73,11 @@ export default function getQuoteDisabledReason(
     }
   } else {
     if (newBaseIv.lt(tradeLimitParams.minBaseIV)) {
-      return QuoteDisabledReason.IVTooHigh
+      return QuoteDisabledReason.IVTooLow
     } else if (newSkew.lt(tradeLimitParams.minSkew)) {
-      return QuoteDisabledReason.SkewTooHigh
+      return QuoteDisabledReason.SkewTooLow
     } else if (newIv.lt(tradeLimitParams.minVol)) {
-      return QuoteDisabledReason.VolTooHigh
+      return QuoteDisabledReason.VolTooLow
     }
   }
 

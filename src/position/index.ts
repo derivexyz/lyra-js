@@ -89,6 +89,7 @@ export enum PositionLeaderboardSortBy {
 
 export type PositionLeaderboardFilter = {
   minTotalPremiums?: BigNumber
+  minTotalLongPremiums?: BigNumber
   sortBy?: PositionLeaderboardSortBy
   secondarySortBy?: PositionLeaderboardSortBy
 } & PositionFilter
@@ -102,6 +103,7 @@ export type PositionLeaderboard = {
   unrealizedLongPnl: BigNumber
   unrealizedLongPnlPercentage: BigNumber
   totalPremiums: BigNumber
+  totalLongPremiums: BigNumber
   totalNotionalVolume: BigNumber
   positions: Position[]
 }
@@ -221,7 +223,7 @@ export class Position {
       ? this.market().spotPrice
       : this.isSettled
       ? this.spotPriceAtExpiry ?? ZERO_BN
-      : this.lastTrade().spotPrice
+      : this.lastTrade()?.spotPrice ?? ZERO_BN
     const breakEvenDiff = breakEven.sub(spotPrice)
     const toBreakEven = this.isCall
       ? spotPrice.gt(breakEven)
@@ -256,13 +258,13 @@ export class Position {
     return trades.map(trade => new TradeEvent(this.lyra, trade, collateralUpdatesByHash[trade.transactionHash]))
   }
 
-  firstTrade(): TradeEvent {
-    return this.trades()[0]
+  firstTrade(): TradeEvent | null {
+    return this.trades()[0] ?? null
   }
 
-  lastTrade(): TradeEvent {
+  lastTrade(): TradeEvent | null {
     const trades = this.trades()
-    return trades[trades.length - 1]
+    return trades[trades.length - 1] ?? null
   }
 
   collateralUpdates(): CollateralUpdateEvent[] {

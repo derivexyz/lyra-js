@@ -1,5 +1,5 @@
 import { getAddress } from '@ethersproject/address'
-import { BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
