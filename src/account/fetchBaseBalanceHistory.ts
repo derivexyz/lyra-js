@@ -17,7 +17,7 @@ export default async function fetchBaseBalanceHistory(
     to: TokenTransfer[]
   },
   baseBalances: AccountPortfolioBalance['baseAccountBalances'],
-  startBlock: PartialBlock,
+  startTimestamp: number,
   endBlock: PartialBlock
 ): Promise<BaseBalanceSnapshot[]> {
   const base = baseBalances.find(b => b.marketAddress === marketAddress)
@@ -26,20 +26,20 @@ export default async function fetchBaseBalanceHistory(
   }
 
   // base account history
-  const baseAccountHistory = getTokenBalanceHistory(base.address, base.balance, startBlock, tokenTransfers)
+  const baseAccountHistory = getTokenBalanceHistory(base.address, base.balance, startTimestamp, tokenTransfers)
 
   // base collateral history
   const shortBasePositions = positions.filter(
     p => !p.isLong && p.collateral?.isBase && p.marketAddress === marketAddress
   )
-  const baseCollateralHistory = getCollateralHistory(shortBasePositions, startBlock)
+  const baseCollateralHistory = getCollateralHistory(shortBasePositions, startTimestamp)
 
   if (!baseAccountHistory.length && !baseCollateralHistory.length) {
     return []
   }
 
   const spotHistory = await fetchSpotPriceHistory(lyra, marketAddress, {
-    startTimestamp: startBlock.timestamp,
+    startTimestamp: startTimestamp,
     endTimestamp: endBlock.timestamp,
   })
 

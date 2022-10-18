@@ -12,11 +12,11 @@ import getPositionHistory from './getPositionHistory'
 export default async function fetchPositionHistory(
   lyra: Lyra,
   positions: Position[],
-  startBlock: PartialBlock,
+  startTimestamp: number,
   endBlock: PartialBlock
 ): Promise<AccountPositionSnapshot[]> {
   const priceHistoryByIds = await fetchPositionPriceHistoryByIDs(lyra, positions, {
-    startTimestamp: startBlock.timestamp,
+    startTimestamp: startTimestamp,
     endTimestamp: endBlock.timestamp,
     period: SnapshotPeriod.OneDay,
   })
@@ -24,7 +24,7 @@ export default async function fetchPositionHistory(
   const positionHistories = positions
     .map(position => {
       const priceHistory: OptionPriceHistory[] = priceHistoryByIds[position.id] ?? []
-      const tradeHistory = getPositionHistory(position, startBlock)
+      const tradeHistory = getPositionHistory(position, startTimestamp)
 
       const combinedHistory = [...priceHistory, ...tradeHistory]
 

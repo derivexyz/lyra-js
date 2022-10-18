@@ -75,7 +75,6 @@ export type PositionFilter = {
   minOpenTimestamp?: number
   maxCloseTimestamp?: number
   minPositionIds?: Record<string, number>
-  maxPositionIds?: Record<string, number>
 }
 
 export enum PositionLeaderboardSortBy {

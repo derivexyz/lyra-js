@@ -1,6 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { PartialBlock } from '../constants/blocks'
 import { ZERO_BN } from '../constants/bn'
 import { Position } from '../position'
 import { SettleEvent } from '../settle_event'
@@ -14,7 +13,7 @@ export type PositionSnapshot = {
   settle?: SettleEvent | null
 }
 
-export default function getPositionHistory(position: Position, startBlock: PartialBlock): PositionSnapshot[] {
+export default function getPositionHistory(position: Position, startTimestamp: number): PositionSnapshot[] {
   const trades: PositionSnapshot[] = position
     .trades()
     .map(t => {
@@ -43,10 +42,10 @@ export default function getPositionHistory(position: Position, startBlock: Parti
   }
 
   // get last trade before start block cutoff, or default to 0 size / value
-  const startTrade = [...trades].reverse().find(s => s.blockNumber <= startBlock.number)
+  const startTrade = [...trades].reverse().find(s => s.timestamp <= startTimestamp)
 
   return [
-    { blockNumber: startBlock.number, timestamp: startBlock.timestamp, size: startTrade?.size ?? ZERO_BN },
-    ...trades.filter(s => s.blockNumber >= startBlock.number),
+    { blockNumber: 0, timestamp: startTimestamp, size: startTrade?.size ?? ZERO_BN },
+    ...trades.filter(s => s.timestamp >= startTimestamp),
   ]
 }

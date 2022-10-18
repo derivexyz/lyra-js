@@ -29,7 +29,6 @@ import { TransferEvent } from './transfer_event'
 import fetchLeaderboard from './utils/fetchLeaderboard'
 import fetchPositionEventDataByHash from './utils/fetchPositionEventDataByHash'
 import getLyraDeploymentForChainId from './utils/getLyraDeploymentForChainId'
-import getLyraDeploymentOptimismBlockSubgraphURI from './utils/getLyraDeploymentOptimismBlockSubgraphURI'
 import getLyraDeploymentProvider from './utils/getLyraDeploymentProvider'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
 import getMarketAddresses from './utils/getMarketAddresses'
@@ -37,7 +36,6 @@ import getMarketAddresses from './utils/getMarketAddresses'
 export type LyraConfig = {
   provider: JsonRpcProvider
   subgraphUri?: string
-  blockSubgraphUri?: string
 }
 
 export { Deployment } from './constants/contracts'
@@ -47,8 +45,6 @@ export default class Lyra {
   provider: JsonRpcProvider
   subgraphUri: string
   subgraphClient: GraphQLClient
-  blockSubgraphUri: string
-  blockSubgraphClient: GraphQLClient
   constructor(config: LyraConfig | Deployment | number = Deployment.Mainnet) {
     if (typeof config === 'object') {
       // Config
@@ -56,23 +52,19 @@ export default class Lyra {
       this.provider = config.provider
       this.deployment = getLyraDeploymentForChainId(this.provider.network.chainId)
       this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.deployment)
-      this.blockSubgraphUri = configObj?.blockSubgraphUri ?? getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     } else if (typeof config === 'number') {
       // Chain ID
       this.deployment = getLyraDeploymentForChainId(config)
       this.provider = getLyraDeploymentProvider(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
-      this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     } else {
       // String
       this.deployment = config
       this.provider = getLyraDeploymentProvider(this.deployment)
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.deployment)
-      this.blockSubgraphUri = getLyraDeploymentOptimismBlockSubgraphURI(this.deployment)
     }
 
     this.subgraphClient = new GraphQLClient(this.subgraphUri)
-    this.blockSubgraphClient = new GraphQLClient(this.blockSubgraphUri)
   }
 
   // Quote

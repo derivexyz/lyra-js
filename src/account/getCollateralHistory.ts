@@ -1,7 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { CollateralUpdateEvent } from '..'
-import { PartialBlock } from '../constants/blocks'
 import { ZERO_BN } from '../constants/bn'
 import { Position } from '../position'
 import { SettleEvent } from '../settle_event'
@@ -15,7 +14,7 @@ export type CollateralSnapshot = {
   timestamp: number
 }
 
-export default function getCollateralHistory(positions: Position[], startBlock: PartialBlock): CollateralSnapshot[] {
+export default function getCollateralHistory(positions: Position[], startTimestamp: number): CollateralSnapshot[] {
   const collateralUpdates = positions.flatMap(p => p.collateralUpdates())
   const settles = filterNulls(positions.map(p => p.settle()))
 
@@ -83,16 +82,16 @@ export default function getCollateralHistory(positions: Position[], startBlock: 
   }
 
   // get last balance before start block cutoff, or default to 0 balance
-  const startBalance = [...history].reverse().find(s => s.blockNumber <= startBlock.number)?.balance ?? ZERO_BN
+  const startBalance = [...history].reverse().find(s => s.timestamp <= startTimestamp)?.balance ?? ZERO_BN
 
   return [
     {
-      blockNumber: startBlock.number,
-      timestamp: startBlock.timestamp,
+      blockNumber: 0,
+      timestamp: startTimestamp,
       balance: startBalance,
       collateralUpdates: [],
       settles: [],
     },
-    ...history.filter(s => s.blockNumber >= startBlock.number),
+    ...history.filter(s => s.timestamp >= startTimestamp),
   ]
 }

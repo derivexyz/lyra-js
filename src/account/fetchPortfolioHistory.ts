@@ -4,8 +4,6 @@ import { TokenTransfer } from '../constants/queries'
 import Lyra from '../lyra'
 import { SettleEvent } from '../settle_event'
 import { TradeEvent } from '../trade_event'
-import fetchBlockForTimestamp from '../utils/fetchBlockForTimestamp'
-import fetchBlockTimestamps from '../utils/fetchBlockTimestamps'
 import filterNulls from '../utils/filterNulls'
 import fromBigNumber from '../utils/fromBigNumber'
 import groupTimeSnapshots from '../utils/groupTimeSnapshots'
@@ -18,14 +16,13 @@ import getStableBalanceHistory from './getStableBalanceHistory'
 export default async function fetchPortfolioHistory(
   lyra: Lyra,
   owner: string,
-  startTimestamp: number
+  _startTimestamp: number
 ): Promise<AccountPortfolioSnapshot[]> {
-  const [portfolio, positions, _startBlock, endBlock, tokenTransfers] = await Promise.all([
+  const [portfolio, positions, endBlock, tokenTransfers] = await Promise.all([
     lyra.account(owner).portfolioBalance(),
     lyra.positions(owner),
-    fetchBlockForTimestamp(lyra, startTimestamp),
     lyra.provider.getBlock('latest'),
-    fetchTokenTransfers(lyra, owner, startTimestamp),
+    fetchTokenTransfers(lyra, owner, _startTimestamp),
   ])
 
   const latestSnapshot = {
@@ -49,10 +46,7 @@ export default async function fetchPortfolioHistory(
   }
 
   // limit earliest timestamp to first trade
-  const startBlock =
-    firstTrade.blockNumber > _startBlock.number
-      ? { number: firstTrade.blockNumber, timestamp: firstTrade.timestamp }
-      : _startBlock
+  const startTimestamp = firstTrade.timestamp > _startTimestamp ? firstTrade.timestamp : _startTimestamp
 
   const [_baseHistories, positionHistory] = await Promise.all([
     Promise.all(
@@ -63,15 +57,20 @@ export default async function fetchPortfolioHistory(
           positions,
           tokenTransfers,
           portfolio.baseAccountBalances,
-          startBlock,
+          startTimestamp,
           endBlock
         )
       )
     ),
-    fetchPositionHistory(lyra, positions, startBlock, endBlock),
+    fetchPositionHistory(lyra, positions, startTimestamp, endBlock),
   ])
 
-  const stableHistory = getStableBalanceHistory(positions, tokenTransfers, portfolio.stableAccountBalances, startBlock)
+  const stableHistory = getStableBalanceHistory(
+    positions,
+    tokenTransfers,
+    portfolio.stableAccountBalances,
+    startTimestamp
+  )
   const baseHistories = _baseHistories.filter(b => b.length)
 
   const combinedHistory = [...baseHistories.flat(), ...stableHistory, ...positionHistory]
@@ -115,7 +114,13 @@ export default async function fetchPortfolioHistory(
 
   const uniqueBlockNumbers = Array.from(new Set(combinedHistory.map(s => s.blockNumber))).sort()
 
-  const timestampsByBlock = await fetchBlockTimestamps(lyra, uniqueBlockNumbers)
+  const timestampsByBlock: Record<number, number> = combinedHistory.reduce(
+    (timestampsByBlock, s) => ({
+      ...timestampsByBlock,
+      [s.blockNumber]: s.timestamp,
+    }),
+    {}
+  )
 
   const history: AccountPortfolioSnapshot[] = []
 
@@ -170,9 +175,12 @@ export default async function fetchPortfolioHistory(
     const baseAccountBalances = [...currBaseSnapshots]
     const stableAccountBalances = currStableSnapshot?.accountBalances ? [...currStableSnapshot.accountBalances] : []
 
+    // Catch blockNumber=0 as a snapshot for the start timestamp
+    const timestamp = blockNumber === 0 ? startTimestamp : timestampsByBlock[blockNumber]
+
     const snapshot = {
       blockNumber,
-      timestamp: timestampsByBlock[blockNumber],
+      timestamp,
       longOptionValue,
       shortOptionValue,
       baseAccountValue,

@@ -285,6 +285,7 @@ export const SHORT_OPTION_FRAGMENT = `
 
 export const OPTION_PRICE_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   timestamp
+  blockTimestamp
   optionPrice
   id
   blockNumber
@@ -513,6 +514,7 @@ export type MarketPendingLiquiditySnapshotQueryResult = {
 
 export type OptionPriceAndGreeksSnapshotQueryResult = {
   timestamp: number
+  blockTimestamp: number
   blockNumber: number
   optionPrice: string
   id: string

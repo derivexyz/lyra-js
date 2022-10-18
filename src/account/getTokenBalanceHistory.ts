@@ -1,6 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { PartialBlock } from '../constants/blocks'
 import { TokenTransfer } from '../constants/queries'
 
 export type TokenBalanceSnapshot = { balance: BigNumber; blockNumber: number; timestamp: number }
@@ -8,7 +7,7 @@ export type TokenBalanceSnapshot = { balance: BigNumber; blockNumber: number; ti
 export default function getTokenBalanceHistory(
   tokenAddress: string,
   startTokenBalance: BigNumber,
-  startBlock: PartialBlock,
+  startTimestamp: number,
   tokenTransfers: {
     from: TokenTransfer[]
     to: TokenTransfer[]
@@ -16,10 +15,10 @@ export default function getTokenBalanceHistory(
 ): TokenBalanceSnapshot[] {
   // Filter by token address
   const transferFromEvents = tokenTransfers.from.filter(
-    t => t.tokenAddress === tokenAddress && t.blockNumber >= startBlock.number
+    t => t.tokenAddress === tokenAddress && t.timestamp >= startTimestamp
   )
   const transferToEvents = tokenTransfers.to.filter(
-    t => t.tokenAddress === tokenAddress && t.blockNumber >= startBlock.number
+    t => t.tokenAddress === tokenAddress && t.timestamp >= startTimestamp
   )
 
   if (!transferFromEvents.length && !transferToEvents.length && startTokenBalance.isZero()) {
@@ -82,8 +81,8 @@ export default function getTokenBalanceHistory(
   // append artifical event for start block
   history.unshift({
     balance: currBalance,
-    blockNumber: startBlock.number,
-    timestamp: startBlock.timestamp,
+    blockNumber: 0,
+    timestamp: startTimestamp,
   })
 
   return history

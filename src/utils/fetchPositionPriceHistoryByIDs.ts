@@ -49,7 +49,7 @@ export default async function fetchPositionPriceHistoryByIDs(
     const prices = dict[snapshot.option.id] ?? []
     prices.push({
       optionPrice: BigNumber.from(snapshot.optionPrice),
-      timestamp: snapshot.timestamp,
+      timestamp: snapshot.blockTimestamp, // Use last updated timestamp
       blockNumber: snapshot.blockNumber,
     })
     return {

@@ -1,4 +1,3 @@
-import { PartialBlock } from '../constants/blocks'
 import { ZERO_BN } from '../constants/bn'
 import { TokenTransfer } from '../constants/queries'
 import { Position } from '../position'
@@ -14,7 +13,7 @@ export default function getStableBalanceHistory(
     to: TokenTransfer[]
   },
   stableBalances: AccountPortfolioBalance['stableAccountBalances'],
-  startBlock: PartialBlock
+  startTimestamp: number
 ): StableBalanceSnapshot[] {
   const sUSDBalance = stableBalances.find(b => b.symbol === 'sUSD')
   if (!sUSDBalance) {
@@ -23,7 +22,7 @@ export default function getStableBalanceHistory(
 
   const stableAccountHistories = [sUSDBalance]
     .map(stable =>
-      getTokenBalanceHistory(stable.address, stable.balance, startBlock, tokenTransfers).map(snap => ({
+      getTokenBalanceHistory(stable.address, stable.balance, startTimestamp, tokenTransfers).map(snap => ({
         ...snap,
         symbol: stable.symbol,
         address: stable.address,
@@ -33,7 +32,7 @@ export default function getStableBalanceHistory(
     .filter(s => s.length)
 
   const shortStablePositions = positions.filter(p => !p.isLong && !p.collateral?.isBase)
-  const stableCollateralHistory = getCollateralHistory(shortStablePositions, startBlock)
+  const stableCollateralHistory = getCollateralHistory(shortStablePositions, startTimestamp)
 
   const combinedHistory = [...stableAccountHistories.flat(), ...stableCollateralHistory]
 

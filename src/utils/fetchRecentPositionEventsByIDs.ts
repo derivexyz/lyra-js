@@ -27,15 +27,17 @@ export default async function fetchRecentPositionEventsByIDs(
   }
 
   // Approximately last 1 min of events
-  const fromBlockNumber = market.block.number - BLOCK_LIMIT
+  const toBlockNumber = (await lyra.provider.getBlock('latest')).number
+  const fromBlockNumber = toBlockNumber - BLOCK_LIMIT
 
   const [tradeEvents, updateEvents, transferEvents] = await Promise.all([
-    marketContract.queryFilter(marketContract.filters.Trade(null, null, positionIds), fromBlockNumber),
+    marketContract.queryFilter(marketContract.filters.Trade(null, null, positionIds), fromBlockNumber, toBlockNumber),
     tokenContract.queryFilter(
       tokenContract.filters.PositionUpdated(positionIds, null, POSITION_UPDATED_TYPES),
-      fromBlockNumber
+      fromBlockNumber,
+      toBlockNumber
     ),
-    tokenContract.queryFilter(tokenContract.filters.Transfer(null, null, positionIds), fromBlockNumber),
+    tokenContract.queryFilter(tokenContract.filters.Transfer(null, null, positionIds), fromBlockNumber, toBlockNumber),
   ])
 
   const transfersByIdAndHash: Record<string, ContractTransferEvent[]> = transferEvents.reduce((dict, transfer) => {

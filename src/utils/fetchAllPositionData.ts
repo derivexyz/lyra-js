@@ -36,32 +36,29 @@ export default async function fetchAllPositionData(lyra: Lyra, filter?: Position
   } else {
     markets = await lyra.markets()
   }
-  const data = await Promise.all(
-    markets.map(market => {
-      const minIds = filter?.minPositionIds ?? {}
-      const maxids = filter?.maxPositionIds ?? {}
-      const minKey =
-        Object.keys(minIds).find(
-          id => id.toLowerCase() === market.address.toLowerCase() || id.toLowerCase() === market.name.toLowerCase()
-        ) ?? ''
-      const maxKey =
-        Object.keys(maxids).find(
-          id => id.toLowerCase() === market.address.toLowerCase() || id.toLowerCase() === market.name.toLowerCase()
-        ) ?? ''
-      const min = minIds[minKey] ?? 0
-      const max = maxids[maxKey] ?? 0
-      return subgraphRequestWithLoop<PositionQueryResult>(
-        lyra,
-        positionsQuery,
-        { min, max, market: market.address.toLowerCase() },
-        'positionId',
-        {
-          increment: 1000,
-          batch: 15,
-        }
-      )
-    })
-  )
+  const [data, block] = await Promise.all([
+    Promise.all(
+      markets.map(market => {
+        const minIds = filter?.minPositionIds ?? {}
+        const minKey =
+          Object.keys(minIds).find(
+            id => id.toLowerCase() === market.address.toLowerCase() || id.toLowerCase() === market.name.toLowerCase()
+          ) ?? ''
+        const min = minIds[minKey] ?? 0
+        return subgraphRequestWithLoop<PositionQueryResult>(
+          lyra,
+          positionsQuery,
+          { min, max: 0, market: market.address.toLowerCase() },
+          'positionId',
+          {
+            increment: 1000,
+            batch: 15,
+          }
+        )
+      })
+    ),
+    lyra.provider.getBlock('latest'),
+  ])
 
   const marketsByAddress: Record<string, Market> = markets.reduce(
     (dict, market) => ({ ...dict, [market.address]: market }),
@@ -73,7 +70,21 @@ export default async function fetchAllPositionData(lyra: Lyra, filter?: Position
 
   const positions = data
     .flat()
-    .filter(pos => pos.openTimestamp >= minOpenTimestamp && pos.closeTimestamp <= maxCloseTimestamp)
+    .filter(pos => {
+      // Ignore any positions opened before min open timestamp
+      if (pos.openTimestamp < minOpenTimestamp) {
+        return false
+      }
+      // After the close timestamp, ignore any open positions
+      if (block.timestamp > maxCloseTimestamp && !pos.closeTimestamp) {
+        return false
+      }
+      // Ignore any positions closed after max close timestamp
+      if (pos.closeTimestamp > maxCloseTimestamp) {
+        return false
+      }
+      return true
+    })
     .map(pos => {
       const trades = pos.trades.map(getTradeDataFromSubgraph)
       const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)

@@ -75,9 +75,14 @@ export default function getPositionPnl(position: Position): PositionPnl {
     let settlementPnl = ZERO_BN
     let settlementPnlPercentage = ZERO_BN
     if (settle) {
-      const lockedCollateralValue = position.collateral?.value ?? ZERO_BN // Always > 0
-      const settlementValue = settle.returnedCollateralValue
-      settlementPnl = settlementValue.add(totalAverageOpenCost).sub(lockedCollateralValue)
+      const lockedCollateralAmount = position.collateral?.amount ?? ZERO_BN // Always > 0
+      const spotPriceAtExpiry = settle.spotPriceAtExpiry
+      const settlementAmount = settle.returnedCollateralAmount
+      const lostCollateralAmount = lockedCollateralAmount.sub(settlementAmount) // E.g. locked 5 sETH, returned 3 sETH, lost 2 sETH
+      const lostCollateralValue = settle.isBaseCollateral
+        ? lostCollateralAmount.mul(spotPriceAtExpiry).div(UNIT) // E.g. Sold 2 sETH to cover cash-settled obligation on expriy
+        : lostCollateralAmount
+      settlementPnl = totalAverageOpenCost.sub(lostCollateralValue)
       settlementPnlPercentage = totalAverageOpenCost.gt(0) ? settlementPnl.mul(UNIT).div(totalAverageOpenCost) : ZERO_BN
     }
 

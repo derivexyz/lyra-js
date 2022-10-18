@@ -1,5 +1,5 @@
 import { getAddress } from '@ethersproject/address'
-import { equalTo, get, orderByChild, query, ref } from 'firebase/database'
+import { get, query, ref } from 'firebase/database'
 
 import { FirebaseCollections } from '../constants/collections'
 import Lyra, { Deployment } from '../lyra'
@@ -49,8 +49,8 @@ export default async function fetchAccountRewardEpochData(
   const key = getAddress(account as string)
   if (!ACCOUNT_EPOCH_CACHE[key] || blockTimestamp > ACCOUNT_EPOCH_CACHE[key].lastUpdated + ACCOUNT_EPOCH_CACHE_LIFE) {
     const database = connectToFirebaseDatabase()
-    const collectionReference = ref(database, FirebaseCollections.AvalonAccountRewardsEpoch)
-    const queryReference = query(collectionReference, orderByChild('account'), equalTo(key))
+    const collectionReference = ref(database, `${FirebaseCollections.AvalonAccountRewardsEpoch}/${key}`)
+    const queryReference = query(collectionReference)
     const epochPromise = async (): Promise<AccountRewardEpochData[]> => {
       const snapshot = await get(queryReference)
       return snapshot.val() ? Object.values(snapshot.val()) : []
