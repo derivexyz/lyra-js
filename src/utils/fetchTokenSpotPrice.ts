@@ -13,7 +13,7 @@ import fromBigNumber from './fromBigNumber'
 
 export default async function fetchTokenSpotPrice(lyra: Lyra, tokenNameOrAddress: string): Promise<number> {
   // BLOCK: remove before merging
-  if (lyra.deployment === Deployment.Kovan) {
+  if (lyra.deployment === Deployment.Testnet) {
     return 0.05
   }
   const oneInchOffchainOracle = new Contract(

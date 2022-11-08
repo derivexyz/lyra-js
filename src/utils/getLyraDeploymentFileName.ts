@@ -4,7 +4,7 @@ const getLyraDeploymentFilename = (deployment: Deployment): string => {
   switch (deployment) {
     case Deployment.Local:
       return 'lyra.mockSnx.json'
-    case Deployment.Kovan:
+    case Deployment.Testnet:
       return 'lyra.realPricing.json'
     case Deployment.Mainnet:
       return 'lyra.json'

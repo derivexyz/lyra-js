@@ -35,7 +35,7 @@ export enum OptionType {
 
 export enum Deployment {
   Local = 'local',
-  Kovan = 'kovan',
+  Testnet = 'testnet',
   Mainnet = 'mainnet',
 }
 export const DEFAULT_ITERATIONS = 1

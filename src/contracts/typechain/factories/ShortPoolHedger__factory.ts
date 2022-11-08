@@ -161,6 +161,27 @@ const _abi = [
       },
       {
         internalType: "address",
+        name: "approvee",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "QuoteApprovalFailure",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "thrower",
+        type: "address",
+      },
+      {
+        internalType: "address",
         name: "from",
         type: "address",
       },

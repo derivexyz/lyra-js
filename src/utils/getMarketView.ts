@@ -15,6 +15,7 @@ export default async function getMarketView(
     return await viewer.getMarket(marketAddressOrName)
   } else {
     const baseKey = parseBaseKey(marketAddressOrName)
-    return await viewer.getMarketForBaseKey(baseKey)
+    const baseKeyMarket = await viewer.getMarketForBaseKey(baseKey)
+    return baseKeyMarket
   }
 }

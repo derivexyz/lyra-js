@@ -1,6 +1,6 @@
 {
   "name": "@lyrafinance/lyra-js",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "A JavaScript SDK for Optimistic Ethereum and the Lyra Protocol.",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -38,7 +38,6 @@
     "@ethersproject/strings": "^5.6.0",
     "@ethersproject/units": "^5.6.0",
     "@ethersproject/wallet": "^5.6.0",
-    "ethers": "^5.6.0",
     "firebase": "^9.9.4",
     "graphql": "^16.4.0",
     "graphql-request": "^4.2.0"

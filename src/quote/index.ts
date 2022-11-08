@@ -228,6 +228,18 @@ export class Quote {
         preTradeAmmNetStdVega,
         isForceClose,
       })
+      console.log("This is quote start")
+      console.log("This is quote.forceClosePenalty", fromBigNumber(quote.forceClosePenalty))
+      console.log("This is quote.newBaseIv", fromBigNumber(quote.newBaseIv))
+      console.log("This is quote.newSkew", fromBigNumber(quote.newSkew))
+      console.log("This is quote.optionPriceFee", fromBigNumber(quote.optionPriceFee))
+      console.log("This is quote.postTradeAmmNetStdVega", fromBigNumber(quote.postTradeAmmNetStdVega))
+      console.log("This is quote.premium", fromBigNumber(quote.premium))
+      console.log("This is quote.spotPriceFee", fromBigNumber(quote.spotPriceFee))
+      console.log("This is quote.varianceFee", fromBigNumber(quote.varianceFee.varianceFee))
+      console.log("This is quote.vegaUtilFee", fromBigNumber(quote.vegaUtilFee.vegaUtilFee))
+      console.log("This is quote.volTraded", fromBigNumber(quote.volTraded))
+      console.log("This is quote end")
       iterations.push(quote)
 
       // Update skew, IV, AMM net std vega

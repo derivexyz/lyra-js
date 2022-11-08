@@ -31,11 +31,13 @@ export default function getQuoteIteration({
   isForceClose: boolean
 }): QuoteIteration {
   // Post-impact iv and skew
-  const { newBaseIv, newSkew } = getIVImpactForTrade(option, baseIv, skew, size, isBuy)
+  const { newBaseIv: proposedNewBaseIv, newSkew } = getIVImpactForTrade(option, baseIv, skew, size, isBuy)
 
   // Calculate (force close) base bsc price per option
-  const basePriceData = getPrice(option, newBaseIv, newSkew)
-  const { price, volTraded } = isForceClose ? getForceClosePrice(option, isBuy, newBaseIv, newSkew) : basePriceData
+  const basePriceData = getPrice(option, proposedNewBaseIv, newSkew)
+  const { price, volTraded } = isForceClose
+    ? getForceClosePrice(option, isBuy, proposedNewBaseIv, newSkew)
+    : basePriceData
   const basePrice = basePriceData.price
 
   // Penalty
@@ -61,6 +63,9 @@ export default function getQuoteIteration({
   // Vega util fee
   const vegaUtilFee = getVegaUtilFee(option.market(), preTradeAmmNetStdVega, postTradeAmmNetStdVega, volTraded, size)
 
+  // Skip baseIv update on force close
+  const newBaseIv = isForceClose ? baseIv : proposedNewBaseIv
+
   // Variance fee
   const varianceFee = getVarianceFee(option, volTraded, newSkew, newBaseIv, size, isForceClose)
 
@@ -82,7 +87,6 @@ export default function getQuoteIteration({
     postTradeAmmNetStdVega,
     volTraded,
     newSkew,
-    // Skip baseIv update on force close
-    newBaseIv: isForceClose ? baseIv : newBaseIv,
+    newBaseIv,
   }
 }

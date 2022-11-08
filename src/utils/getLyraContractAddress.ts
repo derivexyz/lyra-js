@@ -1,12 +1,12 @@
 import { Deployment, LyraContractId } from '../constants/contracts'
-import KOVAN_ADDRESS_MAP from '../contracts/addresses/kovan.addresses.json'
-import KOVAN_MISC_ADDRESS_MAP from '../contracts/addresses/kovan-misc.addresses.json'
 import MAINNET_ADDRESS_MAP from '../contracts/addresses/mainnet.addresses.json'
 import MAINNET_MISC_ADDRESS_MAP from '../contracts/addresses/mainnet-misc.addresses.json'
+import TESTNET_ADDRESS_MAP from '../contracts/addresses/testnet.addresses.json'
+import TESTNET_MISC_ADDRESS_MAP from '../contracts/addresses/testnet-misc.addresses.json'
 
 const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Record<string, string> => {
-  const kovanAddressMap = KOVAN_ADDRESS_MAP
-  const kovanMiscAddressMap = KOVAN_MISC_ADDRESS_MAP
+  const goerliAddressMap = TESTNET_ADDRESS_MAP
+  const goerliMiscAddressMap = TESTNET_MISC_ADDRESS_MAP
   const mainnetAddressMap = MAINNET_ADDRESS_MAP
   const mainnetMiscAddressMap = MAINNET_MISC_ADDRESS_MAP
   switch (contractId) {
@@ -15,8 +15,8 @@ const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Reco
     case LyraContractId.SynthetixAdapter:
     case LyraContractId.TestFaucet:
     case LyraContractId.LyraRegistry:
-      return deployment === Deployment.Kovan
-        ? kovanAddressMap
+      return deployment === Deployment.Testnet
+        ? goerliAddressMap
         : deployment === Deployment.Mainnet
         ? mainnetAddressMap
         : {}
@@ -24,8 +24,8 @@ const getAddressMap = (deployment: Deployment, contractId: LyraContractId): Reco
     case LyraContractId.MultiDistributor:
     case LyraContractId.ArrakisPool:
     case LyraContractId.WethLyraStakingRewards:
-      return deployment === Deployment.Kovan
-        ? kovanMiscAddressMap
+      return deployment === Deployment.Testnet
+        ? goerliMiscAddressMap
         : deployment === Deployment.Mainnet
         ? mainnetMiscAddressMap
         : {}

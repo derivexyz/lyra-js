@@ -135,7 +135,6 @@ export class GlobalRewardEpoch {
       lyra.markets(),
       lyra.lyraStaking(),
     ])
-
     const prices = { lyra: lyraPrice, op: opPrice }
     return epochs
       .map((epoch, idx) => new GlobalRewardEpoch(lyra, idx + 1, epoch, prices, markets, staking, block))
@@ -320,10 +319,15 @@ export class GlobalRewardEpoch {
     return { lyra: lyraRewards, op: opRewards }
   }
 
-  shortCollateralYieldPerDay(contracts: number, delta: number, expiryTimestamp: number): GlobalRewardEpochTokens {
+  shortCollateralYieldPerDay(
+    contracts: number,
+    delta: number,
+    expiryTimestamp: number,
+    marketAddressOrName: string
+  ): GlobalRewardEpochTokens {
     const timeToExpiry = Math.max(0, expiryTimestamp - this.blockTimestamp)
     const { longDatedPenalty, tenDeltaRebatePerOptionDay, ninetyDeltaRebatePerOptionDay } =
-      this.epoch.tradingRewardConfig.shortCollatRewards
+      this.epoch.tradingRewardConfig.shortCollatRewards[`s${marketAddressOrName.toUpperCase()}`]
     const { lyraPortion, floorTokenPriceLyra, floorTokenPriceOP } = this.epoch.tradingRewardConfig.rewards
     const absDelta = Math.abs(delta)
 
