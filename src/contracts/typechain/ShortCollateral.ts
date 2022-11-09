@@ -12,188 +12,290 @@ import {
   PopulatedTransaction,
   Signer,
   utils,
-} from 'ethers'
-import { FunctionFragment, Result, EventFragment } from '@ethersproject/abi'
-import { Listener, Provider } from '@ethersproject/providers'
-import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from './common'
+} from "ethers";
+import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
+import { Listener, Provider } from "@ethersproject/providers";
+import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace OptionToken {
   export type LiquidationFeesStruct = {
-    returnCollateral: BigNumberish
-    lpPremiums: BigNumberish
-    lpFee: BigNumberish
-    liquidatorFee: BigNumberish
-    smFee: BigNumberish
-    insolventAmount: BigNumberish
-  }
+    returnCollateral: BigNumberish;
+    lpPremiums: BigNumberish;
+    lpFee: BigNumberish;
+    liquidatorFee: BigNumberish;
+    smFee: BigNumberish;
+    insolventAmount: BigNumberish;
+  };
 
-  export type LiquidationFeesStructOutput = [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
-    returnCollateral: BigNumber
-    lpPremiums: BigNumber
-    lpFee: BigNumber
-    liquidatorFee: BigNumber
-    smFee: BigNumber
-    insolventAmount: BigNumber
-  }
+  export type LiquidationFeesStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    returnCollateral: BigNumber;
+    lpPremiums: BigNumber;
+    lpFee: BigNumber;
+    liquidatorFee: BigNumber;
+    smFee: BigNumber;
+    insolventAmount: BigNumber;
+  };
 }
 
 export interface ShortCollateralInterface extends utils.Interface {
-  contractName: 'ShortCollateral'
+  contractName: "ShortCollateral";
   functions: {
-    'LPBaseExcess()': FunctionFragment
-    'LPQuoteExcess()': FunctionFragment
-    'acceptOwnership()': FunctionFragment
-    'boardSettlement(uint256,uint256)': FunctionFragment
-    'init(address,address,address,address,address,address)': FunctionFragment
-    'nominateNewOwner(address)': FunctionFragment
-    'nominatedOwner()': FunctionFragment
-    'owner()': FunctionFragment
-    'routeLiquidationFunds(address,address,uint8,(uint256,uint256,uint256,uint256,uint256,uint256))': FunctionFragment
-    'sendBaseCollateral(address,uint256)': FunctionFragment
-    'sendQuoteCollateral(address,uint256)': FunctionFragment
-    'settleOptions(uint256[])': FunctionFragment
-    'updateDelegateApproval()': FunctionFragment
-  }
+    "LPBaseExcess()": FunctionFragment;
+    "LPQuoteExcess()": FunctionFragment;
+    "acceptOwnership()": FunctionFragment;
+    "boardSettlement(uint256,uint256)": FunctionFragment;
+    "init(address,address,address,address,address,address)": FunctionFragment;
+    "nominateNewOwner(address)": FunctionFragment;
+    "nominatedOwner()": FunctionFragment;
+    "owner()": FunctionFragment;
+    "routeLiquidationFunds(address,address,uint8,(uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
+    "sendBaseCollateral(address,uint256)": FunctionFragment;
+    "sendQuoteCollateral(address,uint256)": FunctionFragment;
+    "settleOptions(uint256[])": FunctionFragment;
+    "updateDelegateApproval()": FunctionFragment;
+  };
 
-  encodeFunctionData(functionFragment: 'LPBaseExcess', values?: undefined): string
-  encodeFunctionData(functionFragment: 'LPQuoteExcess', values?: undefined): string
-  encodeFunctionData(functionFragment: 'acceptOwnership', values?: undefined): string
-  encodeFunctionData(functionFragment: 'boardSettlement', values: [BigNumberish, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'init', values: [string, string, string, string, string, string]): string
-  encodeFunctionData(functionFragment: 'nominateNewOwner', values: [string]): string
-  encodeFunctionData(functionFragment: 'nominatedOwner', values?: undefined): string
-  encodeFunctionData(functionFragment: 'owner', values?: undefined): string
   encodeFunctionData(
-    functionFragment: 'routeLiquidationFunds',
+    functionFragment: "LPBaseExcess",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "LPQuoteExcess",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "boardSettlement",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "init",
+    values: [string, string, string, string, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominateNewOwner",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "nominatedOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "routeLiquidationFunds",
     values: [string, string, BigNumberish, OptionToken.LiquidationFeesStruct]
-  ): string
-  encodeFunctionData(functionFragment: 'sendBaseCollateral', values: [string, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'sendQuoteCollateral', values: [string, BigNumberish]): string
-  encodeFunctionData(functionFragment: 'settleOptions', values: [BigNumberish[]]): string
-  encodeFunctionData(functionFragment: 'updateDelegateApproval', values?: undefined): string
+  ): string;
+  encodeFunctionData(
+    functionFragment: "sendBaseCollateral",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "sendQuoteCollateral",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "settleOptions",
+    values: [BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateDelegateApproval",
+    values?: undefined
+  ): string;
 
-  decodeFunctionResult(functionFragment: 'LPBaseExcess', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'LPQuoteExcess', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'acceptOwnership', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'boardSettlement', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'init', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'nominateNewOwner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'nominatedOwner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'routeLiquidationFunds', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'sendBaseCollateral', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'sendQuoteCollateral', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'settleOptions', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'updateDelegateApproval', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: "LPBaseExcess",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "LPQuoteExcess",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "boardSettlement",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "nominateNewOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "nominatedOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "routeLiquidationFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "sendBaseCollateral",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "sendQuoteCollateral",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "settleOptions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateDelegateApproval",
+    data: BytesLike
+  ): Result;
 
   events: {
-    'BaseExchangedAndQuoteSent(address,uint256,uint256)': EventFragment
-    'BaseSent(address,uint256)': EventFragment
-    'BoardSettlementCollateralSent(uint256,uint256,uint256,uint256,uint256,uint256)': EventFragment
-    'OwnerChanged(address,address)': EventFragment
-    'OwnerNominated(address)': EventFragment
-    'PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)': EventFragment
-    'QuoteSent(address,uint256)': EventFragment
-  }
+    "BaseExchangedAndQuoteSent(address,uint256,uint256)": EventFragment;
+    "BaseSent(address,uint256)": EventFragment;
+    "BoardSettlementCollateralSent(uint256,uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "OwnerChanged(address,address)": EventFragment;
+    "OwnerNominated(address)": EventFragment;
+    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)": EventFragment;
+    "QuoteSent(address,uint256)": EventFragment;
+  };
 
-  getEvent(nameOrSignatureOrTopic: 'BaseExchangedAndQuoteSent'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BaseSent'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'BoardSettlementCollateralSent'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'OwnerChanged'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'OwnerNominated'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'PositionSettled'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'QuoteSent'): EventFragment
+  getEvent(nameOrSignatureOrTopic: "BaseExchangedAndQuoteSent"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BaseSent"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "BoardSettlementCollateralSent"
+  ): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PositionSettled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "QuoteSent"): EventFragment;
 }
 
 export type BaseExchangedAndQuoteSentEvent = TypedEvent<
   [string, BigNumber, BigNumber],
   { recipient: string; amountBase: BigNumber; quoteReceived: BigNumber }
->
+>;
 
-export type BaseExchangedAndQuoteSentEventFilter = TypedEventFilter<BaseExchangedAndQuoteSentEvent>
+export type BaseExchangedAndQuoteSentEventFilter =
+  TypedEventFilter<BaseExchangedAndQuoteSentEvent>;
 
-export type BaseSentEvent = TypedEvent<[string, BigNumber], { receiver: string; amount: BigNumber }>
+export type BaseSentEvent = TypedEvent<
+  [string, BigNumber],
+  { receiver: string; amount: BigNumber }
+>;
 
-export type BaseSentEventFilter = TypedEventFilter<BaseSentEvent>
+export type BaseSentEventFilter = TypedEventFilter<BaseSentEvent>;
 
 export type BoardSettlementCollateralSentEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
   {
-    amountBaseSent: BigNumber
-    amountQuoteSent: BigNumber
-    lpBaseInsolvency: BigNumber
-    lpQuoteInsolvency: BigNumber
-    LPBaseExcess: BigNumber
-    LPQuoteExcess: BigNumber
+    amountBaseSent: BigNumber;
+    amountQuoteSent: BigNumber;
+    lpBaseInsolvency: BigNumber;
+    lpQuoteInsolvency: BigNumber;
+    LPBaseExcess: BigNumber;
+    LPQuoteExcess: BigNumber;
   }
->
+>;
 
-export type BoardSettlementCollateralSentEventFilter = TypedEventFilter<BoardSettlementCollateralSentEvent>
+export type BoardSettlementCollateralSentEventFilter =
+  TypedEventFilter<BoardSettlementCollateralSentEvent>;
 
-export type OwnerChangedEvent = TypedEvent<[string, string], { oldOwner: string; newOwner: string }>
+export type OwnerChangedEvent = TypedEvent<
+  [string, string],
+  { oldOwner: string; newOwner: string }
+>;
 
-export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>
+export type OwnerChangedEventFilter = TypedEventFilter<OwnerChangedEvent>;
 
-export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>
+export type OwnerNominatedEvent = TypedEvent<[string], { newOwner: string }>;
 
-export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>
+export type OwnerNominatedEventFilter = TypedEventFilter<OwnerNominatedEvent>;
 
 export type PositionSettledEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber, BigNumber, number, BigNumber, BigNumber, BigNumber],
+  [
+    BigNumber,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ],
   {
-    positionId: BigNumber
-    settler: string
-    optionOwner: string
-    strikePrice: BigNumber
-    priceAtExpiry: BigNumber
-    optionType: number
-    amount: BigNumber
-    settlementAmount: BigNumber
-    insolventAmount: BigNumber
+    positionId: BigNumber;
+    settler: string;
+    optionOwner: string;
+    strikePrice: BigNumber;
+    priceAtExpiry: BigNumber;
+    optionType: number;
+    amount: BigNumber;
+    settlementAmount: BigNumber;
+    insolventAmount: BigNumber;
   }
->
+>;
 
-export type PositionSettledEventFilter = TypedEventFilter<PositionSettledEvent>
+export type PositionSettledEventFilter = TypedEventFilter<PositionSettledEvent>;
 
-export type QuoteSentEvent = TypedEvent<[string, BigNumber], { receiver: string; amount: BigNumber }>
+export type QuoteSentEvent = TypedEvent<
+  [string, BigNumber],
+  { receiver: string; amount: BigNumber }
+>;
 
-export type QuoteSentEventFilter = TypedEventFilter<QuoteSentEvent>
+export type QuoteSentEventFilter = TypedEventFilter<QuoteSentEvent>;
 
 export interface ShortCollateral extends BaseContract {
-  contractName: 'ShortCollateral'
-  connect(signerOrProvider: Signer | Provider | string): this
-  attach(addressOrName: string): this
-  deployed(): Promise<this>
+  contractName: "ShortCollateral";
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
-  interface: ShortCollateralInterface
+  interface: ShortCollateralInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>
+  ): Promise<Array<TEvent>>;
 
-  listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>
-  listeners(eventName?: string): Array<Listener>
-  removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this
-  removeAllListeners(eventName?: string): this
-  off: OnEvent<this>
-  on: OnEvent<this>
-  once: OnEvent<this>
-  removeListener: OnEvent<this>
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
   functions: {
-    LPBaseExcess(overrides?: CallOverrides): Promise<[BigNumber]>
+    LPBaseExcess(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    LPQuoteExcess(overrides?: CallOverrides): Promise<[BigNumber]>
+    LPQuoteExcess(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     boardSettlement(
       amountBase: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     init(
       _optionMarket: string,
@@ -203,16 +305,16 @@ export interface ShortCollateral extends BaseContract {
       _quoteAsset: string,
       _baseAsset: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    nominatedOwner(overrides?: CallOverrides): Promise<[string]>
+    nominatedOwner(overrides?: CallOverrides): Promise<[string]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>
+    owner(overrides?: CallOverrides): Promise<[string]>;
 
     routeLiquidationFunds(
       trader: string,
@@ -220,39 +322,43 @@ export interface ShortCollateral extends BaseContract {
       optionType: BigNumberish,
       liquidationFees: OptionToken.LiquidationFeesStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     sendBaseCollateral(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     sendQuoteCollateral(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     settleOptions(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    updateDelegateApproval(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
-  }
+    updateDelegateApproval(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+  };
 
-  LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>
+  LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-  LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>
+  LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-  acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
+  acceptOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   boardSettlement(
     amountBase: BigNumberish,
     amountQuote: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   init(
     _optionMarket: string,
@@ -262,16 +368,16 @@ export interface ShortCollateral extends BaseContract {
     _quoteAsset: string,
     _baseAsset: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   nominateNewOwner(
     _owner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  nominatedOwner(overrides?: CallOverrides): Promise<string>
+  nominatedOwner(overrides?: CallOverrides): Promise<string>;
 
-  owner(overrides?: CallOverrides): Promise<string>
+  owner(overrides?: CallOverrides): Promise<string>;
 
   routeLiquidationFunds(
     trader: string,
@@ -279,33 +385,35 @@ export interface ShortCollateral extends BaseContract {
     optionType: BigNumberish,
     liquidationFees: OptionToken.LiquidationFeesStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   sendBaseCollateral(
     recipient: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   sendQuoteCollateral(
     recipient: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   settleOptions(
     positionIds: BigNumberish[],
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  updateDelegateApproval(overrides?: Overrides & { from?: string | Promise<string> }): Promise<ContractTransaction>
+  updateDelegateApproval(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>
+    LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-    LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>
+    LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-    acceptOwnership(overrides?: CallOverrides): Promise<void>
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
 
     boardSettlement(
       amountBase: BigNumberish,
@@ -313,10 +421,10 @@ export interface ShortCollateral extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
-        lpBaseInsolvency: BigNumber
-        lpQuoteInsolvency: BigNumber
+        lpBaseInsolvency: BigNumber;
+        lpQuoteInsolvency: BigNumber;
       }
-    >
+    >;
 
     init(
       _optionMarket: string,
@@ -326,13 +434,13 @@ export interface ShortCollateral extends BaseContract {
       _quoteAsset: string,
       _baseAsset: string,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>
+    nominateNewOwner(_owner: string, overrides?: CallOverrides): Promise<void>;
 
-    nominatedOwner(overrides?: CallOverrides): Promise<string>
+    nominatedOwner(overrides?: CallOverrides): Promise<string>;
 
-    owner(overrides?: CallOverrides): Promise<string>
+    owner(overrides?: CallOverrides): Promise<string>;
 
     routeLiquidationFunds(
       trader: string,
@@ -340,40 +448,54 @@ export interface ShortCollateral extends BaseContract {
       optionType: BigNumberish,
       liquidationFees: OptionToken.LiquidationFeesStruct,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    sendBaseCollateral(recipient: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>
+    sendBaseCollateral(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
-    sendQuoteCollateral(recipient: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>
+    sendQuoteCollateral(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
-    settleOptions(positionIds: BigNumberish[], overrides?: CallOverrides): Promise<void>
+    settleOptions(
+      positionIds: BigNumberish[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
-    updateDelegateApproval(overrides?: CallOverrides): Promise<void>
-  }
+    updateDelegateApproval(overrides?: CallOverrides): Promise<void>;
+  };
 
   filters: {
-    'BaseExchangedAndQuoteSent(address,uint256,uint256)'(
+    "BaseExchangedAndQuoteSent(address,uint256,uint256)"(
       recipient?: string | null,
       amountBase?: null,
       quoteReceived?: null
-    ): BaseExchangedAndQuoteSentEventFilter
+    ): BaseExchangedAndQuoteSentEventFilter;
     BaseExchangedAndQuoteSent(
       recipient?: string | null,
       amountBase?: null,
       quoteReceived?: null
-    ): BaseExchangedAndQuoteSentEventFilter
+    ): BaseExchangedAndQuoteSentEventFilter;
 
-    'BaseSent(address,uint256)'(receiver?: string | null, amount?: null): BaseSentEventFilter
-    BaseSent(receiver?: string | null, amount?: null): BaseSentEventFilter
+    "BaseSent(address,uint256)"(
+      receiver?: string | null,
+      amount?: null
+    ): BaseSentEventFilter;
+    BaseSent(receiver?: string | null, amount?: null): BaseSentEventFilter;
 
-    'BoardSettlementCollateralSent(uint256,uint256,uint256,uint256,uint256,uint256)'(
+    "BoardSettlementCollateralSent(uint256,uint256,uint256,uint256,uint256,uint256)"(
       amountBaseSent?: null,
       amountQuoteSent?: null,
       lpBaseInsolvency?: null,
       lpQuoteInsolvency?: null,
       LPBaseExcess?: null,
       LPQuoteExcess?: null
-    ): BoardSettlementCollateralSentEventFilter
+    ): BoardSettlementCollateralSentEventFilter;
     BoardSettlementCollateralSent(
       amountBaseSent?: null,
       amountQuoteSent?: null,
@@ -381,15 +503,18 @@ export interface ShortCollateral extends BaseContract {
       lpQuoteInsolvency?: null,
       LPBaseExcess?: null,
       LPQuoteExcess?: null
-    ): BoardSettlementCollateralSentEventFilter
+    ): BoardSettlementCollateralSentEventFilter;
 
-    'OwnerChanged(address,address)'(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
-    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter
+    "OwnerChanged(address,address)"(
+      oldOwner?: null,
+      newOwner?: null
+    ): OwnerChangedEventFilter;
+    OwnerChanged(oldOwner?: null, newOwner?: null): OwnerChangedEventFilter;
 
-    'OwnerNominated(address)'(newOwner?: null): OwnerNominatedEventFilter
-    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter
+    "OwnerNominated(address)"(newOwner?: null): OwnerNominatedEventFilter;
+    OwnerNominated(newOwner?: null): OwnerNominatedEventFilter;
 
-    'PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)'(
+    "PositionSettled(uint256,address,address,uint256,uint256,uint8,uint256,uint256,uint256)"(
       positionId?: BigNumberish | null,
       settler?: string | null,
       optionOwner?: string | null,
@@ -399,7 +524,7 @@ export interface ShortCollateral extends BaseContract {
       amount?: null,
       settlementAmount?: null,
       insolventAmount?: null
-    ): PositionSettledEventFilter
+    ): PositionSettledEventFilter;
     PositionSettled(
       positionId?: BigNumberish | null,
       settler?: string | null,
@@ -410,24 +535,29 @@ export interface ShortCollateral extends BaseContract {
       amount?: null,
       settlementAmount?: null,
       insolventAmount?: null
-    ): PositionSettledEventFilter
+    ): PositionSettledEventFilter;
 
-    'QuoteSent(address,uint256)'(receiver?: string | null, amount?: null): QuoteSentEventFilter
-    QuoteSent(receiver?: string | null, amount?: null): QuoteSentEventFilter
-  }
+    "QuoteSent(address,uint256)"(
+      receiver?: string | null,
+      amount?: null
+    ): QuoteSentEventFilter;
+    QuoteSent(receiver?: string | null, amount?: null): QuoteSentEventFilter;
+  };
 
   estimateGas: {
-    LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>
+    LPBaseExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-    LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>
+    LPQuoteExcess(overrides?: CallOverrides): Promise<BigNumber>;
 
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     boardSettlement(
       amountBase: BigNumberish,
       amountQuote: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     init(
       _optionMarket: string,
@@ -437,73 +567,16 @@ export interface ShortCollateral extends BaseContract {
       _quoteAsset: string,
       _baseAsset: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    nominateNewOwner(_owner: string, overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
-
-    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>
-
-    routeLiquidationFunds(
-      trader: string,
-      liquidator: string,
-      optionType: BigNumberish,
-      liquidationFees: OptionToken.LiquidationFeesStruct,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    sendBaseCollateral(
-      recipient: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    sendQuoteCollateral(
-      recipient: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    settleOptions(
-      positionIds: BigNumberish[],
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
-
-    updateDelegateApproval(overrides?: Overrides & { from?: string | Promise<string> }): Promise<BigNumber>
-  }
-
-  populateTransaction: {
-    LPBaseExcess(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    LPQuoteExcess(overrides?: CallOverrides): Promise<PopulatedTransaction>
-
-    acceptOwnership(overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
-
-    boardSettlement(
-      amountBase: BigNumberish,
-      amountQuote: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
-
-    init(
-      _optionMarket: string,
-      _liquidityPool: string,
-      _optionToken: string,
-      _synthetixAdapter: string,
-      _quoteAsset: string,
-      _baseAsset: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     nominateNewOwner(
       _owner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    nominatedOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     routeLiquidationFunds(
       trader: string,
@@ -511,25 +584,91 @@ export interface ShortCollateral extends BaseContract {
       optionType: BigNumberish,
       liquidationFees: OptionToken.LiquidationFeesStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     sendBaseCollateral(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     sendQuoteCollateral(
       recipient: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
     settleOptions(
       positionIds: BigNumberish[],
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<BigNumber>;
 
-    updateDelegateApproval(overrides?: Overrides & { from?: string | Promise<string> }): Promise<PopulatedTransaction>
-  }
+    updateDelegateApproval(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    LPBaseExcess(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    LPQuoteExcess(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    acceptOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    boardSettlement(
+      amountBase: BigNumberish,
+      amountQuote: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    init(
+      _optionMarket: string,
+      _liquidityPool: string,
+      _optionToken: string,
+      _synthetixAdapter: string,
+      _quoteAsset: string,
+      _baseAsset: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nominateNewOwner(
+      _owner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    nominatedOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    routeLiquidationFunds(
+      trader: string,
+      liquidator: string,
+      optionType: BigNumberish,
+      liquidationFees: OptionToken.LiquidationFeesStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    sendBaseCollateral(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    sendQuoteCollateral(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    settleOptions(
+      positionIds: BigNumberish[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateDelegateApproval(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+  };
 }

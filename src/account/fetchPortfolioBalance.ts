@@ -56,8 +56,7 @@ export default async function fetchPortfolioBalance(lyra: Lyra, account: string)
     }, ZERO_BN)
   )
 
-  // TODO: @dappbeast implement multiple stables
-  const stableAccountValue = [balances.stable('sUSD')].reduce((total, balance) => {
+  const stableAccountValue = balances.stables.reduce((total, balance) => {
     return total + fromBigNumber(balance.balance, balance.decimals)
   }, 0)
 

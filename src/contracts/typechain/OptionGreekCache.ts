@@ -942,9 +942,8 @@ export interface OptionGreekCache extends BaseContract {
       isPostCutoff: boolean,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber] & {
         optionPrice: BigNumber;
-        callDelta: BigNumber;
         forceCloseVol: BigNumber;
       }
     >;
@@ -1109,9 +1108,8 @@ export interface OptionGreekCache extends BaseContract {
     isPostCutoff: boolean,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber] & {
       optionPrice: BigNumber;
-      callDelta: BigNumber;
       forceCloseVol: BigNumber;
     }
   >;
@@ -1274,9 +1272,8 @@ export interface OptionGreekCache extends BaseContract {
       isPostCutoff: boolean,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber] & {
         optionPrice: BigNumber;
-        callDelta: BigNumber;
         forceCloseVol: BigNumber;
       }
     >;

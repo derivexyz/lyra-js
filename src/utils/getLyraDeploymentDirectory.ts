@@ -4,8 +4,8 @@ const getLyraDeploymentDirectory = (deployment: Deployment): string => {
   switch (deployment) {
     case Deployment.Local:
       return 'local'
-    case Deployment.Kovan:
-      return 'kovan-ovm'
+    case Deployment.Testnet:
+      return 'goerli-ovm'
     case Deployment.Mainnet:
       return 'mainnet-ovm'
   }

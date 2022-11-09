@@ -63,10 +63,14 @@ export default function getQuoteDisabledReason(
     return QuoteDisabledReason.DeltaOutOfRange
   }
 
+  // On force close, base iv is not impacted and should never be out of range
+  // On force close, skew is impacted and should use abs min / max
+  const minSkew = isForceClose ? tradeLimitParams.absMinSkew : tradeLimitParams.minSkew
+  const maxSkew = isForceClose ? tradeLimitParams.absMaxSkew : tradeLimitParams.maxSkew
   if (isBuy) {
     if (newBaseIv.gt(tradeLimitParams.maxBaseIV)) {
       return QuoteDisabledReason.IVTooHigh
-    } else if (newSkew.gt(tradeLimitParams.maxSkew)) {
+    } else if (newSkew.gt(maxSkew)) {
       return QuoteDisabledReason.SkewTooHigh
     } else if (newIv.gt(tradeLimitParams.maxVol)) {
       return QuoteDisabledReason.VolTooHigh
@@ -74,7 +78,7 @@ export default function getQuoteDisabledReason(
   } else {
     if (newBaseIv.lt(tradeLimitParams.minBaseIV)) {
       return QuoteDisabledReason.IVTooLow
-    } else if (newSkew.lt(tradeLimitParams.minSkew)) {
+    } else if (newSkew.lt(minSkew)) {
       return QuoteDisabledReason.SkewTooLow
     } else if (newIv.lt(tradeLimitParams.minVol)) {
       return QuoteDisabledReason.VolTooLow

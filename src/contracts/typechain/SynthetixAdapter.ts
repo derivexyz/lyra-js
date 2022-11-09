@@ -68,6 +68,7 @@ export interface SynthetixAdapterInterface extends utils.Interface {
     "nominatedOwner()": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteKey(address)": FunctionFragment;
+    "requireNotGlobalPaused(address)": FunctionFragment;
     "rewardAddress(address)": FunctionFragment;
     "setAddressResolver(address)": FunctionFragment;
     "setGlobalPaused(bool)": FunctionFragment;
@@ -172,6 +173,10 @@ export interface SynthetixAdapterInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "quoteKey", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "requireNotGlobalPaused",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "rewardAddress",
     values: [string]
@@ -283,6 +288,10 @@ export interface SynthetixAdapterInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "quoteKey", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "requireNotGlobalPaused",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "rewardAddress",
     data: BytesLike
@@ -553,6 +562,11 @@ export interface SynthetixAdapter extends BaseContract {
 
     quoteKey(arg0: string, overrides?: CallOverrides): Promise<[string]>;
 
+    requireNotGlobalPaused(
+      optionMarket: string,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     rewardAddress(arg0: string, overrides?: CallOverrides): Promise<[string]>;
 
     setAddressResolver(
@@ -688,6 +702,11 @@ export interface SynthetixAdapter extends BaseContract {
 
   quoteKey(arg0: string, overrides?: CallOverrides): Promise<string>;
 
+  requireNotGlobalPaused(
+    optionMarket: string,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   rewardAddress(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   setAddressResolver(
@@ -790,7 +809,7 @@ export interface SynthetixAdapter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber] & {
-        quoteSpent: BigNumber;
+        baseSpent: BigNumber;
         quoteReceived: BigNumber;
       }
     >;
@@ -835,6 +854,11 @@ export interface SynthetixAdapter extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     quoteKey(arg0: string, overrides?: CallOverrides): Promise<string>;
+
+    requireNotGlobalPaused(
+      optionMarket: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     rewardAddress(arg0: string, overrides?: CallOverrides): Promise<string>;
 
@@ -1052,6 +1076,11 @@ export interface SynthetixAdapter extends BaseContract {
 
     quoteKey(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    requireNotGlobalPaused(
+      optionMarket: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     rewardAddress(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     setAddressResolver(
@@ -1197,6 +1226,11 @@ export interface SynthetixAdapter extends BaseContract {
 
     quoteKey(
       arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    requireNotGlobalPaused(
+      optionMarket: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

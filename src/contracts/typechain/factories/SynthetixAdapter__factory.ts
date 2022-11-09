@@ -832,7 +832,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "quoteSpent",
+        name: "baseSpent",
         type: "uint256",
       },
       {
@@ -1101,6 +1101,19 @@ const _abi = [
         type: "bytes32",
       },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "optionMarket",
+        type: "address",
+      },
+    ],
+    name: "requireNotGlobalPaused",
+    outputs: [],
     stateMutability: "view",
     type: "function",
   },
