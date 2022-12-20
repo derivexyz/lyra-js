@@ -2,7 +2,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Contract } from '@ethersproject/contracts'
 
 import Lyra, {
-  getLyraContractABI,
   LyraMarketContractId,
   TradeEvent,
   TradeEventListener,
@@ -10,7 +9,8 @@ import Lyra, {
   TradeEventListenerOptions,
 } from '..'
 import { ZERO_ADDRESS } from '../constants/bn'
-import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/typechain/OptionMarket'
+import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/newport/typechain/OptionMarket'
+import getLyraContractABI from './getLyraContractABI'
 import getMarketAddresses from './getMarketAddresses'
 
 const DEFAULT_POLL_INTERVAL = 10 * 1000
@@ -25,7 +25,10 @@ export default function fetchTradeListener(
 
   let timeout: NodeJS.Timeout | null
 
-  const optionMarket = new Contract(ZERO_ADDRESS, getLyraContractABI(LyraMarketContractId.OptionMarket)) as OptionMarket
+  const optionMarket = new Contract(
+    ZERO_ADDRESS,
+    getLyraContractABI(lyra.version, LyraMarketContractId.OptionMarket)
+  ) as OptionMarket
 
   Promise.all([getMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
     console.debug(`Polling from block ${block.number} every ${ms}ms`)

@@ -5,12 +5,15 @@ export enum LyraContractId {
   OptionMarketViewer = 'OptionMarketViewer',
   OptionMarketWrapper = 'OptionMarketWrapper',
   TestFaucet = 'TestFaucet',
-  SynthetixAdapter = 'SynthetixAdapter',
   LyraStakingModuleProxy = 'LyraStakingModuleProxy',
   LyraRegistry = 'LyraRegistry',
   MultiDistributor = 'MultiDistributor',
   ArrakisPool = 'ArrakisPool',
   WethLyraStakingRewards = 'WethLyraStakingRewards',
+  ExchangeAdapter = 'ExchangeAdapter',
+  // TODO @michaelxuwu deprecate SynthetixAdapter
+  SynthetixAdapter = 'SynthetixAdapter',
+  Multicall3 = 'Multicall3',
 }
 
 // Per-market contract name mappings
@@ -22,8 +25,9 @@ export enum LyraMarketContractId {
   OptionGreekCache = 'OptionGreekCache',
   LiquidityToken = 'LiquidityToken',
   LiquidityPool = 'LiquidityPool',
-  ShortPoolHedger = 'ShortPoolHedger',
+  PoolHedger = 'PoolHedger',
 }
+
 // Ordered enum from contracts
 export enum OptionType {
   LongCall,
@@ -34,7 +38,6 @@ export enum OptionType {
 }
 
 export enum Deployment {
-  Local = 'local',
   Testnet = 'testnet',
   Mainnet = 'mainnet',
 }

@@ -2,16 +2,20 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { gql } from 'graphql-request'
 
 import Lyra from '..'
-import { MARKET_GREEKS_SNAPSHOT_FRAGMENT, MarketGreeksSnapshotQueryResult } from '../constants/queries'
+import {
+  MARKET_GREEKS_SNAPSHOT_FRAGMENT,
+  MarketGreeksSnapshotQueryResult,
+  SNAPSHOT_RESULT_LIMIT,
+} from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
 import { Market, MarketNetGreeks } from '../market'
 import fetchSnapshots from './fetchSnapshots'
 
 const marketGreeksSnapshotsQuery = gql`
   query marketGreeksSnapshots(
-    $market: String!, $min: Int!, $max: Int! $period: Int!
+    $market: String!, $min: Int!, $max: Int! $period: Int!,
   ) {
-    marketGreeksSnapshots(first: 1000, orderBy: timestamp, orderDirection: asc, where: { market: $market, 
+    marketGreeksSnapshots(first: ${SNAPSHOT_RESULT_LIMIT}, orderBy: timestamp, orderDirection: asc, where: { market: $market, 
       timestamp_gte: $min, 
       timestamp_lte: $max,
       period_gte: $period

@@ -2,13 +2,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { Log } from '@ethersproject/providers'
 
-import { AccountStableBalance } from '..'
-import getAccountBalancesAndAllowances from '../account/getAccountBalancesAndAllowances'
+import { AccountQuoteBalance } from '../account'
 import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
 import { MAX_BN, ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS, LyraContractId } from '../constants/contracts'
-import { OptionMarketWrapperWithSwaps } from '../contracts/typechain/OptionMarketWrapper'
+import { OptionMarketWrapperWithSwaps } from '../contracts/newport/typechain/OptionMarketWrapper'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
@@ -99,7 +98,7 @@ export type TradeOptionsSync = {
     address: string
     decimals: number
   }
-  stables?: AccountStableBalance[]
+  stables?: AccountQuoteBalance[]
 } & Omit<TradeOptions, 'positionId' | 'inputAsset'>
 
 export type TradeToken = {
@@ -197,7 +196,7 @@ export class Trade {
     const isBaseCollateral = position ? position.collateral?.isBase : _isBaseCollateral
     this.size = size
 
-    let quote = Quote.get(option, this.isBuy, this.size, {
+    let quote = Quote.getSync(lyra, option, this.isBuy, this.size, {
       iterations,
     })
 
@@ -207,7 +206,7 @@ export class Trade {
         quote.disabledReason === QuoteDisabledReason.TradingCutoff)
     ) {
       // Retry quote with force close flag
-      quote = Quote.get(option, this.isBuy, this.size, {
+      quote = Quote.getSync(lyra, option, this.isBuy, this.size, {
         iterations,
         isForceClose: true,
       })
@@ -339,7 +338,7 @@ export class Trade {
 
     this.isCollateralUpdate = !!(this.collateral && this.size.isZero() && this.collateral.amount.gt(0))
 
-    const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+    const wrapper = getLyraContract(lyra, LyraContractId.OptionMarketWrapper)
     const stables = options?.stables ?? []
     const roundedInputAmount = roundToDp(this.quoteToken.transfer, 1)
     const roundedMaxCost = roundToDp(BigNumber.from(this.__params.maxCost), 1)
@@ -414,14 +413,14 @@ export class Trade {
     const [market, position, balances] = await Promise.all([
       Market.get(lyra, marketAddressOrName),
       maybeGetPosition(),
-      getAccountBalancesAndAllowances(lyra, owner),
+      lyra.account(owner).marketBalances(marketAddressOrName),
     ])
-    let supportedInputAsset: AccountStableBalance | null = null
-    const { stables } = balances
+    let supportedInputAsset: AccountQuoteBalance | null = null
+    const { quoteSwapAssets: supportedAssets } = balances
     const inputAddress = options?.inputAsset?.address
     if (inputAddress) {
       supportedInputAsset =
-        stables.find(
+        supportedAssets.find(
           stable => stable.address === inputAddress || stable.symbol.toLowerCase() === inputAddress.toLowerCase()
         ) ?? null
     }
@@ -450,7 +449,7 @@ export class Trade {
             decimals: supportedInputAsset.decimals,
           }
         : undefined,
-      stables,
+      stables: supportedAssets,
     })
 
     // Insufficient balance early return

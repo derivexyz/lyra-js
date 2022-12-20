@@ -1,6 +1,6 @@
 import Lyra from '..'
 import { LyraMarketContractId } from '../constants/contracts'
-import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'
+import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/newport/typechain/LiquidityPool'
 import { Market } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
 

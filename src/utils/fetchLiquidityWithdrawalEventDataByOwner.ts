@@ -1,55 +1,62 @@
 import Lyra from '..'
 import { ZERO_BN } from '../constants/bn'
-import { LyraMarketContractId } from '../constants/contracts'
-import { WithdrawProcessedEvent, WithdrawQueuedEvent } from '../contracts/typechain/LiquidityPool'
+import {
+  LiquidityWithdrawalProcessedEvent,
+  LiquidityWithdrawalQueuedEvent,
+  WithdrawalQueuedOrProcessedEvent,
+} from '../liquidity_withdrawal'
 import { Market } from '../market'
-import getLyraMarketContract from './getLyraMarketContract'
-
-export type WithdrawalQueuedOrProcessedEvent = {
-  queued?: WithdrawQueuedEvent
-  processed?: WithdrawProcessedEvent
-}
+import fetchAllLiquidityWithdrawalEventDataByOwner from './fetchAllLiquidityWithdrawalEventDataByOwner'
+import fetchLatestLiquidityWithdrawalEventDataByOwner from './fetchLatestLiquidityWithdrawalEventDataByOwner'
+import getUniqueBy from './getUniqueBy'
 
 export default async function fetchLiquidityWithdrawalEventDataByOwner(
   lyra: Lyra,
-  market: Market,
-  owner: string
+  owner: string,
+  market: Market
 ): Promise<{
   events: WithdrawalQueuedOrProcessedEvent[]
 }> {
-  const liquidityPoolContract = getLyraMarketContract(
-    lyra,
-    market.__marketData.marketAddresses,
-    LyraMarketContractId.LiquidityPool
-  )
-  const [withdrawalQueuedEvents, withdrawalProcessedEvents] = await Promise.all([
-    liquidityPoolContract.queryFilter(liquidityPoolContract.filters.WithdrawQueued(owner)),
-    liquidityPoolContract.queryFilter(liquidityPoolContract.filters.WithdrawProcessed(null, owner)),
+  const [latestLiquidityWithdrawal, allLiquidityWithdrawals] = await Promise.all([
+    // Contract (realtime) data
+    fetchLatestLiquidityWithdrawalEventDataByOwner(lyra, owner, market),
+    // Subgraph data
+    fetchAllLiquidityWithdrawalEventDataByOwner(lyra, owner, market),
   ])
 
-  const withdrawalQueuedMap: Record<string, WithdrawQueuedEvent> = {}
-  const withdrawalProcessedMap: Record<string, WithdrawProcessedEvent> = {}
+  const uniqueQueuedWithdrawals = getUniqueBy(
+    latestLiquidityWithdrawal.queued.concat(allLiquidityWithdrawals.queued),
+    withdrawal => withdrawal?.timestamp
+  )
+  const uniqueProcessedWithdrawals = getUniqueBy(
+    latestLiquidityWithdrawal.processed.concat(allLiquidityWithdrawals.processed),
+    withdrawal => withdrawal?.timestamp
+  )
+
+  const withdrawalQueuedMap: Record<string, LiquidityWithdrawalQueuedEvent> = {}
+  const withdrawalProcessedMap: Record<string, LiquidityWithdrawalProcessedEvent> = {}
   const withdrawalQueuedOrProcessedEvents: WithdrawalQueuedOrProcessedEvent[] = []
-  withdrawalProcessedEvents.forEach((withdrawalProcessedEvent: WithdrawProcessedEvent) => {
-    if (withdrawalProcessedEvent.args.withdrawalQueueId == ZERO_BN) {
+
+  uniqueProcessedWithdrawals.forEach((withdrawalProcessedEvent: LiquidityWithdrawalProcessedEvent) => {
+    if (withdrawalProcessedEvent?.withdrawalQueueId == ZERO_BN) {
       withdrawalQueuedOrProcessedEvents.push({
         processed: withdrawalProcessedEvent,
       })
     }
   })
 
-  withdrawalQueuedEvents.forEach((withdrawalQueuedEvent: WithdrawQueuedEvent) => {
-    const id = String(withdrawalQueuedEvent.args.withdrawalQueueId)
+  uniqueQueuedWithdrawals.forEach((withdrawalQueuedEvent: LiquidityWithdrawalQueuedEvent) => {
+    const id = String(withdrawalQueuedEvent?.withdrawalQueueId)
     withdrawalQueuedMap[id] = withdrawalQueuedEvent
   })
 
-  withdrawalProcessedEvents.forEach((withdrawalProcessedEvent: WithdrawProcessedEvent) => {
-    const id = String(withdrawalProcessedEvent.args.withdrawalQueueId)
+  uniqueProcessedWithdrawals.forEach((withdrawalProcessedEvent: LiquidityWithdrawalProcessedEvent) => {
+    const id = String(withdrawalProcessedEvent?.withdrawalQueueId)
     withdrawalProcessedMap[id] = withdrawalProcessedEvent
   })
 
-  withdrawalQueuedEvents.forEach((withdrawalQueuedEvent: WithdrawQueuedEvent) => {
-    const id = String(withdrawalQueuedEvent.args.withdrawalQueueId)
+  uniqueQueuedWithdrawals.forEach((withdrawalQueuedEvent: LiquidityWithdrawalQueuedEvent) => {
+    const id = String(withdrawalQueuedEvent?.withdrawalQueueId)
     if (withdrawalQueuedMap[id] && withdrawalProcessedMap[id]) {
       withdrawalQueuedOrProcessedEvents.push({
         queued: withdrawalQueuedMap[id],

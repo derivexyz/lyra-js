@@ -1,6 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
+import { Version } from '..'
 import { UNIT, ZERO_BN } from '../constants/bn'
+import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
 import { Option } from '../option'
 import { getVega } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
@@ -20,8 +23,16 @@ export default function getVarianceFee(
   const coefficient = isForceClose
     ? varianceFeeParams.forceCloseVarianceFeeCoefficient
     : varianceFeeParams.defaultVarianceFeeCoefficient
-  const ivVariance = option.board().__boardData.forceCloseGwavIV.sub(newBaseIv).abs()
-  const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
+  const forceCloseGwavIv =
+    option.lyra.version === Version.Avalon
+      ? (option.board().__boardData as OptionMarketViewerAvalon.BoardViewStructOutput).forceCloseGwavIV
+      : (option.board().__boardData as OptionMarketViewer.BoardViewStructOutput).forceCloseGwavIv
+  const ivVariance = forceCloseGwavIv.sub(newBaseIv).abs()
+  const rate =
+    option.lyra.version === Version.Avalon
+      ? (option.market().__marketData as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters
+          .greekCacheParams.rateAndCarry
+      : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
   const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
   const vega = toBigNumber(
     getVega(

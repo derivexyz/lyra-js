@@ -1,0 +1,9 @@
+[
+  {
+    "inputs": [],
+    "name": "drip",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

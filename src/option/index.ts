@@ -5,7 +5,9 @@ import { Board } from '../board'
 import { ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
 import { SnapshotOptions } from '../constants/snapshots'
-import Lyra from '../lyra'
+import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
+import Lyra, { Version } from '../lyra'
 import { Market } from '../market'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike } from '../strike'
@@ -29,10 +31,16 @@ export type OptionTradingVolume = {
   timestamp: number
 }
 
+export type OptionQuotes = {
+  option: Option
+  bid: Quote
+  ask: Quote
+}
+
 export class Option {
-  private lyra: Lyra
   private __strike: Strike
   __source = DataSource.ContractCall
+  lyra: Lyra
   block: Block
   isCall: boolean
   price: BigNumber
@@ -48,7 +56,7 @@ export class Option {
     this.__strike = strike
     this.block = block
     this.isCall = isCall
-    const fields = Option.getFields(strike, isCall)
+    const fields = Option.getFields(lyra.version, strike, isCall)
     this.price = fields.price
     this.longOpenInterest = fields.longOpenInterest
     this.shortOpenInterest = fields.shortOpenInterest
@@ -60,6 +68,7 @@ export class Option {
 
   // TODO: @dappbeast Remove getFields
   static getFields(
+    version: Version,
     strike: Strike,
     isCall: boolean
   ): {
@@ -94,9 +103,18 @@ export class Option {
         ? strikeView.shortCallBaseOpenInterest.add(strikeView.shortCallQuoteOpenInterest)
         : strikeView.shortPutOpenInterest
 
-      const spotPrice = fromBigNumber(marketView.exchangeParams.spotPrice)
+      const spotPrice = fromBigNumber(
+        version === Version.Avalon
+          ? (marketView as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).exchangeParams.spotPrice
+          : (marketView as OptionMarketViewer.MarketViewWithBoardsStructOutput).spotPrice
+      )
       const strikePriceNum = fromBigNumber(strikeView.strikePrice)
-      const rate = fromBigNumber(marketView.marketParameters.greekCacheParams.rateAndCarry)
+      const rate = fromBigNumber(
+        version === Version.Avalon
+          ? (marketView as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters.greekCacheParams
+              .rateAndCarry
+          : (marketView as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
+      )
       const strikeIV = fromBigNumber(strike.iv)
 
       const price = toBigNumber(
@@ -137,6 +155,10 @@ export class Option {
     return await market.option(strikeId, isCall)
   }
 
+  async refresh(): Promise<Option> {
+    return Option.get(this.lyra, this.market().address, this.strike().id, this.isCall)
+  }
+
   // Edges
 
   market(): Market {
@@ -151,12 +173,26 @@ export class Option {
     return this.__strike
   }
 
-  quoteSync(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
-    return Quote.get(this, isBuy, size, options)
+  async quote(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
+    const option = await this.refresh()
+    return option.quoteSync(isBuy, size, options)
   }
 
-  async quote(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
-    return await this.strike().quote(this.isCall, isBuy, size, options)
+  quoteSync(isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
+    return Quote.getSync(this.lyra, this, isBuy, size, options)
+  }
+
+  async quoteAll(size: BigNumber, options?: QuoteOptions): Promise<OptionQuotes> {
+    const option = await this.refresh()
+    return option.quoteAllSync(size, options)
+  }
+
+  quoteAllSync(size: BigNumber, options?: QuoteOptions): OptionQuotes {
+    return {
+      option: this,
+      bid: this.quoteSync(false, size, options),
+      ask: this.quoteSync(true, size, options),
+    }
   }
 
   async tradingVolumeHistory(options?: SnapshotOptions): Promise<OptionTradingVolume[]> {

@@ -1,6 +1,6 @@
 import { CollateralUpdateData } from '..'
 import { DataSource, PositionState } from '../constants/contracts'
-import { OptionToken } from '../contracts/typechain'
+import { OptionToken } from '../contracts/newport/typechain'
 import { Option } from '../option'
 import { PositionData } from '../position'
 import getPositionCollateral from '../position/getPositionCollateral'

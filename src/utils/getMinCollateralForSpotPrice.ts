@@ -1,7 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
+import { Version } from '..'
 import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
-import { OptionGreekCache } from '../contracts/typechain/OptionMarketViewer'
+import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
+import { OptionGreekCache } from '../contracts/newport/typechain/OptionMarketViewer'
 import { Market } from '../market'
 import { Option } from '../option'
 import { getBlackScholesPrice } from './blackScholes'
@@ -57,7 +60,11 @@ export default function getMinCollateralForSpotPrice(
   const shockSpotPrice = option.isCall
     ? spotPrice.mul(minCollatParams.callSpotPriceShock).div(UNIT)
     : spotPrice.mul(minCollatParams.putSpotPriceShock).div(UNIT)
-  const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
+  const rate =
+    option.lyra.version === Version.Avalon
+      ? (option.market().__marketData as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters
+          .greekCacheParams.rateAndCarry
+      : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
   const shockOptionPrice = toBigNumber(
     getBlackScholesPrice(
       timeToExpiryAnnualized,

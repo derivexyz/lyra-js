@@ -22,7 +22,7 @@ const getContractAddress = (marketAddresses: MarketContractAddresses, contractId
       return marketAddresses.liquidityPool
     case LyraMarketContractId.OptionMarketPricer:
       return marketAddresses.optionMarketPricer
-    case LyraMarketContractId.ShortPoolHedger:
+    case LyraMarketContractId.PoolHedger:
       return marketAddresses.poolHedger
   }
 }
@@ -32,7 +32,7 @@ export default function getLyraMarketContract<T extends LyraMarketContractId>(
   marketContractAddresses: MarketContractAddresses,
   contractId: T
 ): LyraMarketContractReturnType[T] {
-  const abi = getLyraContractABI(contractId)
+  const abi = getLyraContractABI(lyra.version, contractId)
   const address = getContractAddress(marketContractAddresses, contractId)
   return new Contract(address, abi, lyra.provider) as LyraMarketContractReturnType[T]
 }

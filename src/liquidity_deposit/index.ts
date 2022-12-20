@@ -2,12 +2,10 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { LyraMarketContractId } from '../constants/contracts'
-import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
 import fetchLiquidityDelayReason from '../utils/fetchLiquidityDelayReason'
-import fetchLiquidityDepositEventDataByID from '../utils/fetchLiquidityDepositEventDataByID'
 import fetchLiquidityDepositEventDataByOwner from '../utils/fetchLiquidityDepositEventDataByOwner'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 
@@ -17,10 +15,40 @@ export enum LiquidityDelayReason {
   Keeper = 'Keeper',
 }
 
+export type LiquidityDepositFilter = {
+  user: string
+}
+
+export type DepositQueuedOrProcessedEvent = {
+  queued?: LiquidityDepositQueuedEvent
+  processed?: LiquidityDepositProcessedEvent
+}
+
+export type LiquidityDepositQueuedEvent = {
+  depositor: string
+  beneficiary: string
+  depositQueueId: BigNumber
+  amountDeposited: BigNumber
+  totalQueuedDeposits: BigNumber
+  timestamp: BigNumber
+  transactionHash: string
+}
+
+export type LiquidityDepositProcessedEvent = {
+  caller: string
+  beneficiary: string
+  depositQueueId: BigNumber
+  amountDeposited: BigNumber
+  tokenPrice: BigNumber
+  tokensReceived: BigNumber
+  timestamp: BigNumber
+  transactionHash: string
+}
+
 export class LiquidityDeposit {
   lyra: Lyra
-  __queued?: DepositQueuedEvent
-  __processed?: DepositProcessedEvent
+  __queued?: LiquidityDepositQueuedEvent
+  __processed?: LiquidityDepositProcessedEvent
   __market: Market
   queueId?: number
   beneficiary: string
@@ -35,8 +63,8 @@ export class LiquidityDeposit {
     lyra: Lyra,
     market: Market,
     data: {
-      queued?: DepositQueuedEvent
-      processed?: DepositProcessedEvent
+      queued?: LiquidityDepositQueuedEvent
+      processed?: LiquidityDepositProcessedEvent
       delayReason: LiquidityDelayReason | null
     }
   ) {
@@ -53,17 +81,17 @@ export class LiquidityDeposit {
     if (!queuedOrProcessed) {
       throw new Error('No queued or processed event for LiquidityDeposit')
     }
-    this.queueId = queuedOrProcessed.args.depositQueueId.toNumber()
-    this.beneficiary = queuedOrProcessed.args.beneficiary
-    this.value = queuedOrProcessed.args.amountDeposited
-    this.tokenPriceAtDeposit = processed?.args.tokenPrice
-    this.balance = processed?.args.tokensReceived
+    this.queueId = queuedOrProcessed.depositQueueId.toNumber()
+    this.beneficiary = queuedOrProcessed.beneficiary
+    this.value = queuedOrProcessed.amountDeposited
+    this.tokenPriceAtDeposit = processed?.tokenPrice
+    this.balance = processed?.tokensReceived
     this.isPending = !processed
-    this.depositRequestedTimestamp = queuedOrProcessed.args.timestamp.toNumber()
+    this.depositRequestedTimestamp = queuedOrProcessed.timestamp.toNumber()
     this.depositTimestamp = processed
-      ? processed.args.timestamp.toNumber()
+      ? processed.timestamp.toNumber()
       : queued
-      ? queued.args.timestamp.add(market.__marketData.marketParameters.lpParams.depositDelay).toNumber()
+      ? queued.timestamp.add(market.__marketData.marketParameters.lpParams.depositDelay).toNumber()
       : // Should never happen
         0
     this.delayReason = data.delayReason
@@ -73,7 +101,7 @@ export class LiquidityDeposit {
 
   static async getByOwner(lyra: Lyra, marketAddress: string, owner: string): Promise<LiquidityDeposit[]> {
     const market = await Market.get(lyra, marketAddress)
-    const { events } = await fetchLiquidityDepositEventDataByOwner(lyra, market, owner)
+    const { events } = await fetchLiquidityDepositEventDataByOwner(lyra, owner, market)
     const liquidityDeposits: LiquidityDeposit[] = await Promise.all(
       events.map(async event => {
         const delayReason = await fetchLiquidityDelayReason(lyra, market, event)
@@ -84,16 +112,6 @@ export class LiquidityDeposit {
       })
     )
     return liquidityDeposits
-  }
-
-  static async getByQueueId(lyra: Lyra, marketAddress: string, id: string): Promise<LiquidityDeposit> {
-    const market = await Market.get(lyra, marketAddress)
-    const event = await fetchLiquidityDepositEventDataByID(lyra, market, id)
-    const delayReason = await fetchLiquidityDelayReason(lyra, market, event)
-    return new LiquidityDeposit(lyra, market, {
-      ...event,
-      delayReason,
-    })
   }
 
   // Initiate Deposit

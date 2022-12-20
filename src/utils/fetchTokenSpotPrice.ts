@@ -8,7 +8,7 @@ import {
   USDC_OPTIMISM_MAINNET_ADDRESS,
   USDC_OPTIMISM_MAINNET_DECIMALS,
 } from '../constants/contracts'
-import ONE_INCH_OFFCHAIN_ORACLE_ABI from '../contracts/abis/OneInchOffChainOracle.json'
+import ONE_INCH_OFFCHAIN_ORACLE_ABI from '../contracts/common/abis/OneInchOffChainOracle.json'
 import fromBigNumber from './fromBigNumber'
 
 export default async function fetchTokenSpotPrice(lyra: Lyra, tokenNameOrAddress: string): Promise<number> {

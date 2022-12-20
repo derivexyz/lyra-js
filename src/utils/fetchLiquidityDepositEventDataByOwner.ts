@@ -1,55 +1,61 @@
 import Lyra from '..'
 import { ZERO_BN } from '../constants/bn'
-import { LyraMarketContractId } from '../constants/contracts'
-import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/typechain/LiquidityPool'
+import {
+  DepositQueuedOrProcessedEvent,
+  LiquidityDepositProcessedEvent,
+  LiquidityDepositQueuedEvent,
+} from '../liquidity_deposit'
 import { Market } from '../market'
-import getLyraMarketContract from './getLyraMarketContract'
-
-export type DepositQueuedOrProcessedEvent = {
-  queued?: DepositQueuedEvent
-  processed?: DepositProcessedEvent
-}
+import fetchAllLiquidityDepositEventDataByOwner from './fetchAllLiquidityDepositEventDataByOwner'
+import fetchLatestLiquidityDepositEventDataByOwner from './fetchLatestLiquidityDepositEventDataByOwner'
+import getUniqueBy from './getUniqueBy'
 
 export default async function fetchLiquidityDepositEventDataByOwner(
   lyra: Lyra,
-  market: Market,
-  owner: string
+  owner: string,
+  market: Market
 ): Promise<{
   events: DepositQueuedOrProcessedEvent[]
 }> {
-  const liquidityPoolContract = getLyraMarketContract(
-    lyra,
-    market.__marketData.marketAddresses,
-    LyraMarketContractId.LiquidityPool
-  )
-  const [depositQueuedEvents, depositProcessedEvents] = await Promise.all([
-    liquidityPoolContract.queryFilter(liquidityPoolContract.filters.DepositQueued(null, owner)),
-    liquidityPoolContract.queryFilter(liquidityPoolContract.filters.DepositProcessed(null, owner)),
+  const [latestLiquidityDeposit, allLiquidityDeposits] = await Promise.all([
+    // Contract (realtime) data
+    fetchLatestLiquidityDepositEventDataByOwner(lyra, owner, market),
+    // Subgraph data
+    fetchAllLiquidityDepositEventDataByOwner(lyra, owner, market),
   ])
 
-  const depositQueuedMap: Record<string, DepositQueuedEvent> = {}
-  const depositProcessedMap: Record<string, DepositProcessedEvent> = {}
+  const uniqueQueuedDeposits = getUniqueBy(
+    latestLiquidityDeposit.queued.concat(allLiquidityDeposits.queued),
+    deposit => deposit?.timestamp
+  )
+  const uniqueProcessedDeposits = getUniqueBy(
+    latestLiquidityDeposit.processed.concat(allLiquidityDeposits.processed),
+    deposit => deposit?.timestamp
+  )
+
+  const depositQueuedMap: Record<string, LiquidityDepositQueuedEvent> = {}
+  const depositProcessedMap: Record<string, LiquidityDepositProcessedEvent> = {}
   const depositQueuedOrProcessedEvents: DepositQueuedOrProcessedEvent[] = []
-  depositProcessedEvents.forEach((depositProcessedEvent: DepositProcessedEvent) => {
-    if (depositProcessedEvent.args.depositQueueId.eq(ZERO_BN)) {
+  uniqueProcessedDeposits.forEach((depositProcessedEvent: LiquidityDepositProcessedEvent) => {
+    if (depositProcessedEvent?.depositQueueId.eq(ZERO_BN)) {
       depositQueuedOrProcessedEvents.push({
         processed: depositProcessedEvent,
       })
     }
   })
 
-  depositQueuedEvents.forEach((depositQueuedEvent: DepositQueuedEvent) => {
-    const id = String(depositQueuedEvent.args.depositQueueId)
+  uniqueQueuedDeposits.forEach((depositQueuedEvent: LiquidityDepositQueuedEvent) => {
+    const id = String(depositQueuedEvent?.depositQueueId)
     depositQueuedMap[id] = depositQueuedEvent
   })
 
-  depositProcessedEvents.forEach((depositProcessedEvent: DepositProcessedEvent) => {
-    const id = String(depositProcessedEvent.args.depositQueueId)
+  uniqueProcessedDeposits.forEach((depositProcessedEvent: LiquidityDepositProcessedEvent) => {
+    const id = String(depositProcessedEvent?.depositQueueId)
     depositProcessedMap[id] = depositProcessedEvent
   })
 
-  depositQueuedEvents.forEach((depositQueuedEvent: DepositQueuedEvent) => {
-    const id = String(depositQueuedEvent.args.depositQueueId)
+  uniqueQueuedDeposits.forEach((depositQueuedEvent: LiquidityDepositQueuedEvent) => {
+    const id = String(depositQueuedEvent?.depositQueueId)
     if (depositQueuedMap[id] && depositProcessedMap[id]) {
       depositQueuedOrProcessedEvents.push({
         queued: depositQueuedMap[id],
@@ -61,7 +67,6 @@ export default async function fetchLiquidityDepositEventDataByOwner(
       })
     }
   })
-
   return {
     events: depositQueuedOrProcessedEvents,
   }

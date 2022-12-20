@@ -1,17 +1,22 @@
 import { Contract } from '@ethersproject/contracts'
 import { Log } from '@ethersproject/providers'
 
+import { Version } from '..'
 import { ZERO_ADDRESS } from '../constants/bn'
 import { EventName, LyraMarketContractId } from '../constants/contracts'
 import { PartialTradeEvent } from '../constants/events'
-import { OptionMarket } from '../contracts/typechain'
-import { TradeEvent } from '../contracts/typechain/OptionMarket'
+import { OptionMarket } from '../contracts/newport/typechain'
+import { TradeEvent } from '../contracts/newport/typechain/OptionMarket'
 import filterNulls from './filterNulls'
 import getLyraContractABI from './getLyraContractABI'
 
 // Some transactions, e.g. liquidations, can have multiple Trade events
 export default function parsePartialTradeEventsFromLogs(logs: Log[]): PartialTradeEvent[] {
-  const optionMarket = new Contract(ZERO_ADDRESS, getLyraContractABI(LyraMarketContractId.OptionMarket)) as OptionMarket
+  const optionMarket = new Contract(
+    ZERO_ADDRESS,
+    // Hard-coded Version as these ABI events are functionally the same
+    getLyraContractABI(Version.Newport, LyraMarketContractId.OptionMarket)
+  ) as OptionMarket
   const events = filterNulls(
     logs.map(log => {
       try {

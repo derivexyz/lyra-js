@@ -24,8 +24,8 @@ export class WethLyraStaking {
 
   static async get(lyra: Lyra): Promise<WethLyraStaking> {
     const [gelatoPoolContract, wethLyraStakingRewardsContract, { apy, tokenValue }] = await Promise.all([
-      await getLyraContract(lyra.provider, lyra.deployment, LyraContractId.ArrakisPool),
-      await getLyraContract(lyra.provider, lyra.deployment, LyraContractId.WethLyraStakingRewards),
+      await getLyraContract(lyra, LyraContractId.ArrakisPool),
+      await getLyraContract(lyra, LyraContractId.WethLyraStakingRewards),
       await fetchLyraWethStakingData(lyra),
     ])
     const stakedTokenBalance = await gelatoPoolContract.balanceOf(wethLyraStakingRewardsContract.address)

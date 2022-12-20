@@ -1,6 +1,6 @@
 import { CollateralUpdateData } from '../collateral_update_event'
-import { TradeEvent } from '../contracts/typechain/OptionMarket'
-import { PositionUpdatedEvent, TransferEvent } from '../contracts/typechain/OptionToken'
+import { TradeEvent } from '../contracts/newport/typechain/OptionMarket'
+import { PositionUpdatedEvent, TransferEvent } from '../contracts/newport/typechain/OptionToken'
 import { SettleEventData } from '../settle_event'
 import { TradeEventData } from '../trade_event'
 import { TransferEventData } from '../transfer_event'

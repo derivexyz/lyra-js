@@ -3,6 +3,9 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Board } from '../board'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS } from '../constants/contracts'
+import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
+import Lyra, { Version } from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Strike } from '../strike'
@@ -83,6 +86,7 @@ export type QuoteOptions = {
 }
 
 export class Quote {
+  private lyra: Lyra
   private __option: Option
   __source = DataSource.ContractCall
   marketName: string
@@ -104,12 +108,14 @@ export class Quote {
   forceClosePenalty: BigNumber
   isForceClose: boolean
   breakEven: BigNumber
+  toBreakEven: BigNumber
   isDisabled: boolean
   disabledReason: QuoteDisabledReason | null
 
   iterations: QuoteIteration[]
 
-  constructor(option: Option, isBuy: boolean, size: BigNumber, options?: QuoteOptions) {
+  constructor(lyra: Lyra, option: Option, isBuy: boolean, size: BigNumber, options?: QuoteOptions) {
+    this.lyra = lyra
     this.__option = option
     this.isBuy = isBuy
     this.size = size
@@ -134,6 +140,7 @@ export class Quote {
     this.isDisabled = !!fields.disabledReason
     this.disabledReason = fields.disabledReason
     this.breakEven = fields.breakEven
+    this.toBreakEven = fields.toBreakEven
     this.iterations = fields.iterations
   }
 
@@ -165,6 +172,7 @@ export class Quote {
       isDisabled: !!disabledReason,
       disabledReason,
       breakEven: ZERO_BN,
+      toBreakEven: ZERO_BN,
       iterations: [],
     }
   }
@@ -187,6 +195,7 @@ export class Quote {
     isDisabled: boolean
     disabledReason: QuoteDisabledReason | null
     breakEven: BigNumber
+    toBreakEven: BigNumber
     iterations: QuoteIteration[]
   } {
     const numIterations = options?.iterations ?? DEFAULT_ITERATIONS
@@ -213,7 +222,7 @@ export class Quote {
     }
 
     const iterationSize = size.div(numIterations)
-    const iterations = []
+    const iterations: QuoteIteration[] = []
 
     const optionStdVega = strike.__strikeData.cachedGreeks.stdVega.mul(-1)
 
@@ -239,7 +248,11 @@ export class Quote {
     const fairIv = baseIv.mul(skew).div(UNIT)
     const spotPrice = option.market().spotPrice
     const strikePrice = option.strike().strikePrice
-    const rate = option.market().__marketData.marketParameters.greekCacheParams.rateAndCarry
+    const rate =
+      option.lyra.version === Version.Avalon
+        ? (option.market().__marketData as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters
+            .greekCacheParams.rateAndCarry
+        : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
 
     const delta = toBigNumber(
       getDelta(
@@ -326,6 +339,15 @@ export class Quote {
     // Pricing
     const pricePerOption = premium.mul(UNIT).div(size)
     const breakEven = getBreakEvenPrice(option.isCall, strike.strikePrice, premium.mul(UNIT).div(size))
+    const breakEvenDiff = breakEven.sub(spotPrice)
+    const toBreakEven = this.isCall
+      ? spotPrice.gt(breakEven)
+        ? ZERO_BN
+        : breakEvenDiff
+      : spotPrice.lt(breakEven)
+      ? ZERO_BN
+      : breakEvenDiff
+
     const forceClosePenalty = iterations.reduce((sum, quote) => sum.add(quote.forceClosePenalty), ZERO_BN)
 
     // Fees
@@ -362,14 +384,28 @@ export class Quote {
       isDisabled: !!disabledReason,
       disabledReason,
       breakEven,
+      toBreakEven,
       iterations,
     }
   }
 
   // Getters
 
-  static get(option: Option, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
-    return new Quote(option, isBuy, size, options)
+  static async get(
+    lyra: Lyra,
+    marketAddressOrName: string,
+    strikeId: number,
+    isCall: boolean,
+    isBuy: boolean,
+    size: BigNumber,
+    options?: QuoteOptions
+  ): Promise<Quote> {
+    const option = await lyra.option(marketAddressOrName, strikeId, isCall)
+    return Quote.getSync(lyra, option, isBuy, size, options)
+  }
+
+  static getSync(lyra: Lyra, option: Option, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
+    return new Quote(lyra, option, isBuy, size, options)
   }
 
   // Edges

@@ -72,6 +72,11 @@ export type GlobalRewardEpochData = {
       OP: number
     }
   }
+  wethLyraStakingRewardConfig?: {
+    totalRewards: {
+      OP: number
+    }
+  }
 }
 
 export default async function fetchGlobalRewardEpochData(

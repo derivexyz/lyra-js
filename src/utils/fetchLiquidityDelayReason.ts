@@ -1,8 +1,8 @@
 import { LiquidityDelayReason, Market } from '..'
 import { LyraMarketContractId, VAULTS_UTILIZATION_THRESHOLD } from '../constants/contracts'
+import { DepositQueuedOrProcessedEvent } from '../liquidity_deposit'
+import { WithdrawalQueuedOrProcessedEvent } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
-import { DepositQueuedOrProcessedEvent } from './fetchLiquidityDepositEventDataByOwner'
-import { WithdrawalQueuedOrProcessedEvent } from './fetchLiquidityWithdrawalEventDataByOwner'
 import getLyraMarketContract from './getLyraMarketContract'
 
 export default async function fetchLiquidityDelayReason(
@@ -16,16 +16,16 @@ export default async function fetchLiquidityDelayReason(
     LyraMarketContractId.LiquidityPool
   )
   const currentTimestamp = market.block.timestamp
-  const cbTimestamp = await liquidityPoolContract.CBTimestamp()
+  const [cbTimestamp, marketLiquidity] = await Promise.all([liquidityPoolContract.CBTimestamp(), market.liquidity()])
   if (cbTimestamp.gt(currentTimestamp)) {
-    if (market.liquidity.utilization > VAULTS_UTILIZATION_THRESHOLD) {
+    if (marketLiquidity.utilization > VAULTS_UTILIZATION_THRESHOLD) {
       return LiquidityDelayReason.Liquidity
     } else {
       return LiquidityDelayReason.Volatility
     }
   } else {
     const duration = market.withdrawalDelay
-    const startTimestamp = event.queued?.args.timestamp.toNumber() ?? 0
+    const startTimestamp = event.queued?.timestamp.toNumber() ?? 0
     const progressDuration = Math.min(Math.max(currentTimestamp - startTimestamp, 0), duration)
     const timeToEntryExit = duration - progressDuration
     if (timeToEntryExit === 0) {

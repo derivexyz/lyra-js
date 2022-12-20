@@ -18,10 +18,11 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.esm.json && tsc --project tsconfig.cjs.json",
-    "dev": "concurrently \"tsc --project tsconfig.esm.json --watch\" \"tsc --project tsconfig.cjs.json --watch\"",
+    "tsc": "yarn build",
+    "watch": "concurrently \"tsc --project tsconfig.esm.json --watch\" \"tsc --project tsconfig.cjs.json --watch\"",
+    "script": "env-cmd -f scripts/.env.local ts-node --project tsconfig.node.json scripts/index.ts",
+    "generate-types": "ts-node --project tsconfig.node.json src/contracts/generate-types.ts",
     "sync": "ts-node --project tsconfig.node.json src/contracts/sync.ts",
-    "example": "env-cmd -f src/examples/.env.local ts-node --project tsconfig.node.json src/examples/index.ts",
-    "generate-types": "yarn typechain --target ethers-v5 --out-dir src/contracts/typechain src/contracts/abis/*.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint '**/*.ts'",
     "clean": "rimraf node_modules dist",
@@ -31,20 +32,13 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "@ethersproject/address": "^5.6.0",
-    "@ethersproject/bignumber": "^5.6.0",
-    "@ethersproject/contracts": "^5.6.0",
-    "@ethersproject/providers": "^5.6.0",
-    "@ethersproject/strings": "^5.6.0",
-    "@ethersproject/units": "^5.6.0",
-    "@ethersproject/wallet": "^5.6.0",
-    "ethers": "^5.6.0",
+    "ethers": "5.6.0",
     "firebase": "^9.9.4",
     "graphql": "^16.4.0",
     "graphql-request": "^4.2.0"
   },
   "devDependencies": {
-    "@typechain/ethers-v5": "^9.0.0",
+    "@typechain/ethers-v5": "^10.1.1",
     "@types/fs-extra": "^9.0.13",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^17.0.21",
@@ -62,7 +56,7 @@
     "rimraf": "^3.0.2",
     "ts-node": "^10.5.0",
     "tslib": "^2.4.0",
-    "typechain": "^7.0.0",
+    "typechain": "^8.1.1",
     "typescript": "^4.7.3",
     "underscore": "^1.13.6",
     "yargs": "^17.3.1"

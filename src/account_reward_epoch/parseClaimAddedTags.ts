@@ -1,4 +1,4 @@
-import { ClaimAddedEvent } from '../contracts/typechain/MultiDistributor'
+import { ClaimAddedEvent } from '../contracts/common/typechain/MultiDistributor'
 
 enum ClaimAddedProgramTags {
   MMV = 'MMV',

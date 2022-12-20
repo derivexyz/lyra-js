@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 
-import { Account, AccountLiquidityTokenBalance, AccountLyraStaking } from '..'
+import { Account, AccountBalances, AccountLiquidityTokenBalance, AccountLyraStaking } from '..'
 import { MAX_BN, ZERO_BN } from '../constants/bn'
 import { LYRA_OPTIMISM_KOVAN_ADDRESS, LYRA_OPTIMISM_MAINNET_ADDRESS, LyraContractId } from '../constants/contracts'
 import { SECONDS_IN_DAY } from '../constants/time'
@@ -13,14 +13,13 @@ import findMarket from '../utils/findMarket'
 import fromBigNumber from '../utils/fromBigNumber'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
-import getMarketAddresses from '../utils/getMarketAddresses'
 import insertTxGasEstimate from '../utils/insertTxGasEstimate'
 
 type StakeData = {
   account: Account
   accountStaking: AccountLyraStaking
   globalEpoch: GlobalRewardEpoch
-  vaultTokenBalances: AccountLiquidityTokenBalance[]
+  accountBalances: AccountBalances[]
   amount: BigNumber
 }
 
@@ -60,10 +59,10 @@ export class LyraStake {
     this.newStakedLyraBalance = this.stakedLyraBalance.add(this.amount)
     this.allowance = data.accountStaking.lyraBalance.stakingAllowance
 
-    this.vaultTokenBalances = data.vaultTokenBalances.reduce(
-      (lpTokenBalances, lpTokenBalance) => ({
+    this.vaultTokenBalances = data.accountBalances.reduce(
+      (lpTokenBalances, accountBalance) => ({
         ...lpTokenBalances,
-        [lpTokenBalance.market.baseToken.symbol]: lpTokenBalance,
+        [accountBalance.baseAsset.symbol]: accountBalance.liquidityToken,
       }),
       {}
     )
@@ -113,11 +112,7 @@ export class LyraStake {
 
     // Build transaction
     if (!this.disabledReason) {
-      const lyraStakingModuleProxyContract = getLyraContract(
-        lyra.provider,
-        lyra.deployment,
-        LyraContractId.LyraStakingModuleProxy
-      )
+      const lyraStakingModuleProxyContract = getLyraContract(lyra, LyraContractId.LyraStakingModuleProxy)
       const txData = lyraStakingModuleProxyContract.interface.encodeFunctionData('stake', [
         this.account.address,
         this.amount,
@@ -132,18 +127,17 @@ export class LyraStake {
 
   static async get(lyra: Lyra, address: string, amount: BigNumber): Promise<LyraStake> {
     const account = Account.get(lyra, address)
-    const marketAddresses = await getMarketAddresses(lyra)
-    const [accountStaking, globalEpoch, vaultTokenBalances] = await Promise.all([
+    const [accountStaking, globalEpoch, balances] = await Promise.all([
       account.lyraStaking(),
       lyra.latestGlobalRewardEpoch(),
-      Promise.all(marketAddresses.map(market => lyra.account(address).liquidityTokenBalance(market.optionMarket))),
+      lyra.account(address).balances(),
     ])
     const stake = new LyraStake(lyra, {
       account,
       globalEpoch,
       amount,
       accountStaking,
-      vaultTokenBalances,
+      accountBalances: balances,
     })
     if (stake?.tx) {
       stake.tx = await insertTxGasEstimate(lyra, stake.tx)
@@ -154,7 +148,8 @@ export class LyraStake {
   // Transactions
 
   static async approve(lyra: Lyra, account: string): Promise<PopulatedTransaction> {
-    const proxyContract = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.LyraStakingModuleProxy)
+    const proxyContract = getLyraContract(lyra, LyraContractId.LyraStakingModuleProxy)
+
     const lyraContract = getERC20Contract(
       lyra.provider,
       lyra.deployment === Deployment.Mainnet ? LYRA_OPTIMISM_MAINNET_ADDRESS : LYRA_OPTIMISM_KOVAN_ADDRESS
@@ -167,7 +162,7 @@ export class LyraStake {
   // Dynamic Fields
 
   vaultApy(marketAddressOrName: string): GlobalRewardEpochAPY {
-    const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
+    const market = findMarket(this.lyra, this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
     const currStakedLyraBalance = fromBigNumber(this.stakedLyraBalance)
     const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalances[marketKey].balance)
@@ -179,7 +174,7 @@ export class LyraStake {
   }
 
   vaultApyMultiplier(marketAddressOrName: string): number {
-    const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
+    const market = findMarket(this.lyra, this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
     const currStakedLyraBalance = fromBigNumber(this.stakedLyraBalance)
     const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalances[marketKey].balance)
@@ -191,7 +186,7 @@ export class LyraStake {
   }
 
   newVaultApy(marketAddressOrName: string): GlobalRewardEpochAPY {
-    const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
+    const market = findMarket(this.lyra, this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
     const newStakedLyraBalance = fromBigNumber(this.newStakedLyraBalance)
     const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalances[marketKey].balance)
@@ -203,7 +198,7 @@ export class LyraStake {
   }
 
   newVaultApyMultiplier(marketAddressOrName: string): number {
-    const market = findMarket(this.globalEpoch.markets, marketAddressOrName)
+    const market = findMarket(this.lyra, this.globalEpoch.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
     const newStakedLyraBalance = fromBigNumber(this.newStakedLyraBalance)
     const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalances[marketKey].balance)

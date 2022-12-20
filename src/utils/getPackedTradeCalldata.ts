@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
 import Lyra, { Position, TradeOptions } from '..'
-import { AccountStableBalance } from '..'
+import { AccountQuoteBalance } from '..'
 import { ZERO_BN } from '../constants/bn'
 import { LyraContractId } from '../constants/contracts'
 import { Option } from '../option'
@@ -32,7 +32,7 @@ type TradeParams = {
   minCost: BigNumber
   iterations: number
   isForceClose: boolean
-  stables: AccountStableBalance[]
+  stables: AccountQuoteBalance[]
   collateral?: TradeCollateral
   position?: Position
 }
@@ -57,7 +57,7 @@ export default function getPackedTradeCalldata(
   }: TradeParams,
   options: TradeOptions
 ): string {
-  const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+  const wrapper = getLyraContract(lyra, LyraContractId.OptionMarketWrapper)
   const strike = option.strike()
 
   if (stables.length < 1) {

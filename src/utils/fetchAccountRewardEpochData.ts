@@ -36,6 +36,11 @@ export type AccountRewardEpochData = {
     tradingFees: number
     totalCollatRebateDollars: number
   }
+  wethLyraStakingRewards?: {
+    opRewards: number
+    gUniTokensStaked: number
+    percentShare: number
+  }
 }
 
 export default async function fetchAccountRewardEpochData(

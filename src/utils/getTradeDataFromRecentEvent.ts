@@ -1,7 +1,7 @@
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, TradeDirection } from '../constants/contracts'
 import { PartialTradeEvent, PartialTransferEvent } from '../constants/events'
-import { PositionTradedEvent } from '../contracts/typechain/OptionMarketWrapper'
+import { PositionTradedEvent } from '../contracts/newport/typechain/OptionMarketWrapper'
 import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
 import getIsBaseCollateral from './getIsBaseCollateral'

@@ -1,6 +1,9 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
+import { Version } from '..'
 import { ONE_BN, UNIT } from '../constants/bn'
+import { OptionGreekCache } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
 import { Option } from '../option'
 import { getDelta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
@@ -46,7 +49,10 @@ export default function getQuoteDisabledReason(
   const strikePrice = strike.strikePrice
 
   // Check delta range
-  const rate = greekCacheParams.rateAndCarry
+  const rate =
+    option.lyra.version === Version.Avalon
+      ? (greekCacheParams as OptionGreekCache.GreekCacheParametersStructOutput).rateAndCarry
+      : (market.__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
   const callDelta = toBigNumber(
     getDelta(
       timeToExpiryAnnualized,

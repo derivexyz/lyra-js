@@ -6,9 +6,10 @@ import fromBigNumber from '../utils/fromBigNumber'
 import { AccountPortfolioBalance } from '.'
 
 export default async function fetchPortfolioBalance(lyra: Lyra, account: string): Promise<AccountPortfolioBalance> {
-  const [positions, balances, markets] = await Promise.all([
+  const [positions, balances, quoteAssets, markets] = await Promise.all([
     lyra.openPositions(account),
     lyra.account(account).balances(),
+    lyra.account(account).quoteAssets(),
     lyra.markets(),
   ])
 
@@ -49,14 +50,14 @@ export default async function fetchPortfolioBalance(lyra: Lyra, account: string)
   )
 
   const baseAccountValue = fromBigNumber(
-    balances.bases.reduce((sum, balance) => {
+    balances.reduce((sum, balance) => {
       const spotPrice = spotPriceByMarket[balance.marketAddress]
-      const value = balance.balance.mul(spotPrice).div(UNIT)
+      const value = balance.baseAsset.balance.mul(spotPrice).div(UNIT)
       return sum.add(value)
     }, ZERO_BN)
   )
 
-  const stableAccountValue = balances.stables.reduce((total, balance) => {
+  const stableAccountValue = quoteAssets.reduce((total, balance) => {
     return total + fromBigNumber(balance.balance, balance.decimals)
   }, 0)
 
@@ -77,11 +78,12 @@ export default async function fetchPortfolioBalance(lyra: Lyra, account: string)
     stableAccountValue,
     totalValue,
     positions,
-    stableAccountBalances: balances.stables,
-    baseAccountBalances: balances.bases.map(b => ({
-      ...b,
+    stableAccountBalances: quoteAssets,
+    baseAccountBalances: balances.map(b => ({
+      ...b.baseAsset,
+      marketAddress: b.marketAddress,
       spotPrice: spotPriceByMarket[b.marketAddress],
-      value: spotPriceByMarket[b.marketAddress].mul(b.balance).div(UNIT),
+      value: spotPriceByMarket[b.marketAddress].mul(b.baseAsset.balance).div(UNIT),
     })),
   }
 }

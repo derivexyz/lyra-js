@@ -1,13 +1,15 @@
-import { Deployment } from '../constants/contracts'
+import { Chain } from '../constants/chain'
 
-const getLyraDeploymentChainId = (deployment: Deployment): number => {
-  switch (deployment) {
-    case Deployment.Local:
-      return 31337
-    case Deployment.Testnet:
-      return 420
-    case Deployment.Mainnet:
+const getLyraDeploymentChainId = (chain: Chain): number => {
+  switch (chain) {
+    case Chain.Optimism:
       return 10
+    case Chain.OptimismGoerli:
+      return 420
+    // case Chain.Arbitrum:
+    //   return 42161
+    case Chain.ArbitrumGoerli:
+      return 421613
   }
 }
 

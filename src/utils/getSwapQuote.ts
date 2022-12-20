@@ -10,7 +10,7 @@ export default async function getSwapQuote(
   to: string,
   amountIn: BigNumber
 ): Promise<BigNumber> {
-  const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+  const wrapper = getLyraContract(lyra, LyraContractId.OptionMarketWrapper)
   const [poolAddress, amountOut] = await wrapper.quoteCurveSwap(from, to, amountIn)
   return amountOut
 }

@@ -1,0 +1,8 @@
+{
+  "ExchangeAdapter": "0xD7777Eb7f2876AE6E58e43Fecb67E8269A78DA87",
+  "TestFaucet": "0xD265B52FedFD43d3C5422a96566bC7Fc046781F0",
+  "LyraRegistry": "0x10e27afcb3aAEdddaa2E3B78aBF73232cCC283bc",
+  "LyraStakingModule": "",
+  "LyraStakingModuleProxy": "",
+  "MultiDistributor": ""
+}

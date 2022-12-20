@@ -5,8 +5,9 @@ import { Board } from '../board'
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
 import { SnapshotOptions } from '../constants/snapshots'
-import { OptionMarketViewer } from '../contracts/typechain'
-import Lyra from '../lyra'
+import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
+import { OptionMarketViewer } from '../contracts/newport/typechain'
+import Lyra, { Version } from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
@@ -23,6 +24,14 @@ export type StrikeHistoryOptions = {
 export type StrikeIVHistory = {
   iv: number
   timestamp: number
+}
+
+export type StrikeQuotes = {
+  callBid: Quote
+  callAsk: Quote
+  putBid: Quote
+  putAsk: Quote
+  strike: Strike
 }
 
 export class Strike {
@@ -47,7 +56,7 @@ export class Strike {
       throw new Error('Strike does not exist for board')
     }
     this.__strikeData = strikeView
-    const fields = Strike.getFields(board, strikeId)
+    const fields = Strike.getFields(lyra.version, board, strikeId)
     this.block = block
     this.id = fields.id
     this.strikePrice = fields.strikePrice
@@ -58,7 +67,7 @@ export class Strike {
     this.isDeltaInRange = fields.isDeltaInRange
   }
 
-  private static getFields(board: Board, strikeId: number) {
+  private static getFields(version: Version, board: Board, strikeId: number) {
     const strikeView = board.__boardData.strikes.find(strikeView => strikeView.strikeId.toNumber() === strikeId)
     if (!strikeView) {
       throw new Error('Strike does not exist for board')
@@ -82,7 +91,12 @@ export class Strike {
       const ivNum = fromBigNumber(iv)
       const spotPrice = fromBigNumber(board.market().spotPrice)
       const strikePriceNum = fromBigNumber(strikePrice)
-      const rate = fromBigNumber(board.market().__marketData.marketParameters.greekCacheParams.rateAndCarry) ?? 0
+      const marketParameters = board.market().__marketData.marketParameters
+      const rate = fromBigNumber(
+        (version == Version.Avalon
+          ? (marketParameters as OptionMarketViewerAvalon.MarketParametersStructOutput).greekCacheParams.rateAndCarry
+          : (board.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry) ?? 0
+      )
       const vega =
         ivNum > 0 && spotPrice > 0
           ? toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
@@ -116,6 +130,10 @@ export class Strike {
     return await market.strike(strikeId)
   }
 
+  async refresh(): Promise<Strike> {
+    return Strike.get(this.lyra, this.market().address, this.id)
+  }
+
   // Dynamic Fields
 
   async ivHistory(lyra: Lyra, options?: SnapshotOptions): Promise<StrikeIVHistory[]> {
@@ -144,9 +162,29 @@ export class Strike {
     return isCall ? this.call() : this.put()
   }
 
-  // Quote
-
   async quote(isCall: boolean, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Promise<Quote> {
-    return await this.market().quote(this.id, isCall, isBuy, size, options)
+    const strike = await this.refresh()
+    return strike.quoteSync(isCall, isBuy, size, options)
+  }
+
+  quoteSync(isCall: boolean, isBuy: boolean, size: BigNumber, options?: QuoteOptions): Quote {
+    return this.option(isCall).quoteSync(isBuy, size, options)
+  }
+
+  async quoteAll(size: BigNumber, options?: QuoteOptions): Promise<StrikeQuotes> {
+    const strike = await this.refresh()
+    return strike.quoteAllSync(size, options)
+  }
+
+  quoteAllSync(size: BigNumber, options?: QuoteOptions): StrikeQuotes {
+    const { bid: callBid, ask: callAsk } = this.option(true).quoteAllSync(size, options)
+    const { bid: putBid, ask: putAsk } = this.option(false).quoteAllSync(size, options)
+    return {
+      strike: this,
+      callBid,
+      callAsk,
+      putBid,
+      putAsk,
+    }
   }
 }

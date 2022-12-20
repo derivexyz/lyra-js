@@ -8,7 +8,7 @@ type MarketAddressToId = {
 }
 
 export default async function getOptionWrapperMarketIds(lyra: Lyra): Promise<MarketAddressToId> {
-  const wrapper = getLyraContract(lyra.provider, lyra.deployment, LyraContractId.OptionMarketWrapper)
+  const wrapper = getLyraContract(lyra, LyraContractId.OptionMarketWrapper)
   const [_, marketBalances] = await wrapper.getBalancesAndAllowances(ZERO_ADDRESS)
   const marketToId = marketBalances.reduce(
     (marketToId: MarketAddressToId, marketAssetView) => ({

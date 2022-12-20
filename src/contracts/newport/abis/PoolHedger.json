@@ -1,0 +1,1407 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      }
+    ],
+    "name": "AlreadyInitialised",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      }
+    ],
+    "name": "AssetTransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CancellationDelayNotPassed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "GetGMXVaultError",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastInteraction",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "interactionDelta",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "InteractionDelayNotExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newMaxLeverage",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidMaxLeverage",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      }
+    ],
+    "name": "NoQuoteReceivedFromLP",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quoteReceived",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minCollateral",
+        "type": "uint256"
+      }
+    ],
+    "name": "NotEnoughQuoteForMinCollateral",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "liquidityPool",
+        "type": "address"
+      }
+    ],
+    "name": "OnlyLiquidityPool",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "nominatedOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OnlyNominatedOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OnlyOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "key",
+        "type": "bytes32"
+      }
+    ],
+    "name": "PositionRequestPending",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "approvee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "QuoteApprovalFailure",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountBase",
+        "type": "uint256"
+      }
+    ],
+    "name": "BaseReturnedToLP",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "positionKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isLong",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "collateralDelta",
+        "type": "int256"
+      }
+    ],
+    "name": "CollateralOrderPosted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "positionKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isExecuted",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isIncrease",
+        "type": "bool"
+      },
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "longPosition",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "shortPosition",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountOpen",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLong",
+            "type": "bool"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct GMXFuturesPoolHedger.CurrentPositions",
+        "name": "positions",
+        "type": "tuple"
+      }
+    ],
+    "name": "GMXPositionCallback",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "longPosition",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "shortPosition",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountOpen",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLong",
+            "type": "bool"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct GMXFuturesPoolHedger.CurrentPositions",
+        "name": "position",
+        "type": "tuple"
+      }
+    ],
+    "name": "HedgerPosition",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "targetLeverage",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxLeverageSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "pendingOrderKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "name": "OrderCanceled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "positionKey",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "collateralDelta",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "sizeDelta",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isLong",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isIncrease",
+        "type": "bool"
+      }
+    ],
+    "name": "OrderPosted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "interactionDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hedgeCap",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct PoolHedger.PoolHedgerParameters",
+        "name": "poolHedgerParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "PoolHedgerParametersSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "currentNetDelta",
+        "type": "int256"
+      },
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "expectedNetDelta",
+        "type": "int256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "modifiedDelta",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isIncrease",
+        "type": "bool"
+      }
+    ],
+    "name": "PositionUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      }
+    ],
+    "name": "QuoteReturnedToLP",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "GMX_PRICE_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "baseAsset",
+    "outputs": [
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "deltaIncreasing",
+        "type": "bool"
+      }
+    ],
+    "name": "canHedge",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelPendingOrder",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exchangeAdapter",
+    "outputs": [
+      {
+        "internalType": "contract BaseExchangeAdapter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "futuresPoolHedgerParams",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "acceptableSpotSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deltaThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "marketDepthBuffer",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "targetLeverage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "leverageBuffer",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minCancelDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "vaultLiquidityCheckEnabled",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllPositionsValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCappedExpectedHedge",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentHedgedNetDelta",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentLeverage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "leverage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isLong",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "needUpdate",
+        "type": "bool"
+      },
+      {
+        "internalType": "int256",
+        "name": "collateralDelta",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "spotPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "getHedgingLiquidity",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "pendingDeltaLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "usedDeltaLiquidity",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPoolHedgerParams",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "interactionDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hedgeCap",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PoolHedger.PoolHedgerParameters",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "longPosition",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "collateral",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "averagePrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "entryFundingRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealisedPnl",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "lastIncreasedTime",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bool",
+                "name": "isLong",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+            "name": "shortPosition",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountOpen",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLong",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct GMXFuturesPoolHedger.CurrentPositions",
+        "name": "positions",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "positionKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "isExecuted",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isIncrease",
+        "type": "bool"
+      }
+    ],
+    "name": "gmxPositionCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "greekCache",
+    "outputs": [
+      {
+        "internalType": "contract OptionGreekCache",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "hasPendingDecrease",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "hasPendingIncrease",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "hedgeDelta",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract LiquidityPool",
+        "name": "_liquidityPool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_optionMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "contract OptionGreekCache",
+        "name": "_greekCache",
+        "type": "address"
+      },
+      {
+        "internalType": "contract BaseExchangeAdapter",
+        "name": "_exchangeAdapter",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPositionRouter",
+        "name": "_positionRouter",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IRouter",
+        "name": "_router",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "_quoteAsset",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "_baseAsset",
+        "type": "address"
+      }
+    ],
+    "name": "init",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastInteraction",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastOrderTimestamp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "optionMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingOrderKey",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "positionRouter",
+    "outputs": [
+      {
+        "internalType": "contract IPositionRouter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "quoteAsset",
+    "outputs": [
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "receiver",
+        "type": "address"
+      }
+    ],
+    "name": "recoverEth",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "referralCode",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resetInteractionDelay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "router",
+    "outputs": [
+      {
+        "internalType": "contract IRouter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sendAllFundsToLP",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "acceptableSpotSlippage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deltaThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketDepthBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "targetLeverage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "leverageBuffer",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minCancelDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "vaultLiquidityCheckEnabled",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct GMXFuturesPoolHedger.FuturesPoolHedgerParameters",
+        "name": "_futuresPoolHedgerParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "setFuturesPoolHedgerParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "interactionDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hedgeCap",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PoolHedger.PoolHedgerParameters",
+        "name": "_poolHedgerParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "setPoolHedgerParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_referralCode",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setReferralCode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateCollateral",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vault",
+    "outputs": [
+      {
+        "internalType": "contract IVault",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

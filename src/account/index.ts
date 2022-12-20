@@ -26,16 +26,26 @@ import { Position } from '../position'
 import { SettleEvent } from '../settle_event'
 import { TradeEvent } from '../trade_event'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
+import callContractWithMulticall from '../utils/callContractWithMulticall'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraContract from '../utils/getLyraContract'
 import getLyraContractAddress from '../utils/getLyraContractAddress'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
+import getUniqueBy from '../utils/getUniqueBy'
+import isTokenEqual from '../utils/isTokenEqual'
+import toBigNumber from '../utils/toBigNumber'
+import fetchAccountBalancesAndAllowances from './fetchAccountBalancesAndAllowances'
 import fetchPortfolioBalance from './fetchPortfolioBalance'
 import fetchPortfolioHistory from './fetchPortfolioHistory'
-import getAccountBalancesAndAllowances from './getAccountBalancesAndAllowances'
 import getAverageCostPerLPToken from './getAverageCostPerLPToken'
-import getLiquidityDepositBalance from './getLiquidityDepositBalance'
-import getLiquidityTokenBalance from './getLiquidityTokenBalance'
+
+export type AccountTokenBalance = {
+  address: string
+  symbol: string
+  decimals: number
+  balance: BigNumber
+  id: number
+}
 
 export type AccountPortfolioBalance = {
   longOptionValue: number
@@ -140,41 +150,26 @@ export type AccountPositionSnapshot = {
   settles: SettleEvent[]
 }
 
-export type AccountStableBalance = {
-  address: string
-  symbol: string
-  decimals: number
-  balance: BigNumber
-  allowance: BigNumber
-  id: number
+export type AccountQuoteBalance = AccountTokenBalance & {
+  tradeAllowance: BigNumber
+  depositAllowance: BigNumber
 }
 
-export type AccountBaseBalance = {
-  marketAddress: string
-  address: string
-  symbol: string
-  decimals: number
-  balance: BigNumber
-  allowance: BigNumber
-  id: number
+export type AccountBaseBalance = AccountTokenBalance & {
+  tradeAllowance: BigNumber
 }
 
 export type AccountOptionTokenBalance = {
-  marketAddress: string
   address: string
   isApprovedForAll: boolean
   id: number
 }
 
 export type AccountLiquidityTokenBalance = {
-  market: Market
   address: string
   balance: BigNumber
-  value: BigNumber
-  tokenPrice: BigNumber
   symbol: string
   decimals: number
-  allowance: BigNumber
 }
 
 export type AccountLiquidityDepositBalance = {
@@ -186,12 +181,13 @@ export type AccountLiquidityDepositBalance = {
 }
 
 export type AccountBalances = {
-  stables: AccountStableBalance[]
-  stable: (tokenAddressOrName: string) => AccountStableBalance
-  bases: AccountBaseBalance[]
-  base: (tokenOrMarketAddressOrName: string) => AccountBaseBalance
-  optionTokens: AccountOptionTokenBalance[]
-  optionToken: (tokenOrMarketAddress: string) => AccountOptionTokenBalance
+  marketAddress: string
+  marketName: string
+  quoteAsset: AccountQuoteBalance
+  baseAsset: AccountBaseBalance
+  quoteSwapAssets: AccountQuoteBalance[]
+  optionToken: AccountOptionTokenBalance
+  liquidityToken: AccountLiquidityTokenBalance
 }
 
 export type AccountLyraStaking = {
@@ -208,6 +204,7 @@ export type AccountWethLyraStaking = {
   unstakedLPTokenBalance: BigNumber
   stakedLPTokenBalance: BigNumber
   rewards: BigNumber
+  opRewards: BigNumber
   allowance: BigNumber
 }
 
@@ -243,72 +240,101 @@ export class Account {
 
   // Dynamic Fields
 
-  async balances(): Promise<AccountBalances> {
-    const { stables, bases, optionTokens } = await getAccountBalancesAndAllowances(this.lyra, this.address)
-    const stable = (tokenAddressOrName: string): AccountStableBalance => {
-      const stable = stables.find(
-        stable =>
-          stable.address.toLowerCase() === tokenAddressOrName.toLowerCase() ||
-          stable.symbol.toLowerCase() === tokenAddressOrName.toLowerCase()
-      )
-      if (!stable) {
-        throw new Error('Stable token does not exist')
-      }
-      return stable
+  async balances(): Promise<AccountBalances[]> {
+    return await fetchAccountBalancesAndAllowances(this.lyra, this.address)
+  }
+
+  async marketBalances(marketAddressOrName: string): Promise<AccountBalances> {
+    const [market, balances] = await Promise.all([this.lyra.market(marketAddressOrName), this.balances()])
+    const balance = balances.find(balance => balance.marketAddress.toLowerCase() === market.address.toLowerCase())
+    if (!balance) {
+      throw new Error(`No balances exist for market`)
     }
-    const base = (tokenOrMarketAddressOrName: string): AccountBaseBalance => {
-      const base = bases.find(
-        base =>
-          [base.marketAddress.toLowerCase(), base.address.toLowerCase()].includes(
-            tokenOrMarketAddressOrName.toLowerCase()
-          ) || base.symbol.toLowerCase() === tokenOrMarketAddressOrName.toLowerCase()
-      )
-      if (!base) {
-        throw new Error('Base token does not exist')
-      }
-      return base
+    return balance
+  }
+
+  async quoteAsset(marketAddressOrName: string, tokenAddressOrName: string): Promise<AccountQuoteBalance> {
+    const accBalances = await this.marketBalances(marketAddressOrName)
+    const allQuoteAssets = accBalances.quoteSwapAssets
+    const quoteAsset = allQuoteAssets.find(quoteAsset => isTokenEqual(quoteAsset, tokenAddressOrName))
+    if (!quoteAsset) {
+      throw new Error(`Quote asset does exist`)
     }
-    const optionToken = (tokenOrMarketAddress: string): AccountOptionTokenBalance => {
-      const optionToken = optionTokens.find(optionToken =>
-        [optionToken.marketAddress.toLowerCase(), optionToken.address.toLowerCase()].includes(
-          tokenOrMarketAddress.toLowerCase()
-        )
-      )
-      if (!optionToken) {
-        throw new Error('Option token does not exist')
-      }
-      return optionToken
+    return quoteAsset
+  }
+
+  async baseAsset(tokenOrMarketAddressOrName: string): Promise<AccountBaseBalance> {
+    const [market, balances] = await Promise.all([this.lyra.market(tokenOrMarketAddressOrName), this.balances()])
+    const marketBalance = balances.find(
+      balance =>
+        balance.marketAddress.toLowerCase() === market.address.toLowerCase() ||
+        isTokenEqual(balance.baseAsset, tokenOrMarketAddressOrName)
+    )
+    if (!marketBalance) {
+      throw new Error(`No balances exist for market`)
+    }
+    return marketBalance.baseAsset
+  }
+
+  async quoteAssets() {
+    const balances = await this.balances()
+    const allQuoteAssets = getUniqueBy<AccountTokenBalance>(
+      balances.reduce((quoteAssets, balance) => {
+        return [...quoteAssets, ...balance.quoteSwapAssets]
+      }, [] as AccountTokenBalance[]),
+      token => token.address
+    )
+    return allQuoteAssets
+  }
+
+  // No allowance
+  async quoteAssetBalance(quoteAddressOrName: string): Promise<AccountTokenBalance> {
+    const quoteAssets = await this.quoteAssets()
+    const quoteAssetBalance = quoteAssets.find(quoteAsset => isTokenEqual(quoteAsset, quoteAddressOrName))
+    if (!quoteAssetBalance) {
+      throw new Error(`Quote asset does not exist: ${quoteAddressOrName}`)
     }
     return {
-      stables,
-      stable,
-      bases,
-      base,
-      optionTokens,
-      optionToken,
+      address: quoteAssetBalance.address,
+      balance: quoteAssetBalance.balance,
+      symbol: quoteAssetBalance.symbol,
+      decimals: quoteAssetBalance.decimals,
+      id: quoteAssetBalance.id,
     }
   }
 
-  async liquidityDepositBalance(marketAddressOrName: string): Promise<AccountLiquidityDepositBalance> {
-    const market = await this.lyra.market(marketAddressOrName)
-    return await getLiquidityDepositBalance(this.lyra, this.address, market)
-  }
-
-  async liquidityTokenBalance(marketAddressOrName: string): Promise<AccountLiquidityTokenBalance> {
-    const market = await this.lyra.market(marketAddressOrName)
-    return await getLiquidityTokenBalance(this.lyra, this.address, market)
+  async baseAssetBalance(tokenOrMarketAddressOrName: string) {
+    const balances = await this.balances()
+    const baseAssetBalance = balances.find(
+      balance =>
+        [balance.baseAsset.address.toLowerCase(), balance.marketAddress.toLowerCase()].includes(
+          tokenOrMarketAddressOrName.toLowerCase()
+        ) || balance.baseAsset.symbol.toLowerCase() === tokenOrMarketAddressOrName.toLowerCase()
+    )
+    if (!baseAssetBalance) {
+      throw new Error(`Base asset does not exist: ${tokenOrMarketAddressOrName}`)
+    }
+    return baseAssetBalance.baseAsset
   }
 
   async liquidityUnrealizedPnl(marketAddressOrName: string): Promise<{ pnl: BigNumber; pnlPercent: BigNumber }> {
-    const [{ balance, value, tokenPrice }, liquidityDeposits, liquidityWithdrawals] = await Promise.all([
-      this.liquidityTokenBalance(marketAddressOrName),
+    const [market, balance, liquidityDeposits, liquidityWithdrawals] = await Promise.all([
+      this.lyra.market(marketAddressOrName),
+      this.marketBalances(marketAddressOrName),
       this.lyra.liquidityDeposits(marketAddressOrName, this.address),
       this.lyra.liquidityWithdrawals(marketAddressOrName, this.address),
     ])
+    if (!balance) {
+      throw new Error('No balance found for market')
+    }
+    const marketLiquidity = await market.liquidity()
+    const value = marketLiquidity.tokenPrice.mul(balance.liquidityToken.balance).div(UNIT)
     const avgCostPerToken = getAverageCostPerLPToken(liquidityDeposits, liquidityWithdrawals)
-    const avgValue = avgCostPerToken.mul(balance).div(UNIT)
+    const avgValue = avgCostPerToken.mul(balance.liquidityToken.balance).div(UNIT)
     const pnl = value.sub(avgValue)
-    const pnlPercent = avgCostPerToken.gt(0) ? tokenPrice.mul(UNIT).div(avgCostPerToken).sub(ONE_BN) : ZERO_BN
+    const pnlPercent = avgCostPerToken.gt(0)
+      ? marketLiquidity.tokenPrice.mul(UNIT).div(avgCostPerToken).sub(ONE_BN)
+      : ZERO_BN
     return {
       pnl,
       pnlPercent,
@@ -320,13 +346,24 @@ export class Account {
       this.lyra.provider,
       this.lyra.deployment === Deployment.Mainnet ? LYRA_OPTIMISM_MAINNET_ADDRESS : LYRA_OPTIMISM_KOVAN_ADDRESS
     )
-    const lyraStakingModuleProxyAddress = getLyraContractAddress(
-      this.lyra.deployment,
-      LyraContractId.LyraStakingModuleProxy
-    )
-    const [balance, stakingAllowance] = await Promise.all([
-      lyraTokenContract.balanceOf(this.address),
-      lyraTokenContract.allowance(this.address, lyraStakingModuleProxyAddress),
+    const lyraStakingModuleProxyAddress = getLyraContractAddress(this.lyra, LyraContractId.LyraStakingModuleProxy)
+    const balanceOfCallData = lyraTokenContract.interface.encodeFunctionData('balanceOf', [this.address])
+    const allowanceCallData = lyraTokenContract.interface.encodeFunctionData('allowance', [
+      this.address,
+      lyraStakingModuleProxyAddress,
+    ])
+
+    const [[balance], [stakingAllowance]] = await callContractWithMulticall<[[BigNumber], [BigNumber]]>(this.lyra, [
+      {
+        callData: balanceOfCallData,
+        contract: lyraTokenContract,
+        functionFragment: 'balanceOf',
+      },
+      {
+        callData: allowanceCallData,
+        contract: lyraTokenContract,
+        functionFragment: 'allowance',
+      },
     ])
     return {
       balance,
@@ -346,11 +383,7 @@ export class Account {
   }
 
   async claimableRewards(): Promise<ClaimableBalance> {
-    const distributorContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.MultiDistributor
-    )
+    const distributorContract = getLyraContract(this.lyra, LyraContractId.MultiDistributor)
     const stkLyraAddress = getAddress(
       this.lyra.deployment === Deployment.Mainnet ? STAKED_LYRA_OPTIMISM_ADDRESS : STAKED_LYRA_OPTIMISM_KOVAN_ADDRESS
     )
@@ -372,11 +405,7 @@ export class Account {
   }
 
   async claim(tokenAddresses: string[]): Promise<PopulatedTransaction> {
-    const distributorContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.MultiDistributor
-    )
+    const distributorContract = getLyraContract(this.lyra, LyraContractId.MultiDistributor)
     const calldata = distributorContract.interface.encodeFunctionData('claim', [tokenAddresses])
     return await buildTxWithGasEstimate(this.lyra, distributorContract.address, this.address, calldata)
   }
@@ -386,7 +415,7 @@ export class Account {
   async approveOptionToken(marketAddressOrName: string, isAllowed: boolean): Promise<PopulatedTransaction> {
     const market = await Market.get(this.lyra, marketAddressOrName)
     const optionToken = getLyraMarketContract(this.lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
-    const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
+    const wrapper = getLyraContract(this.lyra, LyraContractId.OptionMarketWrapper)
     const data = optionToken.interface.encodeFunctionData('setApprovalForAll', [wrapper.address, isAllowed])
     const tx = await buildTxWithGasEstimate(this.lyra, optionToken.address, this.address, data)
     if (!tx) {
@@ -396,9 +425,8 @@ export class Account {
   }
 
   async approveStableToken(tokenAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    const balances = await this.balances()
-    const stable = balances.stable(tokenAddressOrName)
-    const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
+    const stable = await this.quoteAssetBalance(tokenAddressOrName)
+    const wrapper = getLyraContract(this.lyra, LyraContractId.OptionMarketWrapper)
     const erc20 = getERC20Contract(this.lyra.provider, stable.address)
     const data = erc20.interface.encodeFunctionData('approve', [wrapper.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
@@ -406,9 +434,8 @@ export class Account {
   }
 
   async approveBaseToken(tokenOrMarketAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    const balances = await this.balances()
-    const stable = balances.base(tokenOrMarketAddressOrName)
-    const wrapper = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.OptionMarketWrapper)
+    const stable = await this.baseAssetBalance(tokenOrMarketAddressOrName)
+    const wrapper = getLyraContract(this.lyra, LyraContractId.OptionMarketWrapper)
     const erc20 = getERC20Contract(this.lyra.provider, stable.address)
     const data = erc20.interface.encodeFunctionData('approve', [wrapper.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
@@ -416,10 +443,10 @@ export class Account {
   }
 
   async drip(): Promise<PopulatedTransaction> {
-    if (![Deployment.Testnet, Deployment.Local].includes(this.lyra.deployment)) {
-      throw new Error('Faucet is only supported on local and kovan contracts')
+    if (this.lyra.deployment !== Deployment.Testnet) {
+      throw new Error('Faucet is only supported on testnet contracts')
     }
-    const faucet = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.TestFaucet)
+    const faucet = getLyraContract(this.lyra, LyraContractId.TestFaucet)
     const data = faucet.interface.encodeFunctionData('drip')
     const tx = await buildTxWithGasEstimate(this.lyra, faucet.address, this.address, data)
     if (!tx) {
@@ -429,14 +456,14 @@ export class Account {
   }
 
   async approveDeposit(marketAddressOrName: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    const susd = await this.liquidityDepositBalance(marketAddressOrName)
     const market = await Market.get(this.lyra, marketAddressOrName)
+    const quoteToken = await this.quoteAssetBalance(market.quoteToken.address)
     const liquidityPoolContract = getLyraMarketContract(
       this.lyra,
       market.contractAddresses,
       LyraMarketContractId.LiquidityPool
     )
-    const erc20 = getERC20Contract(this.lyra.provider, susd.address)
+    const erc20 = getERC20Contract(this.lyra.provider, quoteToken.address)
     const data = erc20.interface.encodeFunctionData('approve', [liquidityPoolContract.address, amount])
     const tx = await buildTxWithGasEstimate(this.lyra, erc20.address, this.address, data)
     return tx
@@ -459,11 +486,7 @@ export class Account {
   }
 
   async lyraStaking(): Promise<AccountLyraStaking> {
-    const lyraStakingModuleProxyContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.LyraStakingModuleProxy
-    )
+    const lyraStakingModuleProxyContract = getLyraContract(this.lyra, LyraContractId.LyraStakingModuleProxy)
     const [block, lyraBalance, stakedLyraBalance, staking, accountCooldownBN] = await Promise.all([
       this.lyra.provider.getBlock('latest'),
       this.lyraBalance(),
@@ -501,20 +524,26 @@ export class Account {
 
   async wethLyraStaking(): Promise<AccountWethLyraStaking> {
     const [gelatoPoolContract, wethLyraStakingRewardsContract] = await Promise.all([
-      getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.ArrakisPool),
-      getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.WethLyraStakingRewards),
+      getLyraContract(this.lyra, LyraContractId.ArrakisPool),
+      getLyraContract(this.lyra, LyraContractId.WethLyraStakingRewards),
     ])
-    const [unstakedLPTokenBalance, allowance, stakedLPTokenBalance, rewards] = await Promise.all([
-      gelatoPoolContract.balanceOf(this.address),
-      gelatoPoolContract.allowance(this.address, wethLyraStakingRewardsContract.address),
-      wethLyraStakingRewardsContract.balanceOf(this.address),
-      wethLyraStakingRewardsContract.earned(this.address),
-    ])
+    const [unstakedLPTokenBalance, allowance, stakedLPTokenBalance, rewards, latestGlobalRewardEpoch] =
+      await Promise.all([
+        gelatoPoolContract.balanceOf(this.address),
+        gelatoPoolContract.allowance(this.address, wethLyraStakingRewardsContract.address),
+        wethLyraStakingRewardsContract.balanceOf(this.address),
+        wethLyraStakingRewardsContract.earned(this.address), // @dillon: keep this here for now because some people are yet to claim from old system
+        this.lyra.latestGlobalRewardEpoch(),
+      ])
+    const opRewards = toBigNumber(
+      (await latestGlobalRewardEpoch.accountRewardEpoch(this.address))?.wethLyraStaking.opRewards ?? 0
+    )
     return {
       unstakedLPTokenBalance,
       allowance,
       stakedLPTokenBalance,
-      rewards,
+      rewards: rewards,
+      opRewards: opRewards,
     }
   }
 
@@ -535,29 +564,21 @@ export class Account {
   }
 
   async stakeWethLyra(amount: BigNumber): Promise<PopulatedTransaction> {
-    const wethLyraStakingRewardsContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.WethLyraStakingRewards
-    )
+    const wethLyraStakingRewardsContract = getLyraContract(this.lyra, LyraContractId.WethLyraStakingRewards)
     const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('stake', [amount])
     return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
   }
 
   async unstakeWethLyra(amount: BigNumber) {
-    const wethLyraStakingRewardsContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.WethLyraStakingRewards
-    )
+    const wethLyraStakingRewardsContract = getLyraContract(this.lyra, LyraContractId.WethLyraStakingRewards)
     const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('withdraw', [amount])
     return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
   }
 
   async approveWethLyraTokens(): Promise<PopulatedTransaction> {
-    const gelatoPoolContract = getLyraContract(this.lyra.provider, this.lyra.deployment, LyraContractId.ArrakisPool)
+    const gelatoPoolContract = getLyraContract(this.lyra, LyraContractId.ArrakisPool)
     const wethLyraStakingRewardsContractAddress = getLyraContractAddress(
-      this.lyra.deployment,
+      this.lyra,
       LyraContractId.WethLyraStakingRewards
     )
     const calldata = gelatoPoolContract.interface.encodeFunctionData('approve', [
@@ -568,11 +589,7 @@ export class Account {
   }
 
   async claimWethLyraRewards() {
-    const wethLyraStakingRewardsContract = getLyraContract(
-      this.lyra.provider,
-      this.lyra.deployment,
-      LyraContractId.WethLyraStakingRewards
-    )
+    const wethLyraStakingRewardsContract = getLyraContract(this.lyra, LyraContractId.WethLyraStakingRewards)
     const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('getReward')
     return await buildTxWithGasEstimate(this.lyra, wethLyraStakingRewardsContract.address, this.address, calldata)
   }

@@ -305,6 +305,66 @@ export const STRIKE_IV_AND_GREEKS_SNAPSHOT_FRAGMENT = `
   iv
 `
 
+export const LIQUIDITY_DEPOSIT_FRAGMENT = `
+  pool {
+    market {
+      id
+    }
+  }
+  user
+  pendingDepositsAndWithdrawals(where: {
+    isDeposit: true
+  }) {
+    id
+    queueID
+    pendingAmount
+    processedAmount
+    timestamp
+    transactionHash
+  }
+  depositsAndWithdrawals(where: {
+    isDeposit: true
+  }) {
+    id
+    queueID
+    quoteAmount
+    tokenAmount
+    tokenPrice
+    timestamp
+    transactionHash
+  }
+`
+
+export const LIQUIDITY_WITHDRAWAL_FRAGMENT = `
+  pool {
+    market {
+      id
+    }
+  }
+  user
+  pendingDepositsAndWithdrawals(where: {
+    isDeposit: false
+  }) {
+    id
+    queueID
+    pendingAmount
+    processedAmount
+    timestamp
+    transactionHash
+  }
+  depositsAndWithdrawals(where: {
+    isDeposit: false
+  }) {
+    id
+    queueID
+    quoteAmount
+    tokenAmount
+    tokenPrice
+    timestamp
+    transactionHash
+  }
+`
+
 export type TradeQueryResult = {
   timestamp: number
   blockNumber: number
@@ -563,4 +623,56 @@ export type TokenTransfer = {
   from: string
   to: string
   tokenAddress: string
+}
+
+export type LiquidityDepositQueryResult = {
+  pool: {
+    id: string
+  }
+  user: string
+  pendingDepositsAndWithdrawals: {
+    id: string
+    isDeposit: boolean
+    queueID: string
+    pendingAmount: string
+    processedAmount: string
+    timestamp: number
+    transactionHash: string
+  }[]
+  depositsAndWithdrawals: {
+    id: string
+    isDeposit: boolean
+    queueID: string
+    quoteAmount: string
+    tokenAmount: string
+    tokenPrice: string
+    timestamp: number
+    transactionHash: string
+  }[]
+}
+
+export type LiquidityWithdrawalQueryResult = {
+  pool: {
+    id: string
+  }
+  user: string
+  pendingDepositsAndWithdrawals: {
+    id: string
+    isDeposit: boolean
+    queueID: string
+    pendingAmount: string
+    processedAmount: string
+    transactionHash: string
+    timestamp: number
+  }[]
+  depositsAndWithdrawals: {
+    id: string
+    isDeposit: boolean
+    queueID: string
+    quoteAmount: string
+    tokenAmount: string
+    tokenPrice: string
+    timestamp: number
+    transactionHash: string
+  }[]
 }

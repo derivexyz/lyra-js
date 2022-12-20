@@ -49,6 +49,7 @@ export default async function fetchLiquidityHistory(
     const freeLiquidityBN = BigNumber.from(marketTotalValueSnapshot.freeLiquidity)
     const burnableLiquidityBN = BigNumber.from(marketTotalValueSnapshot.burnableLiquidity)
     const NAVBN = BigNumber.from(marketTotalValueSnapshot.NAV)
+    // TODO @michaelxuwu confirm with Paul if this field will be updated with Newport
     const usedCollatLiquidityBN = BigNumber.from(marketTotalValueSnapshot.usedCollatLiquidity)
     const pendingDeltaLiquidityBN = BigNumber.from(marketTotalValueSnapshot.pendingDeltaLiquidity)
     const usedDeltaLiquidityBN = BigNumber.from(marketTotalValueSnapshot.usedDeltaLiquidity)
@@ -60,7 +61,7 @@ export default async function fetchLiquidityHistory(
       nav: NAVBN,
       utilization: NAVBN.gt(0) ? fromBigNumber(NAVBN.sub(freeLiquidityBN).mul(UNIT).div(NAVBN)) : 0,
       totalWithdrawingDeposits: ZERO_BN, // TODO: paul said he will add
-      usedCollatLiquidity: usedCollatLiquidityBN,
+      reservedCollatLiquidity: usedCollatLiquidityBN,
       pendingDeltaLiquidity: pendingDeltaLiquidityBN,
       usedDeltaLiquidity: usedDeltaLiquidityBN,
       tokenPrice: tokenPriceBN,

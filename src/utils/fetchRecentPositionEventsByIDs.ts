@@ -1,6 +1,6 @@
 import { LyraMarketContractId, POSITION_UPDATED_TYPES } from '../constants/contracts'
 import { PositionEventData } from '../constants/events'
-import { TransferEvent as ContractTransferEvent } from '../contracts/typechain/OptionToken'
+import { TransferEvent as ContractTransferEvent } from '../contracts/newport/typechain/OptionToken'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import filterNulls from './filterNulls'
