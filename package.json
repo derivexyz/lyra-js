@@ -1,6 +1,6 @@
 {
   "name": "@lyrafinance/lyra-js",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "A JavaScript SDK for the Lyra Protocol.",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
