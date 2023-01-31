@@ -6,8 +6,8 @@ const getLyraDeploymentRPCURL = (chain: Chain): string => {
       return 'https://mainnet.optimism.io'
     case Chain.OptimismGoerli:
       return 'https://goerli.optimism.io'
-    // case Chain.Arbitrum:
-    //   return 'https://arb1.arbitrum.io/rpc'
+    case Chain.Arbitrum:
+      return 'https://arb1.arbitrum.io/rpc'
     case Chain.ArbitrumGoerli:
       return 'https://goerli-rollup.arbitrum.io/rpc'
   }

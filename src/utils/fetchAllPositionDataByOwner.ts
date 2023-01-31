@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { getAddress } from '@ethersproject/address'
-import { gql } from 'graphql-request'
 
 import { POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queries'
 import Lyra from '../lyra'
@@ -40,18 +40,21 @@ export default async function fetchAllPositionDataByOwner(
   owner: string,
   markets: Market[]
 ): Promise<PositionData[]> {
-  const res = await lyra.subgraphClient.request<
+  const { data } = await lyra.subgraphClient.query<
     {
       optionTransfers: { position: PositionQueryResult }[]
       trades: { position: PositionQueryResult }[]
     },
     PositionVariables
-  >(positionsQuery, {
-    owner: owner.toLowerCase(),
+  >({
+    query: positionsQuery,
+    variables: {
+      owner: owner.toLowerCase(),
+    },
   })
 
-  const transferPositions = res.optionTransfers.map(t => t.position)
-  const tradedPositions = res.trades.map(t => t.position)
+  const transferPositions = data.optionTransfers.map(t => t.position)
+  const tradedPositions = data.trades.map(t => t.position)
   const positions = getUniqueBy(tradedPositions.concat(transferPositions), p => p.id)
 
   const marketsByAddress: Record<string, Market> = markets.reduce(

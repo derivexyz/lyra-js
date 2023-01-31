@@ -1,10 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import Lyra, { LyraContractId } from '..'
+import Lyra, { LyraGlobalContractId, Network } from '..'
 import { ZERO_BN } from '../constants/bn'
 import fetchLyraWethStakingData from '../utils/fetchLyraWethStakingData'
 import fromBigNumber from '../utils/fromBigNumber'
-import getLyraContract from '../utils/getLyraContract'
+import getGlobalContract from '../utils/getGlobalContract'
 
 export class WethLyraStaking {
   lyra: Lyra
@@ -14,6 +14,9 @@ export class WethLyraStaking {
   stakedTVL: number
   apy: number
   constructor(lyra: Lyra, lpTokenValue: number, stakedTokenBalance: BigNumber, apy: number) {
+    if (lyra.network === Network.Arbitrum) {
+      throw new Error('LYRA-ETH staking is not supported on Arbitrum')
+    }
     this.lyra = lyra
     this.totalStaked = ZERO_BN
     this.lpTokenValue = lpTokenValue
@@ -24,8 +27,8 @@ export class WethLyraStaking {
 
   static async get(lyra: Lyra): Promise<WethLyraStaking> {
     const [gelatoPoolContract, wethLyraStakingRewardsContract, { apy, tokenValue }] = await Promise.all([
-      await getLyraContract(lyra, LyraContractId.ArrakisPool),
-      await getLyraContract(lyra, LyraContractId.WethLyraStakingRewards),
+      getGlobalContract(lyra, LyraGlobalContractId.ArrakisPool, lyra.optimismProvider),
+      getGlobalContract(lyra, LyraGlobalContractId.WethLyraStakingRewards, lyra.optimismProvider),
       await fetchLyraWethStakingData(lyra),
     ])
     const stakedTokenBalance = await gelatoPoolContract.balanceOf(wethLyraStakingRewardsContract.address)

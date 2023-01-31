@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { gql } from 'graphql-request'
 
 import Lyra from '..'
 import {
@@ -7,9 +7,8 @@ import {
   OptionPriceAndGreeksSnapshotQueryResult,
 } from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
-import { Option, OptionPriceHistory } from '../option'
+import { Option, OptionPriceSnapshot } from '../option'
 import fetchSnapshots from './fetchSnapshots'
-import groupTimeSnapshots from './groupTimeSnapshots'
 
 const optionPriceAndGreeksSnapshotsQuery = gql`
   query optionPriceAndGreeksSnapshots($optionId: String!, $min: Int!, $max: Int!, $period: Int!) {
@@ -32,7 +31,7 @@ export default async function fetchOptionPriceHistory(
   lyra: Lyra,
   option: Option,
   options?: SnapshotOptions
-): Promise<OptionPriceHistory[]> {
+): Promise<OptionPriceSnapshot[]> {
   const board = option.board()
   const blockTimestamp = option.block.timestamp
   const endTimestamp = Math.min(board.expiryTimestamp, options?.endTimestamp ?? blockTimestamp)
@@ -48,22 +47,17 @@ export default async function fetchOptionPriceHistory(
       endTimestamp,
     }
   )
-  const subgraphSnapshots: OptionPriceHistory[] = data.map((snapshot: OptionPriceAndGreeksSnapshotQueryResult) => ({
+  const subgraphSnapshots: OptionPriceSnapshot[] = data.map((snapshot: OptionPriceAndGreeksSnapshotQueryResult) => ({
     optionPrice: BigNumber.from(snapshot.optionPrice),
     blockNumber: snapshot.blockNumber,
     timestamp: snapshot.timestamp,
   }))
 
-  const currSnapshot: OptionPriceHistory = {
+  const currSnapshot: OptionPriceSnapshot = {
     optionPrice: option.price,
     blockNumber: option.block.number,
     timestamp: endTimestamp,
   }
 
-  const snapshots =
-    subgraphSnapshots.length && currSnapshot.timestamp > subgraphSnapshots[subgraphSnapshots.length - 1].timestamp
-      ? [...subgraphSnapshots, currSnapshot]
-      : subgraphSnapshots
-
-  return groupTimeSnapshots(snapshots, endTimestamp)
+  return [...subgraphSnapshots, currSnapshot].filter(s => s.optionPrice.gt(0))
 }

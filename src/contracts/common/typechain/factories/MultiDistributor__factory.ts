@@ -84,7 +84,7 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
-] as const;
+];
 
 export class MultiDistributor__factory {
   static readonly abi = _abi;

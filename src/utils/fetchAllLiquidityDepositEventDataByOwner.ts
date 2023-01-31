@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from 'ethers'
-import { gql } from 'graphql-request'
 
 import { ZERO_BN } from '../constants/bn'
 import { LIQUIDITY_DEPOSIT_FRAGMENT, LiquidityDepositQueryResult } from '../constants/queries'
@@ -31,15 +31,18 @@ export default async function fetchAllLiquidityDepositEventDataByOwner(
   queued: LiquidityDepositQueuedEvent[]
   processed: LiquidityDepositProcessedEvent[]
 }> {
-  const res = await lyra.subgraphClient.request<
+  const { data } = await lyra.subgraphClient.query<
     { lpuserLiquidities: LiquidityDepositQueryResult[] },
     LiquidityDepositVariables
-  >(lpUserLiquiditiesQuery, {
-    user: owner.toLowerCase(),
-    pool: market.contractAddresses.liquidityPool.toLowerCase(),
+  >({
+    query: lpUserLiquiditiesQuery,
+    variables: {
+      user: owner.toLowerCase(),
+      pool: market.contractAddresses.liquidityPool.toLowerCase(),
+    },
   })
 
-  const depositQueuedEvents = res.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedDeposit => {
+  const depositQueuedEvents = data.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedDeposit => {
     return {
       depositor: owner,
       beneficiary: owner,
@@ -51,7 +54,7 @@ export default async function fetchAllLiquidityDepositEventDataByOwner(
     }
   })
 
-  const depositProcessedEvents = res.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedDeposit => {
+  const depositProcessedEvents = data.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedDeposit => {
     return {
       caller: owner,
       beneficiary: owner,

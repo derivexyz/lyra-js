@@ -1,14 +1,15 @@
 import { LyraMarketContractId } from '../constants/contracts'
-import { LyraMarketContractReturnType } from '../constants/mappings'
-import Lyra from '../lyra'
+import { LyraMarketContractMap } from '../constants/mappings'
+import Lyra, { Version } from '../lyra'
 import { MarketContractAddresses } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
 
-export default function getLyraMarketContractForAddress<T extends LyraMarketContractId>(
+export default function getLyraMarketContractForAddress<V extends Version, C extends LyraMarketContractId>(
   lyra: Lyra,
+  version: V,
   marketContractAddresses: MarketContractAddresses,
   address: string
-): { contractId: string; contract: LyraMarketContractReturnType[T] } | null {
+): { contractId: string; contract: LyraMarketContractMap<V, C> } | null {
   const keyValPair = Object.entries(marketContractAddresses).find(
     ([key, val]) => isNaN(parseInt(key)) && val === address
   )
@@ -48,10 +49,6 @@ export default function getLyraMarketContractForAddress<T extends LyraMarketCont
   }
   return {
     contractId,
-    contract: getLyraMarketContract(
-      lyra,
-      marketContractAddresses,
-      contractId
-    ) as unknown as LyraMarketContractReturnType[T],
+    contract: getLyraMarketContract(lyra, marketContractAddresses, version, contractId) as LyraMarketContractMap<V, C>,
   }
 }

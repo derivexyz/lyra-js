@@ -37,10 +37,10 @@ export type CollateralUpdateData = {
 }
 
 export class CollateralUpdateEvent {
-  private lyra: Lyra
   private __collateralUpdateData: CollateralUpdateData
   private __tradeData?: TradeEventData
   __source: DataSource
+  lyra: Lyra
   owner: string
   timestamp: number
   transactionHash: string

@@ -2,6 +2,7 @@ import { Network } from '../constants/network'
 
 export default function getLyraNetworkForChainId(chainId: number): Network {
   switch (chainId) {
+    case 42161:
     case 421613:
       return Network.Arbitrum
     case 10:

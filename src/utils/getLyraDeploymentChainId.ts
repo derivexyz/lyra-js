@@ -6,8 +6,8 @@ const getLyraDeploymentChainId = (chain: Chain): number => {
       return 10
     case Chain.OptimismGoerli:
       return 420
-    // case Chain.Arbitrum:
-    //   return 42161
+    case Chain.Arbitrum:
+      return 42161
     case Chain.ArbitrumGoerli:
       return 421613
   }

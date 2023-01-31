@@ -5,12 +5,12 @@ import { UNIT } from '../constants/bn'
 import getTimeWeightedFee from './getTimeWeightedFee'
 
 export default function getSpotPriceFee(board: Board, size: BigNumber) {
-  const pricingParams = board.market().__marketData.marketParameters.pricingParams
+  const market = board.market()
   const timeWeightedSpotPriceFee = getTimeWeightedFee(
     board.timeToExpiry,
-    pricingParams.spotPriceFee1xPoint.toNumber(),
-    pricingParams.spotPriceFee2xPoint.toNumber(),
-    pricingParams.spotPriceFeeCoefficient
+    market.params.spotPriceFee1xPoint,
+    market.params.spotPriceFee2xPoint,
+    market.params.spotPriceFeeCoefficient
   )
   const spotPriceFee = timeWeightedSpotPriceFee.mul(size).div(UNIT).mul(board.market().spotPrice).div(UNIT)
   return spotPriceFee

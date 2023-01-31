@@ -110,9 +110,9 @@ export type PositionLeaderboard = {
 export type PositionTradeOptions = Omit<TradeOptions, 'positionId'>
 
 export class Position {
-  private lyra: Lyra
   private __positionData: PositionData
   __source: DataSource
+  lyra: Lyra
   id: number
   marketName: string
   marketAddress: string
@@ -307,7 +307,7 @@ export class Position {
 
   async trade(isBuy: boolean, size: BigNumber, slippage: number, options?: PositionTradeOptions): Promise<Trade> {
     return await Trade.get(this.lyra, this.owner, this.marketAddress, this.strikeId, this.isCall, isBuy, size, {
-      premiumSlippage: slippage,
+      slippage,
       positionId: this.id,
       ...options,
     })

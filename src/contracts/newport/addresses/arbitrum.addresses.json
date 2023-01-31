@@ -1,0 +1,7 @@
+{
+  "OptionMarketViewer": "0x97B688cEd83a1164AF9D3c0244EC36602E6C3B88",
+  "ExchangeAdapter": "0x7D135662818d3540bd6f23294bFDB6946c52C9AB",
+  "LyraRegistry": "0x8D2e93c726D1e35adc8C81beE688ECBFEB62FD97",
+  "TestFaucet": "",
+  "GMXFuturesPoolHedger": "0x92a612729bf7e832072540222306aEbd6BA0f891"
+}

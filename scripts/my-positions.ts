@@ -1,7 +1,8 @@
 import yargs from 'yargs'
 
+import fromBigNumber from '../src/utils/fromBigNumber'
+import printObject from '../src/utils/printObject'
 import getLyra from './utils/getLyra'
-import printObject from './utils/printObject'
 
 export default async function myPositions(argv: string[]) {
   const lyra = getLyra()
@@ -27,6 +28,8 @@ export default async function myPositions(argv: string[]) {
       pricePerOption: pos.pricePerOption,
       collateral: pos.collateral,
       pnl: pos.pnl(),
+      strikeId: pos.strikeId,
+      strike: fromBigNumber(pos.strikePrice),
     }))
   )
 }

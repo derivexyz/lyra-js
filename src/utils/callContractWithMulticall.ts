@@ -1,8 +1,9 @@
-import { BigNumber, Contract } from 'ethers'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { Contract } from 'ethers'
 
 import Lyra from '..'
-import { LyraContractId } from '../constants/contracts'
-import getLyraContract from './getLyraContract'
+import { LyraGlobalContractId } from '../constants/contracts'
+import getGlobalContract from './getGlobalContract'
 
 type MulticallData = {
   callData: string
@@ -10,13 +11,16 @@ type MulticallData = {
   functionFragment: string
 }
 
-type MulticallResponse = BigNumber | Record<string, any>[]
-
 export default async function callContractWithMulticall<MulticallResponse>(
   lyra: Lyra,
-  multicallData: MulticallData[]
+  multicallData: MulticallData[],
+  useCustomProvider?: JsonRpcProvider
 ): Promise<MulticallResponse> {
-  const multicall3Contract = getLyraContract(lyra, LyraContractId.Multicall3)
+  const multicall3Contract = getGlobalContract(
+    lyra,
+    LyraGlobalContractId.Multicall3,
+    useCustomProvider ? useCustomProvider : lyra.provider
+  )
   const calls = multicallData.map(data => {
     return {
       target: data.contract.address,

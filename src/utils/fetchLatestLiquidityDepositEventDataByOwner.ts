@@ -1,6 +1,5 @@
 import Lyra from '..'
 import { LyraMarketContractId } from '../constants/contracts'
-import { DepositProcessedEvent, DepositQueuedEvent } from '../contracts/newport/typechain/LiquidityPool'
 import { LiquidityDepositProcessedEvent, LiquidityDepositQueuedEvent } from '../liquidity_deposit'
 import { Market } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
@@ -17,7 +16,8 @@ export default async function fetchLatestLiquidityDepositEventDataByOwner(
 }> {
   const liquidityPoolContract = getLyraMarketContract(
     lyra,
-    market.__marketData.marketAddresses,
+    market.contractAddresses,
+    lyra.version,
     LyraMarketContractId.LiquidityPool
   )
 
@@ -38,34 +38,30 @@ export default async function fetchLatestLiquidityDepositEventDataByOwner(
     ),
   ])
 
-  const liquidityDepositQueuedEvents: LiquidityDepositQueuedEvent[] = depositQueuedEvents.map(
-    (event: DepositQueuedEvent) => {
-      return {
-        depositor: event.args.depositor,
-        beneficiary: event.args.beneficiary,
-        depositQueueId: event.args.depositQueueId,
-        amountDeposited: event.args.amountDeposited,
-        totalQueuedDeposits: event.args.totalQueuedDeposits,
-        timestamp: event.args.timestamp,
-        transactionHash: event.transactionHash,
-      }
+  const liquidityDepositQueuedEvents: LiquidityDepositQueuedEvent[] = depositQueuedEvents.map(event => {
+    return {
+      depositor: event.args.depositor,
+      beneficiary: event.args.beneficiary,
+      depositQueueId: event.args.depositQueueId,
+      amountDeposited: event.args.amountDeposited,
+      totalQueuedDeposits: event.args.totalQueuedDeposits,
+      timestamp: event.args.timestamp,
+      transactionHash: event.transactionHash,
     }
-  )
+  })
 
-  const liquidityDepositProcessedEvents: LiquidityDepositProcessedEvent[] = depositProcessedEvents.map(
-    (event: DepositProcessedEvent) => {
-      return {
-        caller: event.args.caller,
-        beneficiary: event.args.beneficiary,
-        depositQueueId: event.args.depositQueueId,
-        amountDeposited: event.args.amountDeposited,
-        tokenPrice: event.args.tokenPrice,
-        tokensReceived: event.args.tokensReceived,
-        timestamp: event.args.timestamp,
-        transactionHash: event.transactionHash,
-      }
+  const liquidityDepositProcessedEvents: LiquidityDepositProcessedEvent[] = depositProcessedEvents.map(event => {
+    return {
+      caller: event.args.caller,
+      beneficiary: event.args.beneficiary,
+      depositQueueId: event.args.depositQueueId,
+      amountDeposited: event.args.amountDeposited,
+      tokenPrice: event.args.tokenPrice,
+      tokensReceived: event.args.tokensReceived,
+      timestamp: event.args.timestamp,
+      transactionHash: event.transactionHash,
     }
-  )
+  })
 
   return {
     queued: liquidityDepositQueuedEvents,

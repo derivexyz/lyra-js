@@ -4,7 +4,6 @@ import { BlockTag, TransactionReceipt } from '@ethersproject/providers'
 import { Board } from '../board'
 import { CollateralUpdateData, CollateralUpdateEvent } from '../collateral_update_event'
 import { DataSource } from '../constants/contracts'
-import { TradeEvent as ContractTradeEvent } from '../contracts/newport/typechain/OptionMarket'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
@@ -19,7 +18,16 @@ import getTradePnl from '../utils/getTradePnl'
 import getTradeEventNewSize from './getTradeEventNewSize'
 import getTradeEventPreviousSize from './getTradeEventPreviousSize'
 
-export type TradeLiquidation = ContractTradeEvent['args']['liquidation']
+export type TradeLiquidation = {
+  rewardBeneficiary: string
+  caller: string
+  returnCollateral: BigNumber
+  lpPremiums: BigNumber
+  lpFee: BigNumber
+  liquidatorFee: BigNumber
+  smFee: BigNumber
+  insolventAmount: BigNumber
+}
 
 export type TradeEventData = {
   positionId: number
@@ -71,10 +79,10 @@ export type TradeEventListenerOptions = {
 }
 
 export class TradeEvent {
-  private lyra: Lyra
   private __tradeData: TradeEventData
   private __collateralUpdateData?: CollateralUpdateData
   __source: DataSource
+  lyra: Lyra
   positionId: number
   marketName: string
   marketAddress: string

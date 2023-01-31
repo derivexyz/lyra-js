@@ -1,14 +1,26 @@
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
+import { AvalonOptionMarketViewer as TAvalonOptionMarketViewer } from '../contracts/avalon/typechain'
+import { OptionMarketViewer as NAvalonOptionMarketViewer } from '../contracts/avalon/typechain/AvalonOptionMarketViewer'
+import { NewportOptionMarketViewer as TNewportOptionMarketViewer } from '../contracts/newport/typechain'
+import { OptionMarketViewer as NNewportOptionMarketViewer } from '../contracts/newport/typechain/NewportOptionMarketViewer'
+
+export type OptionMarketViewer = TAvalonOptionMarketViewer | TNewportOptionMarketViewer
 
 export type MarketParametersStructOutput =
-  | OptionMarketViewer.MarketParametersStructOutput
-  | OptionMarketViewerAvalon.MarketParametersStructOutput
+  | NAvalonOptionMarketViewer.MarketParametersStructOutput
+  | NNewportOptionMarketViewer.MarketParametersStructOutput
 
 export type MarketViewWithBoardsStructOutput =
-  | OptionMarketViewer.MarketViewWithBoardsStructOutput
-  | OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput
+  | NAvalonOptionMarketViewer.MarketViewWithBoardsStructOutput
+  | NNewportOptionMarketViewer.MarketViewStructOutput
 
 export type BoardViewStructOutput =
-  | OptionMarketViewer.BoardViewStructOutput
-  | OptionMarketViewerAvalon.BoardViewStructOutput
+  | NAvalonOptionMarketViewer.BoardViewStructOutput
+  | NNewportOptionMarketViewer.BoardViewStructOutput
+
+export type StrikeViewStructOutput =
+  | NAvalonOptionMarketViewer.StrikeViewStructOutput
+  | NNewportOptionMarketViewer.StrikeViewStructOutput
+
+export type MarketStaticLiquidity = MarketViewWithBoardsStructOutput['liquidity']
+
+export type MarketStaticNetGreeks = MarketViewWithBoardsStructOutput['globalNetGreeks']

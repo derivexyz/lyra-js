@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { gql } from 'graphql-request'
 
 import Lyra from '..'
 import {
@@ -9,7 +9,7 @@ import {
   SnapshotPeriod,
 } from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
-import { Option, OptionTradingVolume } from '../option'
+import { Option, OptionTradingVolumeSnapshot } from '../option'
 import fetchSnapshots from './fetchSnapshots'
 
 const optionVolumeQuery = gql`
@@ -29,7 +29,7 @@ export default async function fetchOptionVolumeHistory(
   lyra: Lyra,
   option: Option,
   options?: SnapshotOptions
-): Promise<OptionTradingVolume[]> {
+): Promise<OptionTradingVolumeSnapshot[]> {
   const board = option.board()
   const endTimestamp = Math.min(board.expiryTimestamp, options?.endTimestamp ?? MAX_END_TIMESTAMP)
   const optionId = `${option.market().address.toLowerCase()}-${option.strike().id}-${option.isCall ? 'call' : 'put'}`

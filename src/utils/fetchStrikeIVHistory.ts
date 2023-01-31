@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { gql } from 'graphql-request'
 
 import Lyra, { Strike } from '..'
 import { STRIKE_IV_AND_GREEKS_SNAPSHOT_FRAGMENT, StrikeIVAndGreeksSnapshotQueryResult } from '../constants/queries'
@@ -58,9 +58,5 @@ export default async function fetchStrikeIVHistory(
 
   const currSnapshot: StrikeIVHistory = { iv: fromBigNumber(strike.iv), timestamp: strike.block.timestamp }
 
-  if (snapshots.length && currSnapshot.timestamp > snapshots[snapshots.length - 1].timestamp) {
-    return [...snapshots, currSnapshot]
-  } else {
-    return snapshots
-  }
+  return [...snapshots, currSnapshot].filter(s => s.iv > 0)
 }

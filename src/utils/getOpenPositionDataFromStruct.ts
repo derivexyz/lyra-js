@@ -1,6 +1,7 @@
 import { CollateralUpdateData } from '..'
 import { DataSource, PositionState } from '../constants/contracts'
-import { OptionToken } from '../contracts/newport/typechain'
+import { OptionToken as AvalonOptionToken } from '../contracts/avalon/typechain/AvalonOptionToken'
+import { OptionToken as NewportOptionToken } from '../contracts/newport/typechain/NewportOptionToken'
 import { Option } from '../option'
 import { PositionData } from '../position'
 import getPositionCollateral from '../position/getPositionCollateral'
@@ -13,7 +14,11 @@ import getIsLong from './getIsLong'
 
 export default function getOpenPositionDataFromStruct(
   owner: string,
-  positionStruct: OptionToken.OptionPositionStructOutput | OptionToken.PositionWithOwnerStructOutput,
+  positionStruct:
+    | NewportOptionToken.OptionPositionStructOutput
+    | NewportOptionToken.PositionWithOwnerStructOutput
+    | AvalonOptionToken.OptionPositionStructOutput
+    | AvalonOptionToken.PositionWithOwnerStructOutput,
   option: Option,
   trades: TradeEventData[],
   collateralUpdates: CollateralUpdateData[],

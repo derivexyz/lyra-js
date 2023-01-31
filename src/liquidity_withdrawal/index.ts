@@ -5,10 +5,10 @@ import { LiquidityDelayReason } from '..'
 import { ZERO_BN } from '../constants/bn'
 import { LyraMarketContractId } from '../constants/contracts'
 import Lyra from '../lyra'
-import { Market } from '../market'
+import { Market, MarketLiquiditySnapshot } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
-import fetchLiquidityDelayReason from '../utils/fetchLiquidityDelayReason'
 import fetchLiquidityWithdrawalEventDataByOwner from '../utils/fetchLiquidityWithdrawalEventDataByOwner'
+import getLiquidityDelayReason from '../utils/getLiquidityDelayReason'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export type LiquidityWithdrawalFilter = {
@@ -55,6 +55,7 @@ export class LiquidityWithdrawal {
   isPending: boolean
   withdrawalRequestedTimestamp: number
   withdrawalTimestamp: number
+  timeToWithdrawal: number
   delayReason: LiquidityDelayReason | null
   constructor(
     lyra: Lyra,
@@ -62,7 +63,8 @@ export class LiquidityWithdrawal {
     data: {
       queued?: LiquidityWithdrawalQueuedEvent
       processed?: LiquidityWithdrawalProcessedEvent
-      delayReason: LiquidityDelayReason | null
+      cbTimestamp: BigNumber
+      marketLiquidity: MarketLiquiditySnapshot
     }
   ) {
     // Data
@@ -88,27 +90,39 @@ export class LiquidityWithdrawal {
     this.withdrawalTimestamp = processed
       ? processed.timestamp.toNumber()
       : queued
-      ? queued.timestamp.add(market.__marketData.marketParameters.lpParams.withdrawalDelay).toNumber()
+      ? queued.timestamp.add(market.params.withdrawalDelay).toNumber()
       : // Should never happen
         0
-    this.delayReason = data.delayReason
+    this.timeToWithdrawal = Math.max(0, this.withdrawalTimestamp - market.block.timestamp)
+    this.delayReason =
+      this.timeToWithdrawal === 0 && this.isPending
+        ? getLiquidityDelayReason(market, data.cbTimestamp, data.marketLiquidity)
+        : null
   }
 
   // Getters
 
   static async getByOwner(lyra: Lyra, marketAddress: string, owner: string): Promise<LiquidityWithdrawal[]> {
     const market = await Market.get(lyra, marketAddress)
-    const { events } = await fetchLiquidityWithdrawalEventDataByOwner(lyra, owner, market)
-    const liquidityWithdrawals: LiquidityWithdrawal[] = await Promise.all(
-      events.map(async event => {
-        const delayReason = (await fetchLiquidityDelayReason(lyra, market, event)) as LiquidityDelayReason | null
-        return new LiquidityWithdrawal(lyra, market, {
-          ...event,
-          delayReason,
-        })
-      })
+    const liquidityPoolContract = getLyraMarketContract(
+      lyra,
+      market.contractAddresses,
+      lyra.version,
+      LyraMarketContractId.LiquidityPool
     )
-    return liquidityWithdrawals
+    const [{ events }, cbTimestamp, marketLiquidity] = await Promise.all([
+      fetchLiquidityWithdrawalEventDataByOwner(lyra, owner, market),
+      liquidityPoolContract.CBTimestamp(),
+      market.liquidity(),
+    ])
+    return events.map(
+      event =>
+        new LiquidityWithdrawal(lyra, market, {
+          ...event,
+          cbTimestamp,
+          marketLiquidity,
+        })
+    )
   }
 
   // Initiate Withdraw
@@ -123,13 +137,20 @@ export class LiquidityWithdrawal {
     const liquidityPoolContract = getLyraMarketContract(
       lyra,
       market.contractAddresses,
+      lyra.version,
       LyraMarketContractId.LiquidityPool
     )
     const data = liquidityPoolContract.interface.encodeFunctionData('initiateWithdraw', [
       beneficiary,
       amountLiquidityTokens,
     ])
-    const tx = await buildTxWithGasEstimate(lyra, liquidityPoolContract.address, beneficiary, data)
+    const tx = await buildTxWithGasEstimate(
+      lyra.provider,
+      lyra.provider.network.chainId,
+      liquidityPoolContract.address,
+      beneficiary,
+      data
+    )
     return tx
   }
 

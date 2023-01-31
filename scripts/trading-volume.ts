@@ -1,6 +1,6 @@
 import yargs from 'yargs'
 
-import { SECONDS_IN_DAY } from '../constants/time'
+import { SECONDS_IN_DAY } from '../src/constants/time'
 import getLyra from './utils/getLyra'
 
 export default async function tradingVolume(argv: string[]) {

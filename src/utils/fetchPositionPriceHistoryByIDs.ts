@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { gql } from 'graphql-request'
 
 import Lyra from '..'
 import {
@@ -7,7 +7,7 @@ import {
   OptionPriceAndGreeksSnapshotQueryResult,
 } from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
-import { OptionPriceHistory } from '../option'
+import { OptionPriceSnapshot } from '../option'
 import { Position } from '../position'
 import fetchSnapshots from './fetchSnapshots'
 
@@ -28,7 +28,7 @@ export default async function fetchPositionPriceHistoryByIDs(
   lyra: Lyra,
   positions: Position[],
   snapshotOptions?: SnapshotOptions
-): Promise<Record<number, OptionPriceHistory[]>> {
+): Promise<Record<number, OptionPriceSnapshot[]>> {
   const optionIdByPositionId: Record<number, string> = positions.reduce(
     (dict, { id, marketAddress, strikeId, isCall }) => ({
       ...dict,
@@ -45,7 +45,7 @@ export default async function fetchPositionPriceHistoryByIDs(
     },
     snapshotOptions
   )
-  const pricesByOptionId: Record<string, OptionPriceHistory[]> = data.reduce((dict, snapshot) => {
+  const pricesByOptionId: Record<string, OptionPriceSnapshot[]> = data.reduce((dict, snapshot) => {
     const prices = dict[snapshot.option.id] ?? []
     prices.push({
       optionPrice: BigNumber.from(snapshot.optionPrice),
@@ -56,8 +56,8 @@ export default async function fetchPositionPriceHistoryByIDs(
       ...dict,
       [snapshot.option.id]: prices,
     }
-  }, {} as Record<string, OptionPriceHistory[]>)
-  const pricesByPositionId: Record<number, OptionPriceHistory[]> = Object.entries(optionIdByPositionId).reduce(
+  }, {} as Record<string, OptionPriceSnapshot[]>)
+  const pricesByPositionId: Record<number, OptionPriceSnapshot[]> = Object.entries(optionIdByPositionId).reduce(
     (dict, [positionId, optionId]) => ({
       ...dict,
       [positionId]: pricesByOptionId[optionId],

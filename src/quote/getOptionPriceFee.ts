@@ -5,12 +5,12 @@ import { UNIT } from '../constants/bn'
 import getTimeWeightedFee from './getTimeWeightedFee'
 
 export default function getOptionPriceFee(board: Board, pricePerOption: BigNumber, size: BigNumber) {
-  const pricingParams = board.market().__marketData.marketParameters.pricingParams
+  const market = board.market()
   const timeWeightedOptionPriceFee = getTimeWeightedFee(
     board.timeToExpiry,
-    pricingParams.optionPriceFee1xPoint.toNumber(),
-    pricingParams.optionPriceFee2xPoint.toNumber(),
-    pricingParams.optionPriceFeeCoefficient
+    market.params.optionPriceFee1xPoint,
+    market.params.optionPriceFee2xPoint,
+    market.params.optionPriceFeeCoefficient
   )
   return timeWeightedOptionPriceFee.mul(size).div(UNIT).mul(pricePerOption).div(UNIT)
 }

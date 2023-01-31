@@ -12,6 +12,7 @@ import ONE_INCH_OFFCHAIN_ORACLE_ABI from '../contracts/common/abis/OneInchOffCha
 import fromBigNumber from './fromBigNumber'
 
 export default async function fetchTokenSpotPrice(lyra: Lyra, tokenNameOrAddress: string): Promise<number> {
+  // use governance provider -> lyra.optimismProvider
   // BLOCK: remove before merging
   if (lyra.deployment === Deployment.Testnet) {
     return 0.05
@@ -19,7 +20,7 @@ export default async function fetchTokenSpotPrice(lyra: Lyra, tokenNameOrAddress
   const oneInchOffchainOracle = new Contract(
     ONE_INCH_ORACLE_OPTIMISM_MAINNET_ADDRESS,
     ONE_INCH_OFFCHAIN_ORACLE_ABI,
-    lyra.provider
+    lyra.optimismProvider
   )
   const data = await oneInchOffchainOracle.getRate(tokenNameOrAddress, USDC_OPTIMISM_MAINNET_ADDRESS, false)
   return fromBigNumber(data ?? ZERO_BN, USDC_OPTIMISM_MAINNET_DECIMALS)

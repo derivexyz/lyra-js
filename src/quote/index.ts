@@ -3,15 +3,15 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Board } from '../board'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS } from '../constants/contracts'
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
-import Lyra, { Version } from '../lyra'
+import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Strike } from '../strike'
 import { getDelta, getGamma, getRho, getTheta, getVega } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
 import getBreakEvenPrice from '../utils/getBreakEvenPrice'
+import getPriceType from '../utils/getPriceType'
+import getQuoteSpotPrice from '../utils/getQuoteSpotPrice'
 import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
 import getQuoteDisabledReason from './getQuoteDisabledReason'
@@ -30,6 +30,8 @@ export enum QuoteDisabledReason {
   IVTooLow = 'IVTooLow',
   SkewTooHigh = 'SkewTooHigh',
   SkewTooLow = 'SkewTooLow',
+  UnableToHedgeDelta = 'UnableToHedgeDelta',
+  PriceVarianceTooHigh = 'PriceVarianceTooHigh',
 }
 
 export type QuoteIteration = {
@@ -82,6 +84,7 @@ export type QuoteGreeks = {
 
 export type QuoteOptions = {
   isForceClose?: boolean
+  isOpen?: boolean
   iterations?: number
 }
 
@@ -204,15 +207,16 @@ export class Quote {
     }
 
     const isForceClose = options?.isForceClose ?? false
+    const isOpen = options?.isOpen ?? true
 
     const board = option.board()
     const strike = option.strike()
-    const marketView = option.market().__marketData
+    const market = option.market()
     const isCall = option.isCall
 
     let baseIv = board.baseIv
     let skew = strike.skew
-    let preTradeAmmNetStdVega = marketView.globalNetGreeks.netStdVega.mul(-1)
+    let preTradeAmmNetStdVega = market.params.netStdVega.mul(-1)
 
     const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
 
@@ -224,7 +228,7 @@ export class Quote {
     const iterationSize = size.div(numIterations)
     const iterations: QuoteIteration[] = []
 
-    const optionStdVega = strike.__strikeData.cachedGreeks.stdVega.mul(-1)
+    const optionStdVega = strike.params.cachedStdVega.mul(-1)
 
     for (let i = 0; i < numIterations; i++) {
       const quote = getQuoteIteration({
@@ -246,13 +250,10 @@ export class Quote {
     }
 
     const fairIv = baseIv.mul(skew).div(UNIT)
-    const spotPrice = option.market().spotPrice
+    const priceType = getPriceType(isCall, isForceClose, isBuy, isOpen)
+    const spotPrice = getQuoteSpotPrice(market, priceType)
     const strikePrice = option.strike().strikePrice
-    const rate =
-      option.lyra.version === Version.Avalon
-        ? (option.market().__marketData as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters
-            .greekCacheParams.rateAndCarry
-        : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
+    const rate = option.market().params.rateAndCarry
 
     const delta = toBigNumber(
       getDelta(
@@ -318,7 +319,17 @@ export class Quote {
 
     const premium = iterations.reduce((sum, quote) => sum.add(quote.premium), ZERO_BN)
 
-    const disabledReason = getQuoteDisabledReason(option, size, premium, fairIv, skew, baseIv, isBuy, isForceClose)
+    const disabledReason = getQuoteDisabledReason(
+      option,
+      size,
+      premium,
+      fairIv,
+      skew,
+      baseIv,
+      isBuy,
+      isForceClose,
+      priceType
+    )
     if (disabledReason) {
       // For subset of disabled reasons, return empty quote
       switch (disabledReason) {

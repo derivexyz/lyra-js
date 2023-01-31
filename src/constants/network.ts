@@ -1,4 +1,4 @@
 export enum Network {
-  Optimism = 'optimism',
   Arbitrum = 'arbitrum',
+  Optimism = 'optimism',
 }

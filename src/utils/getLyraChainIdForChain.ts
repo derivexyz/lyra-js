@@ -1,6 +1,6 @@
 import { Chain } from '../constants/chain'
 
-const getLyraChainForChainId = (chain: Chain): number => {
+const getLyraChainIdForChain = (chain: Chain): number => {
   switch (chain) {
     case Chain.OptimismGoerli:
       return 420
@@ -8,11 +8,11 @@ const getLyraChainForChainId = (chain: Chain): number => {
       return 421613
     case Chain.Optimism:
       return 10
-    // case 42161:
-    //   return Chain.Arbitrum
+    case Chain.Arbitrum:
+      return 42161
     default:
       throw new Error('Chain is not supported by Lyra')
   }
 }
 
-export default getLyraChainForChainId
+export default getLyraChainIdForChain

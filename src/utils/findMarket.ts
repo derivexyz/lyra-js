@@ -1,19 +1,7 @@
-import { getAddress, isAddress } from '@ethersproject/address'
-
-import Lyra from '../'
 import { Market } from '../market'
-import parseBaseSymbol from './parseBaseSymbol'
+import isMarketEqual from './isMarketEqual'
 
-export default function findMarket(lyra: Lyra, markets: Market[], marketAddressOrName: string): Market {
-  const market = Object.values(markets).find(market => {
-    if (isAddress(marketAddressOrName)) {
-      return market.address === getAddress(marketAddressOrName)
-    } else {
-      return market.baseToken.symbol === parseBaseSymbol(lyra, marketAddressOrName)
-    }
-  })
-  if (!market) {
-    throw new Error('Failed to find market')
-  }
-  return market
+export default function findMarket(markets: Market[], marketAddressOrName: string): Market | null {
+  const market = Object.values(markets).find(market => isMarketEqual(market, marketAddressOrName))
+  return market ?? null
 }

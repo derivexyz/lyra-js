@@ -3,10 +3,10 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 
 import { LyraMarketContractId } from '../constants/contracts'
 import Lyra from '../lyra'
-import { Market } from '../market'
+import { Market, MarketLiquiditySnapshot } from '../market'
 import buildTxWithGasEstimate from '../utils/buildTxWithGasEstimate'
-import fetchLiquidityDelayReason from '../utils/fetchLiquidityDelayReason'
 import fetchLiquidityDepositEventDataByOwner from '../utils/fetchLiquidityDepositEventDataByOwner'
+import getLiquidityDelayReason from '../utils/getLiquidityDelayReason'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export enum LiquidityDelayReason {
@@ -58,6 +58,7 @@ export class LiquidityDeposit {
   isPending: boolean
   depositRequestedTimestamp: number
   depositTimestamp: number
+  timeToDeposit: number
   delayReason: LiquidityDelayReason | null
   constructor(
     lyra: Lyra,
@@ -65,7 +66,8 @@ export class LiquidityDeposit {
     data: {
       queued?: LiquidityDepositQueuedEvent
       processed?: LiquidityDepositProcessedEvent
-      delayReason: LiquidityDelayReason | null
+      cbTimestamp: BigNumber
+      marketLiquidity: MarketLiquiditySnapshot
     }
   ) {
     // Data
@@ -91,23 +93,37 @@ export class LiquidityDeposit {
     this.depositTimestamp = processed
       ? processed.timestamp.toNumber()
       : queued
-      ? queued.timestamp.add(market.__marketData.marketParameters.lpParams.depositDelay).toNumber()
+      ? queued.timestamp.add(market.params.depositDelay).toNumber()
       : // Should never happen
         0
-    this.delayReason = data.delayReason
+    this.timeToDeposit = Math.max(0, this.depositTimestamp - market.block.timestamp)
+    this.delayReason =
+      this.timeToDeposit === 0 && this.isPending
+        ? getLiquidityDelayReason(market, data.cbTimestamp, data.marketLiquidity)
+        : null
   }
 
   // Getters
 
   static async getByOwner(lyra: Lyra, marketAddress: string, owner: string): Promise<LiquidityDeposit[]> {
     const market = await Market.get(lyra, marketAddress)
-    const { events } = await fetchLiquidityDepositEventDataByOwner(lyra, owner, market)
+    const liquidityPoolContract = getLyraMarketContract(
+      lyra,
+      market.contractAddresses,
+      lyra.version,
+      LyraMarketContractId.LiquidityPool
+    )
+    const [{ events }, cbTimestamp, marketLiquidity] = await Promise.all([
+      fetchLiquidityDepositEventDataByOwner(lyra, owner, market),
+      liquidityPoolContract.CBTimestamp(),
+      market.liquidity(),
+    ])
     const liquidityDeposits: LiquidityDeposit[] = await Promise.all(
       events.map(async event => {
-        const delayReason = await fetchLiquidityDelayReason(lyra, market, event)
         return new LiquidityDeposit(lyra, market, {
           ...event,
-          delayReason,
+          cbTimestamp,
+          marketLiquidity,
         })
       })
     )
@@ -126,10 +142,17 @@ export class LiquidityDeposit {
     const liquidityPoolContract = getLyraMarketContract(
       lyra,
       market.contractAddresses,
+      lyra.version,
       LyraMarketContractId.LiquidityPool
     )
     const data = liquidityPoolContract.interface.encodeFunctionData('initiateDeposit', [beneficiary, amountQuote])
-    const tx = await buildTxWithGasEstimate(lyra, liquidityPoolContract.address, beneficiary, data)
+    const tx = await buildTxWithGasEstimate(
+      lyra.provider,
+      lyra.provider.network.chainId,
+      liquidityPoolContract.address,
+      beneficiary,
+      data
+    )
     return tx
   }
 
@@ -138,6 +161,4 @@ export class LiquidityDeposit {
   market(): Market {
     return this.__market
   }
-
-  // TODO: @dillonlin add a way to retrieve multiple liquidity deposits from multiple markets
 }

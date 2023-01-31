@@ -1,9 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { Version } from '..'
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
 import { Option } from '../option'
 import { getBlackScholesPrice, getDelta } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
@@ -31,24 +28,15 @@ export default function getForceClosePrice(
 
   const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
 
-  const marketParams = option.market().__marketData.marketParameters
-  const rate =
-    option.lyra.version === Version.Avalon
-      ? (marketParams as OptionMarketViewerAvalon.MarketParametersStructOutput).greekCacheParams.rateAndCarry
-      : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
-  const forceCloseParams = marketParams.forceCloseParams
+  const market = option.market()
+  const rate = market.params.rateAndCarry
 
-  const { tradeLimitParams } = marketParams
-  const isPostCutoff =
-    option.block.timestamp + tradeLimitParams.tradingCutoff.toNumber() > option.board().expiryTimestamp
+  const isPostCutoff = option.block.timestamp + market.params.tradingCutoff > option.board().expiryTimestamp
 
-  const forceCloseGwavIv =
-    option.lyra.version === Version.Avalon
-      ? (option.board().__boardData as OptionMarketViewerAvalon.BoardViewStructOutput).forceCloseGwavIV
-      : (option.board().__boardData as OptionMarketViewer.BoardViewStructOutput).forceCloseGwavIv
-  const forceCloseSkew = option.strike().__strikeData.forceCloseSkew
+  const forceCloseGwavIv = option.board().params.forceCloseGwavIv
+  const forceCloseSkew = option.strike().params.forceCloseSkew
 
-  const spotPrice = option.market().spotPrice
+  const spotPrice = market.spotPrice
   const strikePrice = option.strike().strikePrice
 
   const callDelta = toBigNumber(
@@ -61,7 +49,7 @@ export default function getForceClosePrice(
       true
     )
   )
-  const minForceCloseDelta = tradeLimitParams.minForceCloseDelta
+  const minForceCloseDelta = market.params.minForceCloseDelta
   const isDeltaOutOfRange = callDelta.lte(minForceCloseDelta) || callDelta.gte(ONE_BN.sub(minForceCloseDelta))
 
   if (isPostCutoff || isDeltaOutOfRange) {
@@ -69,13 +57,13 @@ export default function getForceClosePrice(
     if (isBuy) {
       forceCloseVol = forceCloseVol.gt(newVol) ? forceCloseVol : newVol
       forceCloseVol = isPostCutoff
-        ? forceCloseVol.mul(forceCloseParams.shortPostCutoffVolShock).div(UNIT)
-        : forceCloseVol.mul(forceCloseParams.shortVolShock).div(UNIT)
+        ? forceCloseVol.mul(market.params.shortPostCutoffVolShock).div(UNIT)
+        : forceCloseVol.mul(market.params.shortVolShock).div(UNIT)
     } else {
       forceCloseVol = forceCloseVol.lt(newVol) ? forceCloseVol : newVol
       forceCloseVol = isPostCutoff
-        ? forceCloseVol.mul(forceCloseParams.longPostCutoffVolShock).div(UNIT)
-        : forceCloseVol.mul(forceCloseParams.longVolShock).div(UNIT)
+        ? forceCloseVol.mul(market.params.longPostCutoffVolShock).div(UNIT)
+        : forceCloseVol.mul(market.params.longVolShock).div(UNIT)
     }
 
     let price = toBigNumber(
@@ -91,7 +79,7 @@ export default function getForceClosePrice(
 
     if (isBuy) {
       const parity = getParity(option)
-      const factor = option.market().spotPrice.mul(forceCloseParams.shortSpotMin).div(UNIT)
+      const factor = option.market().spotPrice.mul(market.params.shortSpotMin).div(UNIT)
       const minPrice = parity.add(factor)
       price = price.gt(minPrice) ? price : minPrice
     }

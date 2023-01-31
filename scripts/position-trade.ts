@@ -1,13 +1,13 @@
 import yargs from 'yargs'
 
-import { UNIT, ZERO_BN } from '../constants/bn'
+import { TradeEvent } from '../src'
+import { UNIT, ZERO_BN } from '../src/constants/bn'
 import fromBigNumber from '../src/utils/fromBigNumber'
+import printObject from '../src/utils/printObject'
 import toBigNumber from '../src/utils/toBigNumber'
-import { TradeEvent } from '../trade_event'
 import approve from './utils/approve'
 import getLyra from './utils/getLyra'
 import getSigner from './utils/getSigner'
-import printObject from './utils/printObject'
 
 // Increase slippage for debugging
 const SLIPPAGE = 0.1 / 100
@@ -45,17 +45,11 @@ export default async function positionTrade(argv: string[]) {
     )} -> ${fromBigNumber(setToCollateral ?? ZERO_BN)} )`
   )
 
-  // TODO: @michaelxuwu Update to include multiple stables
-  await approve(market, market.quoteToken.address)
-
   const trade = await position.trade(isBuy, size, SLIPPAGE, {
     setToCollateral,
   })
 
-  if (!trade.__params) {
-    console.log('something is broken')
-    return
-  }
+  await approve(trade)
 
   printObject('Quote', {
     premium: trade.quoted,

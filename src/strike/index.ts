@@ -5,9 +5,8 @@ import { Board } from '../board'
 import { ONE_BN, UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource } from '../constants/contracts'
 import { SnapshotOptions } from '../constants/snapshots'
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
-import Lyra, { Version } from '../lyra'
+import { StrikeViewStructOutput } from '../constants/views'
+import Lyra from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
@@ -34,11 +33,15 @@ export type StrikeQuotes = {
   strike: Strike
 }
 
+export type StrikeParams = {
+  forceCloseSkew: BigNumber
+  cachedStdVega: BigNumber
+}
+
 export class Strike {
-  private lyra: Lyra
   private __board: Board
-  __strikeData: OptionMarketViewer.StrikeViewStructOutput
   __source = DataSource.ContractCall
+  lyra: Lyra
   block: Block
   id: number
   strikePrice: BigNumber
@@ -47,16 +50,17 @@ export class Strike {
   vega: BigNumber
   gamma: BigNumber
   isDeltaInRange: boolean
+  openInterest: BigNumber
+  longCallOpenInterest: BigNumber
+  shortCallOpenInterest: BigNumber
+  longPutOpenInterest: BigNumber
+  shortPutOpenInterest: BigNumber
+  params: StrikeParams
 
-  constructor(lyra: Lyra, board: Board, strikeId: number, block: Block) {
+  constructor(lyra: Lyra, board: Board, strikeView: StrikeViewStructOutput, block: Block) {
     this.lyra = lyra
     this.__board = board
-    const strikeView = board.__boardData.strikes.find(strikeView => strikeView.strikeId.toNumber() === strikeId)
-    if (!strikeView) {
-      throw new Error('Strike does not exist for board')
-    }
-    this.__strikeData = strikeView
-    const fields = Strike.getFields(lyra.version, board, strikeId)
+    const fields = Strike.getFields(board, strikeView)
     this.block = block
     this.id = fields.id
     this.strikePrice = fields.strikePrice
@@ -65,18 +69,24 @@ export class Strike {
     this.vega = fields.vega
     this.gamma = fields.gamma
     this.isDeltaInRange = fields.isDeltaInRange
+    this.openInterest = fields.openInterest
+    this.longCallOpenInterest = fields.longCallOpenInterest
+    this.shortCallOpenInterest = fields.shortCallOpenInterest
+    this.longPutOpenInterest = fields.longPutOpenInterest
+    this.shortPutOpenInterest = fields.shortPutOpenInterest
+    this.params = fields.params
   }
 
-  private static getFields(version: Version, board: Board, strikeId: number) {
-    const strikeView = board.__boardData.strikes.find(strikeView => strikeView.strikeId.toNumber() === strikeId)
-    if (!strikeView) {
-      throw new Error('Strike does not exist for board')
-    }
+  private static getFields(board: Board, strikeView: StrikeViewStructOutput) {
     const id = strikeView.strikeId.toNumber()
     const strikePrice = strikeView.strikePrice
     const timeToExpiryAnnualized = getTimeToExpiryAnnualized(board)
     const skew = strikeView.skew
     const iv = board.baseIv.mul(strikeView.skew).div(UNIT)
+    const params = {
+      forceCloseSkew: strikeView.forceCloseSkew,
+      cachedStdVega: strikeView.cachedGreeks.stdVega,
+    }
     if (timeToExpiryAnnualized === 0) {
       return {
         id,
@@ -85,18 +95,19 @@ export class Strike {
         iv: ZERO_BN,
         vega: ZERO_BN,
         gamma: ZERO_BN,
+        openInterest: ZERO_BN,
+        longCallOpenInterest: ZERO_BN,
+        shortCallOpenInterest: ZERO_BN,
+        longPutOpenInterest: ZERO_BN,
+        shortPutOpenInterest: ZERO_BN,
         isDeltaInRange: false,
+        params,
       }
     } else {
       const ivNum = fromBigNumber(iv)
       const spotPrice = fromBigNumber(board.market().spotPrice)
       const strikePriceNum = fromBigNumber(strikePrice)
-      const marketParameters = board.market().__marketData.marketParameters
-      const rate = fromBigNumber(
-        (version == Version.Avalon
-          ? (marketParameters as OptionMarketViewerAvalon.MarketParametersStructOutput).greekCacheParams.rateAndCarry
-          : (board.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry) ?? 0
-      )
+      const rate = fromBigNumber(board.market().params.rateAndCarry)
       const vega =
         ivNum > 0 && spotPrice > 0
           ? toBigNumber(getVega(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate))
@@ -109,8 +120,18 @@ export class Strike {
         ivNum > 0 && spotPrice > 0
           ? toBigNumber(getDelta(timeToExpiryAnnualized, ivNum, spotPrice, strikePriceNum, rate, true))
           : ZERO_BN
-      const minDelta = board.market().__marketData.marketParameters.tradeLimitParams.minDelta
+      const minDelta = board.market().params.minDelta
       const isDeltaInRange = callDelta.gte(minDelta) && callDelta.lte(ONE_BN.sub(minDelta))
+
+      const longCallOpenInterest = strikeView.longCallOpenInterest
+      const shortCallOpenInterest = strikeView.shortCallBaseOpenInterest.add(strikeView.shortCallQuoteOpenInterest)
+      const longPutOpenInterest = strikeView.longPutOpenInterest
+      const shortPutOpenInterest = strikeView.shortPutOpenInterest
+      const openInterest = longCallOpenInterest
+        .add(shortCallOpenInterest)
+        .add(longPutOpenInterest)
+        .add(shortPutOpenInterest)
+
       return {
         id,
         strikePrice,
@@ -119,6 +140,12 @@ export class Strike {
         vega,
         gamma,
         isDeltaInRange,
+        openInterest,
+        longCallOpenInterest,
+        shortCallOpenInterest,
+        longPutOpenInterest,
+        shortPutOpenInterest,
+        params,
       }
     }
   }

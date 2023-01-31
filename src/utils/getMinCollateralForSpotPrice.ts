@@ -1,46 +1,35 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { Version } from '..'
 import { MAX_BN, UNIT, ZERO_BN } from '../constants/bn'
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
-import { OptionGreekCache } from '../contracts/newport/typechain/OptionMarketViewer'
-import { Market } from '../market'
+import { Market, MarketParameters } from '../market'
 import { Option } from '../option'
 import { getBlackScholesPrice } from './blackScholes'
 import fromBigNumber from './fromBigNumber'
 import getTimeToExpiryAnnualized from './getTimeToExpiryAnnualized'
 import toBigNumber from './toBigNumber'
 
-const getShockVol = (
-  minCollatParams: OptionGreekCache.MinCollateralParametersStructOutput,
-  _timeToExpiry: number,
-  isMaxMinCollateral?: boolean
-) => {
+const getShockVol = (marketParams: MarketParameters, _timeToExpiry: number, isMaxMinCollateral?: boolean) => {
   if (isMaxMinCollateral) {
     // Default to largest shock vol
-    return minCollatParams.shockVolA
+    return marketParams.shockVolA
   }
   const timeToExpiry = BigNumber.from(_timeToExpiry)
-  if (timeToExpiry.lte(minCollatParams.shockVolPointA)) {
-    return minCollatParams.shockVolA
+  if (timeToExpiry.lte(marketParams.shockVolPointA)) {
+    return marketParams.shockVolA
   }
-  if (timeToExpiry.gte(minCollatParams.shockVolPointB)) {
-    return minCollatParams.shockVolB
+  if (timeToExpiry.gte(marketParams.shockVolPointB)) {
+    return marketParams.shockVolB
   }
 
-  const shockVolDiff = minCollatParams.shockVolA.sub(minCollatParams.shockVolB)
-  const timeToMaturityShockVolPointA = timeToExpiry.sub(minCollatParams.shockVolPointA)
-  return minCollatParams.shockVolA.sub(
-    shockVolDiff
-      .mul(timeToMaturityShockVolPointA)
-      .div(minCollatParams.shockVolPointB.sub(minCollatParams.shockVolPointA))
+  const shockVolDiff = marketParams.shockVolA.sub(marketParams.shockVolB)
+  const timeToMaturityShockVolPointA = timeToExpiry.sub(marketParams.shockVolPointA)
+  return marketParams.shockVolA.sub(
+    shockVolDiff.mul(timeToMaturityShockVolPointA).div(marketParams.shockVolPointB.sub(marketParams.shockVolPointA))
   )
 }
 
 export const getMinStaticCollateral = (market: Market, isBaseCollateral?: boolean) => {
-  const { minCollatParams } = market.__marketData.marketParameters
-  return isBaseCollateral ? minCollatParams.minStaticBaseCollateral : minCollatParams.minStaticQuoteCollateral
+  return isBaseCollateral ? market.params.minStaticBaseCollateral : market.params.minStaticQuoteCollateral
 }
 
 export default function getMinCollateralForSpotPrice(
@@ -56,19 +45,15 @@ export default function getMinCollateralForSpotPrice(
   if (timeToExpiryAnnualized === 0) {
     return ZERO_BN
   }
-  const minCollatParams = option.market().__marketData.marketParameters.minCollatParams
+  const market = option.market()
   const shockSpotPrice = option.isCall
-    ? spotPrice.mul(minCollatParams.callSpotPriceShock).div(UNIT)
-    : spotPrice.mul(minCollatParams.putSpotPriceShock).div(UNIT)
-  const rate =
-    option.lyra.version === Version.Avalon
-      ? (option.market().__marketData as OptionMarketViewerAvalon.MarketViewWithBoardsStructOutput).marketParameters
-          .greekCacheParams.rateAndCarry
-      : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
+    ? spotPrice.mul(market.params.callSpotPriceShock).div(UNIT)
+    : spotPrice.mul(market.params.putSpotPriceShock).div(UNIT)
+  const rate = option.market().params.rateAndCarry
   const shockOptionPrice = toBigNumber(
     getBlackScholesPrice(
       timeToExpiryAnnualized,
-      fromBigNumber(getShockVol(minCollatParams, timeToExpiry, isMaxMinCollateral)),
+      fromBigNumber(getShockVol(market.params, timeToExpiry, isMaxMinCollateral)),
       fromBigNumber(shockSpotPrice),
       fromBigNumber(option.strike().strikePrice),
       fromBigNumber(rate),

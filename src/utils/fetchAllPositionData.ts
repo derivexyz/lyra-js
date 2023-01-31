@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { getAddress } from '@ethersproject/address'
-import { gql } from 'graphql-request'
 
 import {
   MAX_END_TIMESTAMP,

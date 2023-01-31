@@ -8,8 +8,8 @@ const getLyraChainForChainId = (chainId: number): Chain => {
       return Chain.ArbitrumGoerli
     case 10:
       return Chain.Optimism
-    // case 42161:
-    //   return Chain.Arbitrum
+    case 42161:
+      return Chain.Arbitrum
     default:
       throw new Error('Chain ID is not supported by Lyra')
   }

@@ -1,7 +1,6 @@
 import { LyraMarketContractId, POSITION_UPDATED_TYPES } from '../constants/contracts'
-import { PositionEventData } from '../constants/events'
-import { TransferEvent as ContractTransferEvent } from '../contracts/newport/typechain/OptionToken'
-import Lyra from '../lyra'
+import { PartialTransferEvent, PositionEventData } from '../constants/events'
+import Lyra, { Version } from '../lyra'
 import { Market } from '../market'
 import filterNulls from './filterNulls'
 import getCollateralUpdateDataFromRecentEvent from './getCollateralUpdateDataFromRecentEvent'
@@ -19,9 +18,6 @@ export default async function fetchRecentPositionEventsByIDs(
   market: Market,
   positionIds: number[]
 ): Promise<Record<number, PositionRecentEventData>> {
-  const tokenContract = getLyraMarketContract(lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
-  const marketContract = getLyraMarketContract(lyra, market.contractAddresses, LyraMarketContractId.OptionMarket)
-
   if (positionIds.length === 0) {
     return []
   }
@@ -30,8 +26,45 @@ export default async function fetchRecentPositionEventsByIDs(
   const toBlockNumber = (await lyra.provider.getBlock('latest')).number
   const fromBlockNumber = toBlockNumber - BLOCK_LIMIT
 
+  const tokenContract = getLyraMarketContract(
+    lyra,
+    market.contractAddresses,
+    lyra.version,
+    LyraMarketContractId.OptionToken
+  )
+
+  const queryTradeFilter = async () => {
+    if (lyra.version === Version.Avalon) {
+      const avalonMarketContract = getLyraMarketContract(
+        lyra,
+        market.contractAddresses,
+        Version.Avalon,
+        LyraMarketContractId.OptionMarket
+      )
+      const avalonTradeFilter = avalonMarketContract.queryFilter(
+        avalonMarketContract.filters.Trade(null, null, positionIds),
+        fromBlockNumber,
+        toBlockNumber
+      )
+      return avalonTradeFilter
+    } else {
+      const newportMarketContract = getLyraMarketContract(
+        lyra,
+        market.contractAddresses,
+        Version.Newport,
+        LyraMarketContractId.OptionMarket
+      )
+      const newportTradeFilter = newportMarketContract.queryFilter(
+        newportMarketContract.filters.Trade(null, positionIds),
+        fromBlockNumber,
+        toBlockNumber
+      )
+      return newportTradeFilter
+    }
+  }
+
   const [tradeEvents, updateEvents, transferEvents] = await Promise.all([
-    marketContract.queryFilter(marketContract.filters.Trade(null, null, positionIds), fromBlockNumber, toBlockNumber),
+    queryTradeFilter(),
     tokenContract.queryFilter(
       tokenContract.filters.PositionUpdated(positionIds, null, POSITION_UPDATED_TYPES),
       fromBlockNumber,
@@ -40,13 +73,13 @@ export default async function fetchRecentPositionEventsByIDs(
     tokenContract.queryFilter(tokenContract.filters.Transfer(null, null, positionIds), fromBlockNumber, toBlockNumber),
   ])
 
-  const transfersByIdAndHash: Record<string, ContractTransferEvent[]> = transferEvents.reduce((dict, transfer) => {
+  const transfersByIdAndHash: Record<string, PartialTransferEvent[]> = transferEvents.reduce((dict, transfer) => {
     const key = getTransferKey(transfer.transactionHash, transfer.args.tokenId.toNumber())
     return {
       ...dict,
       [key]: [...(dict[key] ?? []), transfer],
     }
-  }, {} as Record<string, ContractTransferEvent[]>)
+  }, {} as Record<string, PartialTransferEvent[]>)
 
   const eventsByPositionID: Record<number, PositionRecentEventData> = positionIds.reduce(
     (dict, positionId) => ({

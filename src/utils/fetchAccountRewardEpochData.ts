@@ -1,69 +1,61 @@
-import { getAddress } from '@ethersproject/address'
-import { get, query, ref } from 'firebase/database'
-
-import { FirebaseCollections } from '../constants/collections'
+import { LYRA_API_URL } from '../constants/links'
+import { RewardEpochTokenAmount } from '../global_reward_epoch'
 import Lyra, { Deployment } from '../lyra'
-import connectToFirebaseDatabase from './connectToFirebaseDatabase'
-
-const ACCOUNT_EPOCH_CACHE_LIFE = 60
-const ACCOUNT_EPOCH_CACHE: Record<string, { epoch: Promise<AccountRewardEpochData[]>; lastUpdated: number }> = {}
+import fetchWithCache from './fetchWithCache'
 
 export type AccountRewardEpochData = {
-  account: string //indexed,
-  deployment: string // indexed
+  account: string // indexed,
+  deployment: Deployment // indexed
   startTimestamp: number // indexed
   endTimestamp: number
+  lastUpdated: number
+  stakingRewards: AccountStakingRewards
+  mmvRewards: AccountMMVRewards
+  tradingRewards: AccountTradingRewards
+  arrakisRewards?: AccountArrakisRewards
+}
+
+export type AccountStakingRewards = {
+  isIgnored: boolean
+  rewards: RewardEpochTokenAmount[]
   stkLyraDays: number
-  inflationaryRewards: {
-    lyra: number
-    op: number
+}
+
+export type AccountMMVRewards = {
+  [market: string]: {
+    lpDays: number
+    boostedLpDays: number
+    rewards: RewardEpochTokenAmount[]
     isIgnored: boolean
   }
-  lpDays: Record<string, number> // base
-  boostedLpDays: Record<string, number> // boosted
-  MMVRewards: Record<
-    string,
-    {
-      isIgnored: boolean
-      lyra: number
-      op: number
-    }
-  >
-  tradingRewards: {
-    effectiveRebateRate: number
-    lyraRebate: number
-    opRebate: number
-    tradingFees: number
-    totalCollatRebateDollars: number
+}
+
+export type AccountTradingRewards = {
+  fees: number
+  effectiveRebateRate: number
+  tradingRebateRewardDollars: number
+  shortCollateralRewardDollars: number
+  totalTradingRewardDollars: number
+  shortCallSeconds: number
+  shortPutSeconds: number
+  rewards: {
+    trading: RewardEpochTokenAmount[]
+    shortCollateral: RewardEpochTokenAmount[]
   }
-  wethLyraStakingRewards?: {
-    opRewards: number
-    gUniTokensStaked: number
-    percentShare: number
-  }
+}
+
+export type AccountArrakisRewards = {
+  rewards: RewardEpochTokenAmount[]
+  gUniTokensStaked: number
+  percentShare: number
 }
 
 export default async function fetchAccountRewardEpochData(
   lyra: Lyra,
-  account: string,
-  blockTimestamp: number
+  account: string
 ): Promise<AccountRewardEpochData[]> {
   if (lyra.deployment !== Deployment.Mainnet) {
-    throw new Error('GlobalRewardEpoch only supported on mainnet')
+    return []
   }
-  const key = getAddress(account as string)
-  if (!ACCOUNT_EPOCH_CACHE[key] || blockTimestamp > ACCOUNT_EPOCH_CACHE[key].lastUpdated + ACCOUNT_EPOCH_CACHE_LIFE) {
-    const database = connectToFirebaseDatabase()
-    const collectionReference = ref(database, `${FirebaseCollections.AvalonAccountRewardsEpoch}/${key}`)
-    const queryReference = query(collectionReference)
-    const epochPromise = async (): Promise<AccountRewardEpochData[]> => {
-      const snapshot = await get(queryReference)
-      return snapshot.val() ? Object.values(snapshot.val()) : []
-    }
-    ACCOUNT_EPOCH_CACHE[key] = {
-      epoch: epochPromise(),
-      lastUpdated: blockTimestamp,
-    }
-  }
-  return await ACCOUNT_EPOCH_CACHE[key].epoch
+  return fetchWithCache(`${LYRA_API_URL}/rewards/account?network=${lyra.network}&account=${account}`)
 }

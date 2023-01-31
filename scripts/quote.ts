@@ -1,4 +1,4 @@
-import { ONE_BN } from '../constants/bn'
+import { ONE_BN } from '../src/constants/bn'
 import fromBigNumber from '../src/utils/fromBigNumber'
 import getLyra from './utils/getLyra'
 

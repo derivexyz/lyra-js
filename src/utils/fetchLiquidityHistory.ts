@@ -1,11 +1,11 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { gql } from 'graphql-request'
 
 import Lyra from '..'
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { MARKET_TOTAL_VALUE_SNAPSHOT_FRAGMENT, MarketTotalValueSnapshotQueryResult } from '../constants/queries'
 import { SnapshotOptions } from '../constants/snapshots'
-import { Market, MarketLiquidityHistory } from '../market'
+import { Market, MarketLiquiditySnapshot } from '../market'
 import fetchSnapshots from './fetchSnapshots'
 import fromBigNumber from './fromBigNumber'
 
@@ -27,11 +27,24 @@ const marketTotalValueSnapshotsQuery = gql`
   }
 `
 
+const EMPTY: Omit<MarketLiquiditySnapshot, 'timestamp'> = {
+  freeLiquidity: ZERO_BN,
+  burnableLiquidity: ZERO_BN,
+  tvl: ZERO_BN,
+  utilization: 0,
+  reservedCollatLiquidity: ZERO_BN,
+  pendingDeltaLiquidity: ZERO_BN,
+  usedDeltaLiquidity: ZERO_BN,
+  tokenPrice: ZERO_BN,
+  pendingDeposits: ZERO_BN,
+  pendingWithdrawals: ZERO_BN,
+}
+
 export default async function fetchLiquidityHistory(
   lyra: Lyra,
   market: Market,
   options?: SnapshotOptions
-): Promise<MarketLiquidityHistory[]> {
+): Promise<MarketLiquiditySnapshot[]> {
   const data = await fetchSnapshots<
     MarketTotalValueSnapshotQueryResult,
     {
@@ -43,12 +56,21 @@ export default async function fetchLiquidityHistory(
     {
       market: market.address.toLowerCase(),
     },
-    options
+    {
+      ...options,
+      endTimestamp: options?.endTimestamp ?? market.block.timestamp,
+    }
   )
+
+  if (data.length === 0) {
+    // Always return at least 1 snapshot
+    return [{ ...EMPTY, timestamp: market.block.timestamp }]
+  }
+
   const marketLiquidity = data.map(marketTotalValueSnapshot => {
     const freeLiquidityBN = BigNumber.from(marketTotalValueSnapshot.freeLiquidity)
     const burnableLiquidityBN = BigNumber.from(marketTotalValueSnapshot.burnableLiquidity)
-    const NAVBN = BigNumber.from(marketTotalValueSnapshot.NAV)
+    const tvl = BigNumber.from(marketTotalValueSnapshot.NAV)
     // TODO @michaelxuwu confirm with Paul if this field will be updated with Newport
     const usedCollatLiquidityBN = BigNumber.from(marketTotalValueSnapshot.usedCollatLiquidity)
     const pendingDeltaLiquidityBN = BigNumber.from(marketTotalValueSnapshot.pendingDeltaLiquidity)
@@ -57,9 +79,8 @@ export default async function fetchLiquidityHistory(
     return {
       freeLiquidity: freeLiquidityBN,
       burnableLiquidity: burnableLiquidityBN,
-      totalQueuedDeposits: ZERO_BN, // TODO: paul said he will add
-      nav: NAVBN,
-      utilization: NAVBN.gt(0) ? fromBigNumber(NAVBN.sub(freeLiquidityBN).mul(UNIT).div(NAVBN)) : 0,
+      tvl,
+      utilization: tvl.gt(0) ? fromBigNumber(tvl.sub(freeLiquidityBN).mul(UNIT).div(tvl)) : 0,
       totalWithdrawingDeposits: ZERO_BN, // TODO: paul said he will add
       reservedCollatLiquidity: usedCollatLiquidityBN,
       pendingDeltaLiquidity: pendingDeltaLiquidityBN,

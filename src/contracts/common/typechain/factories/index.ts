@@ -3,13 +3,10 @@
 /* eslint-disable */
 export { ArrakisPool__factory } from "./ArrakisPool__factory";
 export { ERC20__factory } from "./ERC20__factory";
-export { ExchangeAdapter__factory } from "./ExchangeAdapter__factory";
-export { LiquidityToken__factory } from "./LiquidityToken__factory";
-export { LyraRegistry__factory } from "./LyraRegistry__factory";
 export { LyraStakingModule__factory } from "./LyraStakingModule__factory";
 export { LyraStakingModuleProxy__factory } from "./LyraStakingModuleProxy__factory";
 export { MultiDistributor__factory } from "./MultiDistributor__factory";
 export { Multicall3__factory } from "./Multicall3__factory";
 export { OneInchOffChainOracle__factory } from "./OneInchOffChainOracle__factory";
 export { StakingRewards__factory } from "./StakingRewards__factory";
-export { TestFaucet__factory } from "./TestFaucet__factory";
+export { TokenMigrator__factory } from "./TokenMigrator__factory";

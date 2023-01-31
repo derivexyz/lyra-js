@@ -9,9 +9,9 @@ import Lyra, {
   TradeEventListenerOptions,
 } from '..'
 import { ZERO_ADDRESS } from '../constants/bn'
-import { OptionMarket, TradeEvent as ContractTradeEvent } from '../contracts/newport/typechain/OptionMarket'
-import getLyraContractABI from './getLyraContractABI'
-import getMarketAddresses from './getMarketAddresses'
+import { PartialTradeEvent } from '../constants/events'
+import fetchMarketAddresses from './fetchMarketAddresses'
+import { getMarketContractABI } from './getLyraMarketContract'
 
 const DEFAULT_POLL_INTERVAL = 10 * 1000
 
@@ -25,12 +25,9 @@ export default function fetchTradeListener(
 
   let timeout: NodeJS.Timeout | null
 
-  const optionMarket = new Contract(
-    ZERO_ADDRESS,
-    getLyraContractABI(lyra.version, LyraMarketContractId.OptionMarket)
-  ) as OptionMarket
+  const optionMarket = new Contract(ZERO_ADDRESS, getMarketContractABI(lyra.version, LyraMarketContractId.OptionMarket))
 
-  Promise.all([getMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
+  Promise.all([fetchMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
     console.debug(`Polling from block ${block.number} every ${ms}ms`)
     let prevBlock = block
 
@@ -47,7 +44,7 @@ export default function fetchTradeListener(
         `Querying block range: ${fromBlockNumber} to ${toBlockNumber} (${toBlockNumber - fromBlockNumber} blocks)`
       )
       // Fetch new trades
-      const trades: ContractTradeEvent[] = await lyra.provider.send('eth_getLogs', [
+      const trades: PartialTradeEvent[] = await lyra.provider.send('eth_getLogs', [
         {
           address: addresses.map(a => a.optionMarket),
           fromBlock: BigNumber.from(fromBlockNumber).toHexString(),

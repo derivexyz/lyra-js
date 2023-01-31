@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 
+import printObject from '../src/utils/printObject'
 import getLyra from './utils/getLyra'
-import printObject from './utils/printObject'
 
 export default async function position(argv: string[]) {
   const lyra = getLyra()

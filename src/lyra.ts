@@ -1,7 +1,8 @@
+import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { JsonRpcProvider, TransactionReceipt } from '@ethersproject/providers'
-import { GraphQLClient } from 'graphql-request'
+import fetch from 'cross-fetch'
 
 import { WethLyraStaking } from '.'
 import { Account } from './account'
@@ -28,16 +29,19 @@ import { Trade } from './trade'
 import { TradeEvent, TradeEventListener, TradeEventListenerCallback, TradeEventListenerOptions } from './trade_event'
 import { TransferEvent } from './transfer_event'
 import fetchLeaderboard from './utils/fetchLeaderboard'
+import fetchMarketAddresses from './utils/fetchMarketAddresses'
 import fetchPositionEventDataByHash from './utils/fetchPositionEventDataByHash'
 import getLyraChainForChainId from './utils/getLyraChainForChainId'
+import getLyraChainIdForChain from './utils/getLyraChainIdForChain'
 import getLyraDeploymentForChain from './utils/getLyraDeploymentForChain'
 import getLyraDeploymentProvider from './utils/getLyraDeploymentProvider'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
-import getLyraNetworkForChain from './utils/getLyraNetworkForChain'
-import getMarketAddresses from './utils/getMarketAddresses'
+import getNetworkForChain from './utils/getLyraNetworkForChain'
 
 export type LyraConfig = {
   provider: JsonRpcProvider
+  optimismProvider?: JsonRpcProvider
+  ethereumProvider?: JsonRpcProvider
   subgraphUri?: string
 }
 
@@ -50,9 +54,12 @@ export { Deployment } from './constants/contracts'
 
 export default class Lyra {
   chain: Chain
+  chainId: number
   provider: JsonRpcProvider
+  optimismProvider?: JsonRpcProvider
+  ethereumProvider?: JsonRpcProvider
   subgraphUri: string
-  subgraphClient: GraphQLClient
+  subgraphClient: ApolloClient<NormalizedCacheObject>
   deployment: Deployment
   network: Network
   version: Version
@@ -61,6 +68,8 @@ export default class Lyra {
       // Config
       const configObj = config as LyraConfig
       this.provider = config.provider
+      this.optimismProvider = config.optimismProvider
+      this.ethereumProvider = config.ethereumProvider
       this.chain = getLyraChainForChainId(this.provider.network.chainId)
       this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.chain)
     } else if (typeof config === 'number') {
@@ -75,10 +84,14 @@ export default class Lyra {
       this.subgraphUri = getLyraDeploymentSubgraphURI(this.chain)
     }
 
-    this.subgraphClient = new GraphQLClient(this.subgraphUri)
+    this.subgraphClient = new ApolloClient({
+      link: new HttpLink({ uri: this.subgraphUri, fetch }),
+      cache: new InMemoryCache(),
+    })
     this.version = version
+    this.chainId = getLyraChainIdForChain(this.chain)
     this.deployment = getLyraDeploymentForChain(this.chain)
-    this.network = getLyraNetworkForChain(this.chain)
+    this.network = getNetworkForChain(this.chain)
   }
 
   // Quote
@@ -158,7 +171,7 @@ export default class Lyra {
   }
 
   async contractAddresses(): Promise<MarketContractAddresses[]> {
-    return await getMarketAddresses(this)
+    return await fetchMarketAddresses(this)
   }
 
   async marketAddresses(): Promise<string[]> {
@@ -218,25 +231,8 @@ export default class Lyra {
     return Account.get(this, address)
   }
 
-  async approveStableToken(owner: string, tokenAddress: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    return await Account.get(this, owner).approveStableToken(tokenAddress, amount)
-  }
-
-  async approveBaseToken(owner: string, tokenAddress: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    return await Account.get(this, owner).approveBaseToken(tokenAddress, amount)
-  }
-
-  async approveOptionToken(
-    owner: string,
-    marketAddressOrName: string,
-    isAllowed: boolean
-  ): Promise<PopulatedTransaction> {
-    const account = await Account.get(this, owner)
-    return await account.approveOptionToken(marketAddressOrName, isAllowed)
-  }
-
   async drip(owner: string): Promise<PopulatedTransaction> {
-    const account = await Account.get(this, owner)
+    const account = Account.get(this, owner)
     return await account.drip()
   }
 
@@ -297,7 +293,7 @@ export default class Lyra {
     return await GlobalRewardEpoch.getAll(this)
   }
 
-  async latestGlobalRewardEpoch(): Promise<GlobalRewardEpoch> {
+  async latestGlobalRewardEpoch(): Promise<GlobalRewardEpoch | null> {
     return await GlobalRewardEpoch.getLatest(this)
   }
 

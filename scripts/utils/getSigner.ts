@@ -1,6 +1,6 @@
 import { Wallet } from '@ethersproject/wallet'
 
-import Lyra from '../../src'
+import Lyra from '../../src/lyra'
 
 export type ScriptLyra = {
   lyra: Lyra

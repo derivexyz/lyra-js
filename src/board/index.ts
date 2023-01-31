@@ -1,30 +1,33 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from '@ethersproject/contracts'
 import { Block } from '@ethersproject/providers'
 
 import { ZERO_BN } from '../constants/bn'
-import { DataSource, LyraMarketContractId } from '../constants/contracts'
-import { BoardViewStructOutput } from '../constants/views'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
-import Lyra from '../lyra'
+import { DataSource } from '../constants/contracts'
+import { BoardViewStructOutput, StrikeViewStructOutput } from '../constants/views'
+import { OptionMarketViewer as AvalonOptionMarketViewer } from '../contracts/avalon/typechain/AvalonOptionMarketViewer'
+import { OptionMarketViewer as NewportOptionMarketViewer } from '../contracts/newport/typechain/NewportOptionMarketViewer'
+import Lyra, { Version } from '../lyra'
 import { Market } from '../market'
 import { Option } from '../option'
 import { Quote, QuoteOptions } from '../quote'
 import { Strike, StrikeQuotes } from '../strike'
-import buildTx from '../utils/buildTx'
-import getLyraMarketContract from '../utils/getLyraMarketContract'
 
 export type BoardQuotes = {
   strikes: StrikeQuotes[]
   board: Board
 }
 
+export type BoardParams = {
+  varianceGwavIv: BigNumber
+  forceCloseGwavIv: BigNumber
+  isBoardPaused: boolean
+}
+
 export class Board {
-  private lyra: Lyra
   private __market: Market
-  private liveStrikeMap: Record<number, OptionMarketViewer.StrikeViewStructOutput>
+  private liveStrikeMap: Record<number, StrikeViewStructOutput>
   __source = DataSource.ContractCall
-  __boardData: BoardViewStructOutput
+  lyra: Lyra
   block: Block
   id: number
   expiryTimestamp: number
@@ -36,12 +39,12 @@ export class Board {
   spotPriceAtExpiry?: BigNumber
   baseIv: BigNumber
   isPaused: boolean
+  params: BoardParams
 
   constructor(lyra: Lyra, market: Market, boardView: BoardViewStructOutput, block: Block) {
     this.lyra = lyra
     this.block = block
     this.__market = market
-    this.__boardData = boardView
     this.block = block
 
     const fields = Board.getFields(market, boardView, block)
@@ -55,6 +58,7 @@ export class Board {
     this.tradingCutoffTimestamp = fields.tradingCutoffTimestamp
     this.timeToTradingCutoff = fields.timeToTradingCutoff
     this.isTradingCutoff = fields.isTradingCutoff
+    this.params = fields.params
     this.liveStrikeMap = boardView.strikes.reduce(
       (map, strikeView) => ({
         ...map,
@@ -69,15 +73,28 @@ export class Board {
     const id = boardView.boardId.toNumber()
     const expiryTimestamp = boardView.expiry.toNumber()
     const timeToExpiry = Math.max(0, expiryTimestamp - block.timestamp)
-    const tradingCutoffTimestamp =
-      expiryTimestamp - market.__marketData.marketParameters.tradeLimitParams.tradingCutoff.toNumber()
+    const tradingCutoffTimestamp = expiryTimestamp - market.params.tradingCutoff
     const timeToTradingCutoff = Math.max(0, tradingCutoffTimestamp - block.timestamp)
     const spotPriceAtExpiry = !boardView.priceAtExpiry.isZero() ? boardView.priceAtExpiry : undefined
     // Expired flag is determined by priceAtExpiry state being set
     const isExpired = !!spotPriceAtExpiry && timeToExpiry === 0
     const isTradingCutoff = timeToTradingCutoff === 0
     const baseIv = !isExpired ? boardView.baseIv : ZERO_BN
-    const isPaused = boardView.isPaused
+    const isPaused = boardView.isPaused ?? market.isPaused
+
+    let varianceGwavIv: BigNumber
+    let forceCloseGwavIv: BigNumber
+    if (market.lyra.version === Version.Avalon) {
+      const avalonBoardView = boardView as AvalonOptionMarketViewer.BoardViewStructOutput
+      // HACK: use forceCloseGwavIV as varianceGwavIv
+      varianceGwavIv = avalonBoardView.forceCloseGwavIV
+      forceCloseGwavIv = avalonBoardView.forceCloseGwavIV
+    } else {
+      const newportBoardView = boardView as NewportOptionMarketViewer.BoardViewStructOutput
+      varianceGwavIv = newportBoardView.varianceGwavIv
+      forceCloseGwavIv = newportBoardView.forceCloseGwavIv
+    }
+
     return {
       id,
       expiryTimestamp,
@@ -89,6 +106,11 @@ export class Board {
       spotPriceAtExpiry,
       baseIv,
       isPaused,
+      params: {
+        varianceGwavIv,
+        forceCloseGwavIv,
+        isBoardPaused: boardView.isPaused,
+      },
     }
   }
 
@@ -110,8 +132,8 @@ export class Board {
   }
 
   strikes(): Strike[] {
-    return this.__boardData.strikes.map(strikeView => {
-      return new Strike(this.lyra, this, strikeView.strikeId.toNumber(), this.block)
+    return Object.values(this.liveStrikeMap).map(strikeView => {
+      return new Strike(this.lyra, this, strikeView, this.block)
     })
   }
 
@@ -120,7 +142,7 @@ export class Board {
     if (!strikeView) {
       throw new Error('Strike does not exist for board')
     }
-    return new Strike(this.lyra, this, strikeId, this.block)
+    return new Strike(this.lyra, this, strikeView, this.block)
   }
 
   option(strikeId: number, isCall: boolean): Option {
@@ -152,21 +174,6 @@ export class Board {
     return {
       strikes: this.strikes().map(strike => strike.quoteAllSync(size, options)),
       board: this,
-    }
-  }
-
-  // Admin
-  setStrikeSkew(account: string, strikeId: BigNumber, skew: BigNumber): PopulatedTransaction {
-    const optionMarket = getLyraMarketContract(
-      this.lyra,
-      this.__market.__marketData.marketAddresses,
-      LyraMarketContractId.OptionMarket
-    )
-    const calldata = optionMarket.interface.encodeFunctionData('setStrikeSkew', [strikeId, skew])
-    const tx = buildTx(this.lyra, optionMarket.address, account, calldata)
-    return {
-      ...tx,
-      gasLimit: BigNumber.from(10_000_000),
     }
   }
 }

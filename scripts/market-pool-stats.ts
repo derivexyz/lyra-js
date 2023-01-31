@@ -1,6 +1,6 @@
 import yargs from 'yargs'
 
-import { ZERO_BN } from '../constants/bn'
+import { ZERO_BN } from '../src/constants/bn'
 import getLyra from './utils/getLyra'
 
 export default async function marketPoolStats(argv: string[]) {
@@ -14,22 +14,9 @@ export default async function marketPoolStats(argv: string[]) {
     (sum, tradingVolume) => sum.add(tradingVolume.notionalVolume),
     ZERO_BN
   )
-  const totalFees = tradingVolumeHistory.reduce(
-    (sum, tradingVolume) =>
-      sum
-        .add(tradingVolume.deltaCutoffFees)
-        .add(tradingVolume.liquidatorFees)
-        .add(tradingVolume.lpLiquidationFees)
-        .add(tradingVolume.optionPriceFees)
-        .add(tradingVolume.smLiquidationFees)
-        .add(tradingVolume.spotPriceFees)
-        .add(tradingVolume.vegaFees),
-    ZERO_BN
-  )
   const openInterest = market.openInterest
   console.log({
     tradingVolume,
-    totalFees,
     openInterest,
   })
 }

@@ -1,6 +1,5 @@
 import Lyra from '..'
 import { LyraMarketContractId } from '../constants/contracts'
-import { WithdrawProcessedEvent, WithdrawQueuedEvent } from '../contracts/newport/typechain/LiquidityPool'
 import { LiquidityWithdrawalProcessedEvent, LiquidityWithdrawalQueuedEvent } from '../liquidity_withdrawal'
 import { Market } from '../market'
 import getLyraMarketContract from './getLyraMarketContract'
@@ -17,7 +16,8 @@ export default async function fetchLatestLiquidityWithdrawalEventDataByOwner(
 }> {
   const liquidityPoolContract = getLyraMarketContract(
     lyra,
-    market.__marketData.marketAddresses,
+    market.contractAddresses,
+    lyra.version,
     LyraMarketContractId.LiquidityPool
   )
 
@@ -38,22 +38,20 @@ export default async function fetchLatestLiquidityWithdrawalEventDataByOwner(
     ),
   ])
 
-  const liquidityWithdrawalQueuedEvents: LiquidityWithdrawalQueuedEvent[] = withdrawalQueuedEvents.map(
-    (event: WithdrawQueuedEvent) => {
-      return {
-        withdrawer: event.args.withdrawer,
-        beneficiary: event.args.beneficiary,
-        withdrawalQueueId: event.args.withdrawalQueueId,
-        amountWithdrawn: event.args.amountWithdrawn,
-        totalQueuedWithdrawals: event.args.totalQueuedWithdrawals,
-        timestamp: event.args.timestamp,
-        transactionHash: event.transactionHash,
-      }
+  const liquidityWithdrawalQueuedEvents: LiquidityWithdrawalQueuedEvent[] = withdrawalQueuedEvents.map(event => {
+    return {
+      withdrawer: event.args.withdrawer,
+      beneficiary: event.args.beneficiary,
+      withdrawalQueueId: event.args.withdrawalQueueId,
+      amountWithdrawn: event.args.amountWithdrawn,
+      totalQueuedWithdrawals: event.args.totalQueuedWithdrawals,
+      timestamp: event.args.timestamp,
+      transactionHash: event.transactionHash,
     }
-  )
+  })
 
   const liquidityWithdrawalProcessedEvents: LiquidityWithdrawalProcessedEvent[] = withdrawalProcessedEvents.map(
-    (event: WithdrawProcessedEvent) => {
+    event => {
       return {
         caller: event.args.caller,
         beneficiary: event.args.beneficiary,

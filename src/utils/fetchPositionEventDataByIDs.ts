@@ -1,4 +1,4 @@
-import { gql } from 'graphql-request'
+import { gql } from '@apollo/client'
 
 import { PositionEventData } from '../constants/events'
 import {
@@ -43,8 +43,8 @@ export default async function fetchPositionEventDataByIDs(
   market: Market,
   positionIds: number[]
 ): Promise<Record<number, PositionEventData>> {
-  const [subgraphDataResult, recentContractEventsResult] = await Promise.allSettled([
-    lyra.subgraphClient.request<
+  const [subgraphData, recentContractEvents] = await Promise.all([
+    lyra.subgraphClient.query<
       {
         trades: TradeQueryResult[]
         collateralUpdates: CollateralUpdateQueryResult[]
@@ -54,8 +54,11 @@ export default async function fetchPositionEventDataByIDs(
       {
         positionIds: string[]
       }
-    >(positionEventsQuery, {
-      positionIds: positionIds.map(pid => `${market.address.toLowerCase()}-${pid}`),
+    >({
+      query: positionEventsQuery,
+      variables: {
+        positionIds: positionIds.map(pid => `${market.address.toLowerCase()}-${pid}`),
+      },
     }),
     fetchRecentPositionEventsByIDs(lyra, market, positionIds),
   ])
@@ -68,35 +71,26 @@ export default async function fetchPositionEventDataByIDs(
     {} as Record<number, PositionEventData>
   )
 
-  if (subgraphDataResult.status === 'fulfilled') {
-    // Initialise with subgraph values
-    const trades = subgraphDataResult.value.trades.map(getTradeDataFromSubgraph)
-    const collateralUpdates = subgraphDataResult.value.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
-    const transfers = subgraphDataResult.value.optionTransfers.map(getTransferDataFromSubgraph)
-    const settles = subgraphDataResult.value.settles.map(getSettleDataFromSubgraph)
-    trades.forEach(trade => {
-      eventsByPositionID[trade.positionId].trades.push(trade)
-    })
-    collateralUpdates.forEach(collateralUpdate => {
-      eventsByPositionID[collateralUpdate.positionId].collateralUpdates.push(collateralUpdate)
-    })
-    transfers.forEach(transfer => {
-      eventsByPositionID[transfer.positionId].transfers.push(transfer)
-    })
-    settles.forEach(settle => {
-      eventsByPositionID[settle.positionId].settle = settle
-    })
-  } else {
-    console.error(subgraphDataResult.reason)
-  }
-
-  // Contract call failure
-  if (recentContractEventsResult.status !== 'fulfilled') {
-    throw new Error(recentContractEventsResult.reason)
-  }
+  // Initialise with subgraph values
+  const trades = subgraphData.data.trades.map(getTradeDataFromSubgraph)
+  const collateralUpdates = subgraphData.data.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
+  const transfers = subgraphData.data.optionTransfers.map(getTransferDataFromSubgraph)
+  const settles = subgraphData.data.settles.map(getSettleDataFromSubgraph)
+  trades.forEach(trade => {
+    eventsByPositionID[trade.positionId].trades.push(trade)
+  })
+  collateralUpdates.forEach(collateralUpdate => {
+    eventsByPositionID[collateralUpdate.positionId].collateralUpdates.push(collateralUpdate)
+  })
+  transfers.forEach(transfer => {
+    eventsByPositionID[transfer.positionId].transfers.push(transfer)
+  })
+  settles.forEach(settle => {
+    eventsByPositionID[settle.positionId].settle = settle
+  })
 
   // Merge recent contract events with subgraph events
-  Object.entries(recentContractEventsResult.value).map(([key, { trades, collateralUpdates }]) => {
+  Object.entries(recentContractEvents).map(([key, { trades, collateralUpdates }]) => {
     const positionId = parseInt(key)
     eventsByPositionID[positionId].trades = getUniqueBy(
       // Merge events by tx hash, prefer subgraph events

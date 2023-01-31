@@ -1,6 +1,6 @@
 # Lyra.js
 
-A JavaScript SDK for [Optimistic Ethereum](https://optimism.io/) and the [Lyra Protocol](https://docs.lyra.finance/). Wraps around [Ethers.js](https://docs.ethers.io/v5/). Works in the web browser and Node.js.
+A JavaScript SDK for the [Lyra Protocol](https://docs.lyra.finance/). Wraps around [Ethers.js](https://docs.ethers.io/v5/). Works in the web browser and Node.js.
 
 [Documentation](https://docs.lyra.finance/developers/tools/lyra.js)
 
@@ -16,12 +16,12 @@ yarn add @lyrafinance/lyra-js
 
 ## Quickstart
 
-Read Lyra's market data with zero configuration.
+Read Lyra's market data.
 
 ```typescript
-import Lyra from '@lyrafinance/lyra-js'
+import Lyra, { Chain } from '@lyrafinance/lyra-js'
 
-const lyra = new Lyra()
+const lyra = new Lyra(Chain.Optimism)
 
 // Fetch all markets
 const markets = await lyra.markets()
@@ -49,9 +49,9 @@ console.log(
 Prepare and execute trades with a simple interface.
 
 ```typescript
-import Lyra, { TradeEvent } from '@lyrafinance/lyra-js'
+import Lyra, { Chain, TradeEvent } from '@lyrafinance/lyra-js'
 
-const lyra = new Lyra()
+const lyra = new Lyra(Chain.Arbitrum)
 
 // Initialize account
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, lyra.provider)
@@ -68,21 +68,14 @@ if (!strike) {
   throw new Error('No strike in delta range')
 }
 
-// Approve
-const approveTx = await account.approveStableToken(market.quoteToken.address, MAX_BN)
+// Prepare trade (Open 1.0 Long ETH Call with 0.1% slippage)
+const trade = await lyra.trade(account.address, 'eth', strike.id, true, true, ONE_BN, 0.1 / 100)
+
+// Approve USDC
+const approveTx = await trade.approveQuote(signer.address, MAX_BN)
 const approveResponse = await signer.sendTransaction(approveTx)
 await approveResponse.wait()
-console.log('Approved sUSD')
-
-// Prepare trade (Open 1.0 Long ETH Call)
-const trade = await Trade.get(lyra, account.address, 'eth', strike.id, true, true, ONE_BN, {
-  premiumSlippage: 0.1 / 100, // 0.1%
-})
-
-// Check if trade is disabled
-if (trade.disabledReason) {
-  throw new Error(`Trade is disabled: ${trade.disabledReason}`)
-}
+console.log('Approved USDC:', approveResponse.hash)
 
 // Execute trade
 const tradeResponse = await signer.sendTransaction(trade.tx)
@@ -105,9 +98,9 @@ printObject('Trade Result', {
 Create trade feeds across all markets with a simple listener
 
 ```typescript
-import Lyra from '@lyrafinance/lyra-js'
+import Lyra, { Chain } from '@lyrafinance/lyra-js'
 
-const lyra = new Lyra()
+const lyra = new Lyra(Chain.Arbitrum)
 
 lyra.onTrade(trade => {
   console.log({
@@ -127,3 +120,26 @@ lyra.onTrade(trade => {
 ## Examples
 
 See the `src/scripts` directory for more examples of SDK interactions.
+
+### Run Script
+
+To run a script, first clone the lyra-js repository
+
+```
+git clone https://github.com/lyra-finance/lyra-js.git
+cd lyra-js
+```
+
+Install dependencies locally
+
+```
+yarn install
+```
+
+Choose a script and run
+
+```
+yarn script <script>
+yarn script markets
+yarn script simple-trade
+```

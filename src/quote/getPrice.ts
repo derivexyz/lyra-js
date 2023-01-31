@@ -1,9 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { Version } from '..'
 import { UNIT } from '../constants/bn'
-import { OptionMarketViewer as OptionMarketViewerAvalon } from '../contracts/avalon/typechain'
-import { OptionMarketViewer } from '../contracts/newport/typechain'
 import { Option } from '../option'
 import { getBlackScholesPrice } from '../utils/blackScholes'
 import fromBigNumber from '../utils/fromBigNumber'
@@ -19,12 +16,7 @@ export default function getPrice(
   volTraded: BigNumber
 } {
   const timeToExpiryAnnualized = getTimeToExpiryAnnualized(option.board())
-
-  const marketParams = option.market().__marketData.marketParameters
-  const rate =
-    option.lyra.version === Version.Avalon
-      ? (marketParams as OptionMarketViewerAvalon.MarketParametersStructOutput).greekCacheParams.rateAndCarry
-      : (option.market().__marketData as OptionMarketViewer.MarketViewWithBoardsStructOutput).rateAndCarry
+  const rate = option.market().params.rateAndCarry
 
   const newVol = newBaseIv.mul(newSkew).div(UNIT)
 

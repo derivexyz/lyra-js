@@ -1,4 +1,4 @@
-import { gql } from 'graphql-request'
+import { gql } from '@apollo/client'
 
 import { LyraMarketContractId } from '../constants/contracts'
 import { POSITION_QUERY_FRAGMENT } from '../constants/queries'
@@ -31,7 +31,12 @@ export default async function fetchPositionDataByID(
   market: Market,
   positionId: number
 ): Promise<PositionData> {
-  const optionToken = getLyraMarketContract(lyra, market.contractAddresses, LyraMarketContractId.OptionToken)
+  const optionToken = getLyraMarketContract(
+    lyra,
+    market.contractAddresses,
+    lyra.version,
+    LyraMarketContractId.OptionToken
+  )
   try {
     const [positionWithOwnerStruct, eventsByPositionID] = await Promise.all([
       optionToken.getPositionWithOwner(positionId),
@@ -51,11 +56,14 @@ export default async function fetchPositionDataByID(
       settle
     )
   } catch (e) {
-    const { positions } = await lyra.subgraphClient.request(positionsQuery, {
-      positionId,
-      market: market.address.toLowerCase(),
+    const { data } = await lyra.subgraphClient.query({
+      query: positionsQuery,
+      variables: {
+        positionId,
+        market: market.address.toLowerCase(),
+      },
     })
-    const pos = positions[0]
+    const pos = data.positions[0]
     const trades = pos.trades.map(getTradeDataFromSubgraph)
     const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
     const transfers = pos.transfers.map(getTransferDataFromSubgraph)

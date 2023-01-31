@@ -1,8 +1,3 @@
 {
-  "SynthetixAdapter": "0xA32c9648511c30d0ce1AeCB423D6B8D2d03cC2DD",
-  "TestFaucet": "0x63B6c96d7C6af3327Bdf364a33cE78E6Ccd920A6",
-  "LyraRegistry": "0xE3E2061d66ea546dD9CAD1fA171d0173A3Ab4b1E",
-  "LyraStakingModule": "",
-  "LyraStakingModuleProxy": "",
-  "MultiDistributor": ""
+  "Multicall3": "0xcA11bde05977b3631167028862bE2a173976CA11"
 }

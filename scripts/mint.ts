@@ -1,6 +1,6 @@
+import printObject from '../src/utils/printObject'
 import getLyra from './utils/getLyra'
 import getSigner from './utils/getSigner'
-import printObject from './utils/printObject'
 
 export default async function mint(argv: string[]): Promise<void> {
   const lyra = getLyra()

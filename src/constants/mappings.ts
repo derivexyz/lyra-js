@@ -1,86 +1,95 @@
 import {
-  LiquidityPool as LiquidityPoolAvalon,
-  OptionGreekCache as OptionGreekCacheAvalon,
-  OptionMarket as OptionMarketAvalon,
-  OptionMarketPricer as OptionMarketPricerAvalon,
-  OptionMarketViewer as OptionMarketViewerAvalon,
-  OptionToken as OptionTokenAvalon,
-  ShortCollateral as ShortCollateralAvalon,
-  ShortPoolHedger as ShortPoolHedgerAvalon,
-  SynthetixAdapter as SynthetixAdapterAvalon,
+  AvalonLiquidityPool,
+  AvalonLiquidityToken,
+  AvalonLyraRegistry,
+  AvalonOptionGreekCache,
+  AvalonOptionMarket,
+  AvalonOptionMarketPricer,
+  AvalonOptionMarketViewer,
+  AvalonOptionToken,
+  AvalonShortCollateral,
+  AvalonShortPoolHedger,
+  AvalonSynthetixAdapter,
+  AvalonTestFaucet,
 } from '../contracts/avalon/typechain'
 import {
   ArrakisPool,
-  ExchangeAdapter,
-  LiquidityToken,
-  LyraRegistry,
   LyraStakingModule,
   Multicall3,
   MultiDistributor,
   StakingRewards,
-  TestFaucet,
+  TokenMigrator,
 } from '../contracts/common/typechain'
 import {
-  LiquidityPool,
-  OptionGreekCache,
-  OptionMarket,
-  OptionMarketPricer,
-  OptionMarketViewer,
-  OptionMarketWrapper,
-  OptionToken,
-  PoolHedger,
-  ShortCollateral,
+  NewportGMXAdapter,
+  NewportGMXFuturesPoolHedger,
+  NewportLiquidityPool,
+  NewportLiquidityToken,
+  NewportLyraRegistry,
+  NewportOptionGreekCache,
+  NewportOptionMarket,
+  NewportOptionMarketPricer,
+  NewportOptionMarketViewer,
+  NewportOptionToken,
+  NewportShortCollateral,
+  NewportTestFaucet,
 } from '../contracts/newport/typechain'
-import { LyraContractId, LyraMarketContractId } from './contracts'
+import { Version } from '../lyra'
+import { LyraContractId, LyraGlobalContractId, LyraMarketContractId } from './contracts'
 
-export type LyraContractReturnType = {
-  [LyraContractId.OptionMarketViewer]: OptionMarketViewer
-  [LyraContractId.OptionMarketWrapper]: OptionMarketWrapper
-  [LyraContractId.TestFaucet]: TestFaucet
-  [LyraContractId.ExchangeAdapter]: ExchangeAdapter
-  [LyraContractId.LyraStakingModuleProxy]: LyraStakingModule
-  [LyraContractId.MultiDistributor]: MultiDistributor
-  [LyraContractId.LyraRegistry]: LyraRegistry
-  [LyraContractId.ArrakisPool]: ArrakisPool
-  [LyraContractId.WethLyraStakingRewards]: StakingRewards
-  [LyraContractId.SynthetixAdapter]: SynthetixAdapterAvalon
-  [LyraContractId.Multicall3]: Multicall3
+export type LyraNewportContractMap = {
+  [LyraContractId.OptionMarketViewer]: NewportOptionMarketViewer
+  [LyraContractId.TestFaucet]: NewportTestFaucet
+  [LyraContractId.ExchangeAdapter]: NewportGMXAdapter
+  [LyraContractId.LyraRegistry]: NewportLyraRegistry
 }
 
-export type LyraMarketContractReturnType = {
-  [LyraMarketContractId.OptionMarket]: OptionMarket
-  [LyraMarketContractId.OptionMarketPricer]: OptionMarketPricer
-  [LyraMarketContractId.OptionToken]: OptionToken
-  [LyraMarketContractId.ShortCollateral]: ShortCollateral
-  [LyraMarketContractId.OptionGreekCache]: OptionGreekCache
-  [LyraMarketContractId.LiquidityToken]: LiquidityToken
-  [LyraMarketContractId.LiquidityPool]: LiquidityPool
-  // TODO @michaelxuwu fix PoolHedger return type
-  [LyraMarketContractId.PoolHedger]: PoolHedger
+export type LyraAvalonContractMap = {
+  [LyraContractId.OptionMarketViewer]: AvalonOptionMarketViewer
+  [LyraContractId.TestFaucet]: AvalonTestFaucet
+  [LyraContractId.ExchangeAdapter]: AvalonSynthetixAdapter
+  [LyraContractId.LyraRegistry]: AvalonLyraRegistry
 }
 
-/* Avalon Types */
-export type LyraAvalonContractReturnType = {
-  [LyraContractId.OptionMarketViewer]: OptionMarketViewerAvalon
-  [LyraContractId.OptionMarketWrapper]: OptionMarketWrapper
-  [LyraContractId.TestFaucet]: TestFaucet
-  [LyraContractId.SynthetixAdapter]: SynthetixAdapterAvalon
-  [LyraContractId.ExchangeAdapter]: ExchangeAdapter
-  [LyraContractId.LyraStakingModuleProxy]: LyraStakingModule
-  [LyraContractId.MultiDistributor]: MultiDistributor
-  [LyraContractId.LyraRegistry]: LyraRegistry
-  [LyraContractId.ArrakisPool]: ArrakisPool
-  [LyraContractId.WethLyraStakingRewards]: StakingRewards
-  [LyraContractId.Multicall3]: Multicall3
+export type LyraContractMap<V extends Version, C extends LyraContractId> = V extends Version.Avalon
+  ? LyraAvalonContractMap[C]
+  : V extends Version.Newport
+  ? LyraNewportContractMap[C]
+  : never
+
+export type LyraMarketAvalonContractMap = {
+  [LyraMarketContractId.OptionMarket]: AvalonOptionMarket
+  [LyraMarketContractId.OptionMarketPricer]: AvalonOptionMarketPricer
+  [LyraMarketContractId.OptionToken]: AvalonOptionToken
+  [LyraMarketContractId.ShortCollateral]: AvalonShortCollateral
+  [LyraMarketContractId.OptionGreekCache]: AvalonOptionGreekCache
+  [LyraMarketContractId.LiquidityToken]: AvalonLiquidityToken
+  [LyraMarketContractId.LiquidityPool]: AvalonLiquidityPool
+  [LyraMarketContractId.PoolHedger]: AvalonShortPoolHedger
 }
 
-export type LyraMarketAvalonContractReturnType = {
-  [LyraMarketContractId.OptionMarket]: OptionMarketAvalon
-  [LyraMarketContractId.OptionMarketPricer]: OptionMarketPricerAvalon
-  [LyraMarketContractId.OptionToken]: OptionTokenAvalon
-  [LyraMarketContractId.ShortCollateral]: ShortCollateralAvalon
-  [LyraMarketContractId.OptionGreekCache]: OptionGreekCacheAvalon
-  [LyraMarketContractId.LiquidityToken]: LiquidityToken
-  [LyraMarketContractId.LiquidityPool]: LiquidityPoolAvalon
-  [LyraMarketContractId.PoolHedger]: ShortPoolHedgerAvalon
+export type LyraMarketNewportContractMap = {
+  [LyraMarketContractId.OptionMarket]: NewportOptionMarket
+  [LyraMarketContractId.OptionMarketPricer]: NewportOptionMarketPricer
+  [LyraMarketContractId.OptionToken]: NewportOptionToken
+  [LyraMarketContractId.ShortCollateral]: NewportShortCollateral
+  [LyraMarketContractId.OptionGreekCache]: NewportOptionGreekCache
+  [LyraMarketContractId.LiquidityToken]: NewportLiquidityToken
+  [LyraMarketContractId.LiquidityPool]: NewportLiquidityPool
+  [LyraMarketContractId.PoolHedger]: NewportGMXFuturesPoolHedger
+}
+
+export type LyraMarketContractMap<V extends Version, C extends LyraMarketContractId> = V extends Version.Avalon
+  ? LyraMarketAvalonContractMap[C]
+  : V extends Version.Newport
+  ? LyraMarketNewportContractMap[C]
+  : never
+
+export type LyraGlobalContractMap = {
+  [LyraGlobalContractId.MultiDistributor]: MultiDistributor
+  [LyraGlobalContractId.ArrakisPool]: ArrakisPool
+  [LyraGlobalContractId.WethLyraStakingRewards]: StakingRewards
+  [LyraGlobalContractId.Multicall3]: Multicall3
+  [LyraGlobalContractId.LyraStakingModule]: LyraStakingModule
+  [LyraGlobalContractId.TokenMigrator]: TokenMigrator
 }

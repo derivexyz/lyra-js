@@ -1,5 +1,5 @@
+import { gql } from '@apollo/client'
 import { BigNumber } from 'ethers'
-import { gql } from 'graphql-request'
 
 import { ZERO_BN } from '../constants/bn'
 import { LIQUIDITY_WITHDRAWAL_FRAGMENT, LiquidityWithdrawalQueryResult } from '../constants/queries'
@@ -31,15 +31,18 @@ export default async function fetchAllLiquidityWithdrawalEventDataByOwner(
   queued: LiquidityWithdrawalQueuedEvent[]
   processed: LiquidityWithdrawalProcessedEvent[]
 }> {
-  const res = await lyra.subgraphClient.request<
+  const { data } = await lyra.subgraphClient.query<
     { lpuserLiquidities: LiquidityWithdrawalQueryResult[] },
     LiquidityWithdrawalVariables
-  >(lpUserLiquiditiesQuery, {
-    user: owner.toLowerCase(),
-    pool: market.contractAddresses.liquidityPool.toLowerCase(),
+  >({
+    query: lpUserLiquiditiesQuery,
+    variables: {
+      user: owner.toLowerCase(),
+      pool: market.contractAddresses.liquidityPool.toLowerCase(),
+    },
   })
 
-  const withdrawalQueuedEvents = res.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedWithdrawal => {
+  const withdrawalQueuedEvents = data.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedWithdrawal => {
     return {
       withdrawer: owner,
       beneficiary: owner,
@@ -51,7 +54,7 @@ export default async function fetchAllLiquidityWithdrawalEventDataByOwner(
     }
   })
 
-  const withdrawalProcessedEvents = res.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedWithdrawal => {
+  const withdrawalProcessedEvents = data.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedWithdrawal => {
     return {
       caller: owner,
       beneficiary: owner,

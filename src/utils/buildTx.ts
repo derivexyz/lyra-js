@@ -1,12 +1,17 @@
 import { PopulatedTransaction } from '@ethersproject/contracts'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-import Lyra from '../lyra'
-
-export default function buildTx(lyra: Lyra, to: string, from: string, data: string): PopulatedTransaction {
+export default function buildTx(
+  provider: JsonRpcProvider,
+  chainId: number,
+  to: string,
+  from: string,
+  data: string
+): PopulatedTransaction {
   return {
     to,
     data,
     from,
-    chainId: lyra.provider.network.chainId,
+    chainId: chainId ?? provider.network.chainId,
   }
 }

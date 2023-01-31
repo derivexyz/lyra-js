@@ -8,6 +8,6 @@ export default async function getBoardViewForStrikeId(
   marketAddressOrName: string,
   strikeId: number
 ): Promise<BoardViewStructOutput> {
-  const viewer = getLyraContract(lyra, LyraContractId.OptionMarketViewer)
+  const viewer = getLyraContract(lyra, lyra.version, LyraContractId.OptionMarketViewer)
   return await viewer.getBoardForStrikeId(marketAddressOrName, strikeId)
 }

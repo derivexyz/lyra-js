@@ -1,7 +1,9 @@
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, TradeDirection } from '../constants/contracts'
 import { PartialTradeEvent, PartialTransferEvent } from '../constants/events'
-import { PositionTradedEvent } from '../contracts/newport/typechain/OptionMarketWrapper'
+import { TradeEvent as AvalonTradeEvent } from '../contracts/avalon/typechain/AvalonOptionMarket'
+import { TradeEvent as NewportTradeEvent } from '../contracts/newport/typechain/NewportOptionMarket'
+import { Version } from '../lyra'
 import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
 import getIsBaseCollateral from './getIsBaseCollateral'
@@ -13,15 +15,21 @@ import getPositionOwner from './getPositionOwner'
 export default function getTradeDataFromRecentEvent(
   trade: PartialTradeEvent,
   market: Market,
-  transfers: PartialTransferEvent[],
-  wrappedTrade?: PositionTradedEvent
+  transfers: PartialTransferEvent[]
 ): TradeEventData {
   const marketName = market.name
   const marketAddress = market.address
   const expiryTimestamp = trade.args.trade.expiry.toNumber()
   const strikePrice = trade.args.trade.strikePrice
   const positionId = trade.args.positionId.toNumber()
-  const strikeId = trade.args.strikeId.toNumber()
+
+  let strikeId: number
+  if (market.lyra.version === Version.Newport) {
+    strikeId = (trade.args as NewportTradeEvent['args']).trade.strikeId.toNumber()
+  } else {
+    strikeId = (trade.args as AvalonTradeEvent['args']).strikeId.toNumber()
+  }
+
   const isCall = getIsCall(trade.args.trade.optionType)
   const isLong = getIsLong(trade.args.trade.optionType)
   const isForceClose = trade.args.trade.isForceClose
@@ -102,12 +110,5 @@ export default function getTradeDataFromRecentEvent(
     skew: newSkew,
     baseIv: newBaseIv,
     volTraded,
-    swap:
-      wrappedTrade && wrappedTrade.args.token !== market.quoteToken.address
-        ? {
-            fee: wrappedTrade.args.swapFee,
-            address: wrappedTrade.args.token,
-          }
-        : undefined,
   }
 }

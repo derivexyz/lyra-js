@@ -1,9 +1,10 @@
 import { Chain } from '../constants/chain'
 import { Deployment } from '../constants/contracts'
 
-const getLyraDeploymentForChain = (chain: Chain): Deployment => {
+const getLyraDeploymentForChain = (chain: Chain | 'ethereum'): Deployment => {
   switch (chain) {
-    // case Chain.Arbitrum:
+    case 'ethereum':
+    case Chain.Arbitrum:
     case Chain.Optimism:
       return Deployment.Mainnet
     case Chain.OptimismGoerli:

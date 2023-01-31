@@ -28,9 +28,9 @@ export type SettleEventData = {
 }
 
 export class SettleEvent {
-  private lyra: Lyra
   private __settleData: SettleEventData
   __source: DataSource
+  lyra: Lyra
   blockNumber: number
   positionId: number
   spotPriceAtExpiry: BigNumber
