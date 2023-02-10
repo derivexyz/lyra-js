@@ -1,4 +1,4 @@
-import { DocumentNode } from '@apollo/client'
+import { DocumentNode } from '@apollo/client/core'
 
 import Lyra from '..'
 import { SNAPSHOT_RESULT_LIMIT } from '../constants/queries'

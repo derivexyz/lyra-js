@@ -4,7 +4,7 @@
 
 import { Contract, Signer, utils } from "ethers";
 import type { Provider } from "@ethersproject/providers";
-import type { ArrakisPool, ArrakisPoolInterface } from "../ArrakisPool";
+import type { ArrakisPoolL2, ArrakisPoolL2Interface } from "../ArrakisPoolL2";
 
 const _abi = [
   {
@@ -254,15 +254,15 @@ const _abi = [
   },
 ];
 
-export class ArrakisPool__factory {
+export class ArrakisPoolL2__factory {
   static readonly abi = _abi;
-  static createInterface(): ArrakisPoolInterface {
-    return new utils.Interface(_abi) as ArrakisPoolInterface;
+  static createInterface(): ArrakisPoolL2Interface {
+    return new utils.Interface(_abi) as ArrakisPoolL2Interface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): ArrakisPool {
-    return new Contract(address, _abi, signerOrProvider) as ArrakisPool;
+  ): ArrakisPoolL2 {
+    return new Contract(address, _abi, signerOrProvider) as ArrakisPoolL2;
   }
 }

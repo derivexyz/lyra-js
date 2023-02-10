@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql } from '@apollo/client/core'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import Lyra, { Strike } from '..'
@@ -53,6 +53,7 @@ export default async function fetchStrikeIVHistory(
       iv: fromBigNumber(BigNumber.from(snapshot.iv)),
       timestamp: snapshot.timestamp,
     })),
+    data[0].timestamp,
     endTimestamp
   )
 

@@ -1,14 +1,15 @@
-import { UNIT } from '../constants/bn'
-import { MarketToken, PoolHedgerView } from '../market'
-import { to18DecimalBN } from './convertBNDecimals'
+import { BigNumber } from 'ethers'
 
-export default function canHedge(
-  increasesPoolDelta: boolean,
-  hedgerView: PoolHedgerView,
-  baseToken: MarketToken,
-  quoteToken: MarketToken
-) {
+import { UNIT } from '../constants/bn'
+import { PoolHedgerView } from '../market'
+
+export default function canHedge(spotPrice: BigNumber, increasesPoolDelta: boolean, hedgerView: PoolHedgerView) {
   const { expectedHedge, currentHedge, gmxView, futuresPoolHedgerParams } = hedgerView
+
+  if (!futuresPoolHedgerParams.vaultLiquidityCheckEnabled) {
+    return true
+  }
+
   const expectedHedgeAbs = expectedHedge.abs()
   const currentHedgeAbs = currentHedge.abs()
   if (!futuresPoolHedgerParams) {
@@ -29,16 +30,17 @@ export default function canHedge(
     return true
   }
 
-  let remainingDeltas
+  // Figure out the amount of remaining dollars for the specific direction the pool needs to hedge
+  let remainingDollars: BigNumber
   if (expectedHedge.gt(0)) {
-    const { basePoolAmount, baseReservedAmount } = gmxView
-    // remaining is the amount of baseAsset that can be hedged (adjusted from base token decimals)
-    remainingDeltas = to18DecimalBN(basePoolAmount.sub(baseReservedAmount), baseToken.decimals)
+    const { remainingLongDollars } = gmxView
+    remainingDollars = remainingLongDollars
   } else {
-    const { quotePoolAmount, quoteReservedAmount } = gmxView
-    // Adjusted from quote token decimals
-    remainingDeltas = to18DecimalBN(quotePoolAmount.sub(quoteReservedAmount), quoteToken.decimals)
+    const { remainingShortDollars } = gmxView
+    remainingDollars = remainingShortDollars
   }
+  // Convert the dollar amount to deltas by dividing by spot.
+  const remainingDeltas = remainingDollars.div(spotPrice).mul(UNIT)
 
   const absHedgeDiff = expectedHedgeAbs.sub(currentHedgeAbs)
   if (remainingDeltas.lt(absHedgeDiff.mul(futuresPoolHedgerParams.marketDepthBuffer).div(UNIT))) {

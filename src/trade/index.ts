@@ -91,6 +91,8 @@ export type TradeOptionsSync = {
 export type TradeToken = MarketToken & {
   transfer: BigNumber
   receive: BigNumber
+  balance: BigNumber
+  newBalance: BigNumber
 }
 
 export class Trade {
@@ -213,11 +215,15 @@ export class Trade {
       ...market.quoteToken,
       transfer: ZERO_BN,
       receive: ZERO_BN,
+      balance: balances.quoteAsset.balance,
+      newBalance: balances.quoteAsset.balance,
     }
     this.baseToken = {
       ...market.baseToken,
       transfer: ZERO_BN,
       receive: ZERO_BN,
+      balance: balances.baseAsset.balance,
+      newBalance: balances.baseAsset.balance,
     }
 
     this.quoted = quote.premium
@@ -292,6 +298,13 @@ export class Trade {
     } else {
       this.baseToken.receive = from18DecimalBN(netBaseTransfer.abs(), this.baseToken.decimals)
     }
+
+    this.quoteToken.newBalance = this.quoteToken.transfer.gt(0)
+      ? this.quoteToken.balance.sub(this.quoteToken.transfer)
+      : this.quoteToken.balance.add(this.quoteToken.receive)
+    this.baseToken.newBalance = this.baseToken.transfer.gt(0)
+      ? this.baseToken.balance.sub(this.baseToken.transfer)
+      : this.baseToken.balance.add(this.baseToken.receive)
 
     this.isCollateralUpdate = !!(this.collateral && this.size.isZero() && this.collateral.amount.gt(0))
 

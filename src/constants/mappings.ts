@@ -13,12 +13,13 @@ import {
   AvalonTestFaucet,
 } from '../contracts/avalon/typechain'
 import {
-  ArrakisPool,
+  ArrakisPoolL1,
+  ArrakisPoolL2,
   LyraStakingModule,
   Multicall3,
   MultiDistributor,
-  StakingRewards,
   TokenMigrator,
+  WethLyraStakingRewards,
 } from '../contracts/common/typechain'
 import {
   NewportGMXAdapter,
@@ -87,8 +88,10 @@ export type LyraMarketContractMap<V extends Version, C extends LyraMarketContrac
 
 export type LyraGlobalContractMap = {
   [LyraGlobalContractId.MultiDistributor]: MultiDistributor
-  [LyraGlobalContractId.ArrakisPool]: ArrakisPool
-  [LyraGlobalContractId.WethLyraStakingRewards]: StakingRewards
+  [LyraGlobalContractId.ArrakisPoolL2]: ArrakisPoolL2
+  [LyraGlobalContractId.ArrakisPoolL1]: ArrakisPoolL1
+  [LyraGlobalContractId.WethLyraStakingRewardsL1]: WethLyraStakingRewards
+  [LyraGlobalContractId.WethLyraStakingRewardsL2]: WethLyraStakingRewards
   [LyraGlobalContractId.Multicall3]: Multicall3
   [LyraGlobalContractId.LyraStakingModule]: LyraStakingModule
   [LyraGlobalContractId.TokenMigrator]: TokenMigrator

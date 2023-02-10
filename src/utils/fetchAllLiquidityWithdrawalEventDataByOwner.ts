@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql } from '@apollo/client/core'
 import { BigNumber } from 'ethers'
 
 import { ZERO_BN } from '../constants/bn'

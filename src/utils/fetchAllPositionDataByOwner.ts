@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql } from '@apollo/client/core'
 import { getAddress } from '@ethersproject/address'
 
 import { POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queries'

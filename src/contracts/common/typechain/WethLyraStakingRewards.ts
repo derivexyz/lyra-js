@@ -27,7 +27,7 @@ import type {
   PromiseOrValue,
 } from "./common";
 
-export interface StakingRewardsInterface extends utils.Interface {
+export interface WethLyraStakingRewardsInterface extends utils.Interface {
   functions: {
     "acceptOwnership()": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -412,12 +412,12 @@ export type WithdrawnEvent = TypedEvent<
 
 export type WithdrawnEventFilter = TypedEventFilter<WithdrawnEvent>;
 
-export interface StakingRewards extends BaseContract {
+export interface WethLyraStakingRewards extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: StakingRewardsInterface;
+  interface: WethLyraStakingRewardsInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

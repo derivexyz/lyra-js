@@ -1,10 +1,9 @@
-import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core'
 import { BigNumber } from '@ethersproject/bignumber'
 import { PopulatedTransaction } from '@ethersproject/contracts'
 import { JsonRpcProvider, TransactionReceipt } from '@ethersproject/providers'
 import fetch from 'cross-fetch'
 
-import { WethLyraStaking } from '.'
 import { Account } from './account'
 import { AccountRewardEpoch } from './account_reward_epoch'
 import { Admin } from './admin'
@@ -37,6 +36,8 @@ import getLyraDeploymentForChain from './utils/getLyraDeploymentForChain'
 import getLyraDeploymentProvider from './utils/getLyraDeploymentProvider'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
 import getNetworkForChain from './utils/getLyraNetworkForChain'
+import getVersionForChain from './utils/getVersionForChain'
+import { WethLyraStaking } from './weth_lyra_staking'
 
 export type LyraConfig = {
   provider: JsonRpcProvider
@@ -63,7 +64,7 @@ export default class Lyra {
   deployment: Deployment
   network: Network
   version: Version
-  constructor(config: LyraConfig | Chain | number = Chain.Optimism, version: Version = Version.Avalon) {
+  constructor(config: LyraConfig | Chain | number = Chain.Optimism) {
     if (typeof config === 'object') {
       // Config
       const configObj = config as LyraConfig
@@ -88,10 +89,10 @@ export default class Lyra {
       link: new HttpLink({ uri: this.subgraphUri, fetch }),
       cache: new InMemoryCache(),
     })
-    this.version = version
     this.chainId = getLyraChainIdForChain(this.chain)
     this.deployment = getLyraDeploymentForChain(this.chain)
     this.network = getNetworkForChain(this.chain)
+    this.version = getVersionForChain(this.network)
   }
 
   // Quote

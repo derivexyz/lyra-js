@@ -1,4 +1,4 @@
-import { DocumentNode } from '@apollo/client'
+import { DocumentNode } from '@apollo/client/core'
 
 import Lyra from '..'
 import { MAX_END_TIMESTAMP, MIN_START_TIMESTAMP, SnapshotPeriod } from '../constants/queries'

@@ -29,7 +29,7 @@ export class AccountRewardEpoch {
   totalVaultRewards: RewardEpochTokenAmount[]
   tradingRewards: RewardEpochTokenAmount[]
   shortCollateralRewards: RewardEpochTokenAmount[]
-  wethLyraStaking: AccountArrakisRewards
+  wethLyraStakingL2: AccountArrakisRewards
   constructor(
     lyra: Lyra,
     account: string,
@@ -113,7 +113,7 @@ export class AccountRewardEpoch {
 
     this.isPendingRewards = !this.globalEpoch.isComplete || isTradingPending || isStakingPending || isVaultsPending
 
-    this.wethLyraStaking = this.accountEpoch.arrakisRewards ?? {
+    this.wethLyraStakingL2 = this.accountEpoch.arrakisRewards ?? {
       rewards: [],
       gUniTokensStaked: 0,
       percentShare: 0,

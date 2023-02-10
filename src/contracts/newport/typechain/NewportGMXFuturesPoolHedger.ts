@@ -137,10 +137,22 @@ export declare namespace GMXFuturesPoolHedger {
     baseReservedAmount: PromiseOrValue<BigNumberish>;
     quotePoolAmount: PromiseOrValue<BigNumberish>;
     quoteReservedAmount: PromiseOrValue<BigNumberish>;
+    maxGlobalLongSize: PromiseOrValue<BigNumberish>;
+    guaranteedUSD: PromiseOrValue<BigNumberish>;
+    maxGlobalShortSize: PromiseOrValue<BigNumberish>;
+    shortSize: PromiseOrValue<BigNumberish>;
     minExecutionFee: PromiseOrValue<BigNumberish>;
+    remainingLongDollars: PromiseOrValue<BigNumberish>;
+    remainingShortDollars: PromiseOrValue<BigNumberish>;
   };
 
   export type GMXViewStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
@@ -151,7 +163,13 @@ export declare namespace GMXFuturesPoolHedger {
     baseReservedAmount: BigNumber;
     quotePoolAmount: BigNumber;
     quoteReservedAmount: BigNumber;
+    maxGlobalLongSize: BigNumber;
+    guaranteedUSD: BigNumber;
+    maxGlobalShortSize: BigNumber;
+    shortSize: BigNumber;
     minExecutionFee: BigNumber;
+    remainingLongDollars: BigNumber;
+    remainingShortDollars: BigNumber;
   };
 
   export type GMXFuturesPoolHedgerViewStruct = {
@@ -237,6 +255,8 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
     "getHedgingLiquidity(uint256)": FunctionFragment;
     "getPoolHedgerParams()": FunctionFragment;
     "getPositions()": FunctionFragment;
+    "getRemainingLongLiquidityDollars(uint256)": FunctionFragment;
+    "getRemainingShortLiquidityDollars()": FunctionFragment;
     "getSwapFeeBP(bool,bool,uint256)": FunctionFragment;
     "gmxPositionCallback(bytes32,bool,bool)": FunctionFragment;
     "greekCache()": FunctionFragment;
@@ -286,6 +306,8 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
       | "getHedgingLiquidity"
       | "getPoolHedgerParams"
       | "getPositions"
+      | "getRemainingLongLiquidityDollars"
+      | "getRemainingShortLiquidityDollars"
       | "getSwapFeeBP"
       | "gmxPositionCallback"
       | "greekCache"
@@ -380,6 +402,14 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getPositions",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRemainingLongLiquidityDollars",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRemainingShortLiquidityDollars",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -564,6 +594,14 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getRemainingLongLiquidityDollars",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRemainingShortLiquidityDollars",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getSwapFeeBP",
     data: BytesLike
   ): Result;
@@ -664,8 +702,9 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
     "OwnerChanged(address,address)": EventFragment;
     "OwnerNominated(address)": EventFragment;
     "PoolHedgerParametersSet(tuple)": EventFragment;
+    "PositionNotUpdated(tuple)": EventFragment;
     "PositionRouterSet(address)": EventFragment;
-    "PositionUpdated(address,int256,int256,uint256,bool)": EventFragment;
+    "PositionUpdated(int256,int256,uint256,bool)": EventFragment;
     "QuoteReturnedToLP(uint256)": EventFragment;
     "WETHSold(uint256,uint256)": EventFragment;
   };
@@ -680,6 +719,7 @@ export interface NewportGMXFuturesPoolHedgerInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerNominated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PoolHedgerParametersSet"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PositionNotUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PositionRouterSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PositionUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "QuoteReturnedToLP"): EventFragment;
@@ -802,6 +842,17 @@ export type PoolHedgerParametersSetEvent = TypedEvent<
 export type PoolHedgerParametersSetEventFilter =
   TypedEventFilter<PoolHedgerParametersSetEvent>;
 
+export interface PositionNotUpdatedEventObject {
+  currentPos: GMXFuturesPoolHedger.PositionDetailsStructOutput;
+}
+export type PositionNotUpdatedEvent = TypedEvent<
+  [GMXFuturesPoolHedger.PositionDetailsStructOutput],
+  PositionNotUpdatedEventObject
+>;
+
+export type PositionNotUpdatedEventFilter =
+  TypedEventFilter<PositionNotUpdatedEvent>;
+
 export interface PositionRouterSetEventObject {
   positionRouter: string;
 }
@@ -814,14 +865,13 @@ export type PositionRouterSetEventFilter =
   TypedEventFilter<PositionRouterSetEvent>;
 
 export interface PositionUpdatedEventObject {
-  thrower: string;
   currentNetDelta: BigNumber;
   expectedNetDelta: BigNumber;
   modifiedDelta: BigNumber;
   isIncrease: boolean;
 }
 export type PositionUpdatedEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber, boolean],
+  [BigNumber, BigNumber, BigNumber, boolean],
   PositionUpdatedEventObject
 >;
 
@@ -965,6 +1015,15 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
         positions: GMXFuturesPoolHedger.CurrentPositionsStructOutput;
       }
     >;
+
+    getRemainingLongLiquidityDollars(
+      spotPrice: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { remainingDollars: BigNumber }>;
+
+    getRemainingShortLiquidityDollars(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { remainingDollars: BigNumber }>;
 
     getSwapFeeBP(
       isLong: PromiseOrValue<boolean>,
@@ -1162,6 +1221,15 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
     overrides?: CallOverrides
   ): Promise<GMXFuturesPoolHedger.CurrentPositionsStructOutput>;
 
+  getRemainingLongLiquidityDollars(
+    spotPrice: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getRemainingShortLiquidityDollars(
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getSwapFeeBP(
     isLong: PromiseOrValue<boolean>,
     isIncrease: PromiseOrValue<boolean>,
@@ -1354,6 +1422,15 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
       overrides?: CallOverrides
     ): Promise<GMXFuturesPoolHedger.CurrentPositionsStructOutput>;
 
+    getRemainingLongLiquidityDollars(
+      spotPrice: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRemainingShortLiquidityDollars(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getSwapFeeBP(
       isLong: PromiseOrValue<boolean>,
       isIncrease: PromiseOrValue<boolean>,
@@ -1534,20 +1611,23 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
       poolHedgerParams?: null
     ): PoolHedgerParametersSetEventFilter;
 
+    "PositionNotUpdated(tuple)"(
+      currentPos?: null
+    ): PositionNotUpdatedEventFilter;
+    PositionNotUpdated(currentPos?: null): PositionNotUpdatedEventFilter;
+
     "PositionRouterSet(address)"(
       positionRouter?: null
     ): PositionRouterSetEventFilter;
     PositionRouterSet(positionRouter?: null): PositionRouterSetEventFilter;
 
-    "PositionUpdated(address,int256,int256,uint256,bool)"(
-      thrower?: null,
+    "PositionUpdated(int256,int256,uint256,bool)"(
       currentNetDelta?: null,
       expectedNetDelta?: null,
       modifiedDelta?: null,
       isIncrease?: null
     ): PositionUpdatedEventFilter;
     PositionUpdated(
-      thrower?: null,
       currentNetDelta?: null,
       expectedNetDelta?: null,
       modifiedDelta?: null,
@@ -1610,6 +1690,15 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
     getPoolHedgerParams(overrides?: CallOverrides): Promise<BigNumber>;
 
     getPositions(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getRemainingLongLiquidityDollars(
+      spotPrice: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getRemainingShortLiquidityDollars(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getSwapFeeBP(
       isLong: PromiseOrValue<boolean>,
@@ -1781,6 +1870,15 @@ export interface NewportGMXFuturesPoolHedger extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getPositions(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getRemainingLongLiquidityDollars(
+      spotPrice: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getRemainingShortLiquidityDollars(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getSwapFeeBP(
       isLong: PromiseOrValue<boolean>,

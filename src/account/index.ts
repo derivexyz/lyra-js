@@ -69,11 +69,18 @@ export type AccountLyraStaking = {
   unstakeWindowEndTimestamp: number | null
 }
 
-export type AccountWethLyraStaking = {
+export type AccountWethLyraStakingL2 = {
   unstakedLPTokenBalance: BigNumber
   stakedLPTokenBalance: BigNumber
   rewards: BigNumber
   opRewards: BigNumber
+  allowance: BigNumber
+}
+
+export type AccountWethLyraStaking = {
+  unstakedLPTokenBalance: BigNumber
+  stakedLPTokenBalance: BigNumber
+  rewards: BigNumber
   allowance: BigNumber
 }
 
@@ -98,6 +105,12 @@ export type ClaimableBalanceL2 = {
 
 export type ClaimableBalanceL1 = {
   newStkLyra: BigNumber
+  lyra: BigNumber
+}
+
+export type AccountPnlSnapshot = {
+  timestamp: number
+  livePnl: number
 }
 
 export class Account {
@@ -203,9 +216,18 @@ export class Account {
   }
 
   async claimableRewardsL1(): Promise<ClaimableBalanceL1> {
-    const stakingRewardsClaimableBalance = await LyraStaking.getStakingRewardsBalance(this.lyra, this.address)
+    const wethLyraStakingRewardsL1Contract = getGlobalContract(
+      this.lyra,
+      LyraGlobalContractId.WethLyraStakingRewardsL1,
+      this.lyra.ethereumProvider
+    )
+    const [stakingRewardsClaimableBalance, wethLyraRewardsL1ClaimableBalance] = await Promise.all([
+      LyraStaking.getStakingRewardsBalance(this.lyra, this.address),
+      wethLyraStakingRewardsL1Contract.earned(this.address),
+    ])
     return {
       newStkLyra: stakingRewardsClaimableBalance,
+      lyra: wethLyraRewardsL1ClaimableBalance,
     }
   }
 
@@ -337,22 +359,22 @@ export class Account {
     }
   }
 
-  async wethLyraStaking(): Promise<AccountWethLyraStaking> {
-    const [gelatoPoolContract, wethLyraStakingRewardsContract] = await Promise.all([
-      getGlobalContract(this.lyra, LyraGlobalContractId.ArrakisPool, this.lyra.optimismProvider),
-      getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewards, this.lyra.optimismProvider),
+  async wethLyraStakingL2(): Promise<AccountWethLyraStakingL2> {
+    const [gelatoPoolContract, wethLyraStakingL2RewardsContract] = await Promise.all([
+      getGlobalContract(this.lyra, LyraGlobalContractId.ArrakisPoolL2, this.lyra.optimismProvider),
+      getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewardsL2, this.lyra.optimismProvider),
     ])
     const [unstakedLPTokenBalance, allowance, stakedLPTokenBalance, rewards, latestGlobalRewardEpoch] =
       await Promise.all([
         gelatoPoolContract.balanceOf(this.address),
-        gelatoPoolContract.allowance(this.address, wethLyraStakingRewardsContract.address),
-        wethLyraStakingRewardsContract.balanceOf(this.address),
-        wethLyraStakingRewardsContract.earned(this.address), // @dillon: keep this here for now because some people are yet to claim from old system
+        gelatoPoolContract.allowance(this.address, wethLyraStakingL2RewardsContract.address),
+        wethLyraStakingL2RewardsContract.balanceOf(this.address),
+        wethLyraStakingL2RewardsContract.earned(this.address),
         this.lyra.latestGlobalRewardEpoch(),
       ])
     const accountRewardEpoch = await latestGlobalRewardEpoch?.accountRewardEpoch(this.address)
     const opRewardsAmount =
-      accountRewardEpoch?.wethLyraStaking?.rewards?.find(token => token.symbol.toLowerCase() === 'op')?.amount ?? 0
+      accountRewardEpoch?.wethLyraStakingL2?.rewards?.find(token => token.symbol.toLowerCase() === 'op')?.amount ?? 0
     const opRewards = toBigNumber(opRewardsAmount)
     return {
       unstakedLPTokenBalance,
@@ -360,6 +382,25 @@ export class Account {
       stakedLPTokenBalance,
       rewards: rewards,
       opRewards: opRewards,
+    }
+  }
+
+  async wethLyraStaking(): Promise<AccountWethLyraStaking> {
+    const [arrakisPoolL1Contract, wethLyraStakingRewardsL1Contract] = await Promise.all([
+      getGlobalContract(this.lyra, LyraGlobalContractId.ArrakisPoolL1, this.lyra.ethereumProvider),
+      getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewardsL1, this.lyra.ethereumProvider),
+    ])
+    const [unstakedLPTokenBalance, allowance, stakedLPTokenBalance, rewards] = await Promise.all([
+      arrakisPoolL1Contract.balanceOf(this.address),
+      arrakisPoolL1Contract.allowance(this.address, wethLyraStakingRewardsL1Contract.address),
+      wethLyraStakingRewardsL1Contract.balanceOf(this.address),
+      wethLyraStakingRewardsL1Contract.earned(this.address),
+    ])
+    return {
+      unstakedLPTokenBalance,
+      allowance,
+      stakedLPTokenBalance,
+      rewards: rewards,
     }
   }
 
@@ -383,53 +424,93 @@ export class Account {
     return await LyraStaking.claimRewards(this.lyra, this.address)
   }
 
-  async stakeWethLyra(amount: BigNumber): Promise<PopulatedTransaction> {
-    const wethLyraStakingRewardsContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewards)
-    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('stake', [amount])
+  async claimWethLyraRewards(): Promise<PopulatedTransaction> {
+    const wethLyraStakingL1RewardsContract = getGlobalContract(
+      this.lyra,
+      LyraGlobalContractId.WethLyraStakingRewardsL1,
+      this.lyra.ethereumProvider
+    )
+    const calldata = wethLyraStakingL1RewardsContract.interface.encodeFunctionData('getReward')
     return await buildTxWithGasEstimate(
-      this.lyra.provider,
-      this.lyra.provider.network.chainId,
-      wethLyraStakingRewardsContract.address,
+      this.lyra.ethereumProvider ?? this.lyra.provider,
+      1,
+      wethLyraStakingL1RewardsContract.address,
+      this.address,
+      calldata
+    )
+  }
+
+  async stakeWethLyra(amount: BigNumber): Promise<PopulatedTransaction> {
+    const wethLyraStakingL1RewardsContract = getGlobalContract(
+      this.lyra,
+      LyraGlobalContractId.WethLyraStakingRewardsL1,
+      this.lyra.ethereumProvider
+    )
+    const calldata = wethLyraStakingL1RewardsContract.interface.encodeFunctionData('stake', [amount])
+    return await buildTxWithGasEstimate(
+      this.lyra.ethereumProvider ?? this.lyra.provider,
+      1,
+      wethLyraStakingL1RewardsContract.address,
+      this.address,
+      calldata
+    )
+  }
+
+  async unstakeWethLyraL2(amount: BigNumber) {
+    const wethLyraStakingL2RewardsContract = getGlobalContract(
+      this.lyra,
+      LyraGlobalContractId.WethLyraStakingRewardsL2,
+      this.lyra.optimismProvider
+    )
+    const calldata = wethLyraStakingL2RewardsContract.interface.encodeFunctionData('withdraw', [amount])
+    return await buildTxWithGasEstimate(
+      this.lyra.optimismProvider ?? this.lyra.provider,
+      this.lyra.chainId,
+      wethLyraStakingL2RewardsContract.address,
       this.address,
       calldata
     )
   }
 
   async unstakeWethLyra(amount: BigNumber) {
-    const wethLyraStakingRewardsContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewards)
-    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('withdraw', [amount])
+    const wethLyraStakingL1RewardsContract = getGlobalContract(
+      this.lyra,
+      LyraGlobalContractId.WethLyraStakingRewardsL1,
+      this.lyra.ethereumProvider
+    )
+    const calldata = wethLyraStakingL1RewardsContract.interface.encodeFunctionData('withdraw', [amount])
     return await buildTxWithGasEstimate(
-      this.lyra.provider,
-      this.lyra.provider.network.chainId,
-      wethLyraStakingRewardsContract.address,
+      this.lyra.ethereumProvider ?? this.lyra.provider,
+      1,
+      wethLyraStakingL1RewardsContract.address,
       this.address,
       calldata
     )
   }
 
   async approveWethLyraTokens(): Promise<PopulatedTransaction> {
-    const gelatoPoolContract = getGlobalContract(this.lyra, LyraGlobalContractId.ArrakisPool)
-    const wethLyraStakingContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewards)
-    const calldata = gelatoPoolContract.interface.encodeFunctionData('approve', [
+    const arrakisPoolContract = getGlobalContract(this.lyra, LyraGlobalContractId.ArrakisPoolL1)
+    const wethLyraStakingContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewardsL1)
+    const calldata = arrakisPoolContract.interface.encodeFunctionData('approve', [
       wethLyraStakingContract.address,
       MAX_BN,
     ])
     return await buildTxWithGasEstimate(
-      this.lyra.provider,
-      this.lyra.provider.network.chainId,
-      gelatoPoolContract.address,
+      this.lyra.ethereumProvider ?? this.lyra.provider,
+      1,
+      arrakisPoolContract.address,
       this.address,
       calldata
     )
   }
 
-  async claimWethLyraRewards() {
-    const wethLyraStakingRewardsContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewards)
-    const calldata = wethLyraStakingRewardsContract.interface.encodeFunctionData('getReward')
+  async claimWethLyraRewardsL2() {
+    const wethLyraStakingL2RewardsContract = getGlobalContract(this.lyra, LyraGlobalContractId.WethLyraStakingRewardsL2)
+    const calldata = wethLyraStakingL2RewardsContract.interface.encodeFunctionData('getReward')
     return await buildTxWithGasEstimate(
-      this.lyra.provider,
-      this.lyra.provider.network.chainId,
-      wethLyraStakingRewardsContract.address,
+      this.lyra.optimismProvider ?? this.lyra.provider,
+      this.lyra.chainId,
+      wethLyraStakingL2RewardsContract.address,
       this.address,
       calldata
     )

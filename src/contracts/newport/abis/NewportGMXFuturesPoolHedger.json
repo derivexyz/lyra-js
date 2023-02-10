@@ -899,6 +899,56 @@
     "anonymous": false,
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "size",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "collateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "averagePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "entryFundingRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "unrealisedPnl",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastIncreasedTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLong",
+            "type": "bool"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct GMXFuturesPoolHedger.PositionDetails",
+        "name": "currentPos",
+        "type": "tuple"
+      }
+    ],
+    "name": "PositionNotUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "contract IPositionRouter",
         "name": "positionRouter",
@@ -911,12 +961,6 @@
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "thrower",
-        "type": "address"
-      },
       {
         "indexed": false,
         "internalType": "int256",
@@ -1402,7 +1446,37 @@
               },
               {
                 "internalType": "uint256",
+                "name": "maxGlobalLongSize",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "guaranteedUSD",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "maxGlobalShortSize",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "shortSize",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
                 "name": "minExecutionFee",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "remainingLongDollars",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "remainingShortDollars",
                 "type": "uint256"
               }
             ],
@@ -1627,6 +1701,38 @@
         "internalType": "struct GMXFuturesPoolHedger.CurrentPositions",
         "name": "positions",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "spotPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRemainingLongLiquidityDollars",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "remainingDollars",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRemainingShortLiquidityDollars",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "remainingDollars",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

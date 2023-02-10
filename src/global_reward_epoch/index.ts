@@ -60,7 +60,7 @@ export class GlobalRewardEpoch {
   tradingRewardsCap: RewardEpochTokenAmount[]
   prices: RewardEpochTokenAmount[]
   tradingFeeRebateTiers: GlobalRewardEpochTradingFeeRebateTier[]
-  wethLyraStaking: RewardEpochTokenAmount[]
+  wethLyraStakingL2: RewardEpochTokenAmount[]
   constructor(
     lyra: Lyra,
     id: number,
@@ -140,7 +140,7 @@ export class GlobalRewardEpoch {
       }
     })
 
-    this.wethLyraStaking = this.epoch?.wethLyraStakingRewardConfig ?? []
+    this.wethLyraStakingL2 = this.epoch?.wethLyraStakingL2RewardConfig ?? []
   }
 
   // Getters

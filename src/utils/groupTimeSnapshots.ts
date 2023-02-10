@@ -6,13 +6,14 @@ type Snapshot = {
 
 export default function groupTimeSnapshots<T extends Snapshot>(
   snapshots: T[],
+  startTimestamp: number,
   endTimestamp: number,
   period?: number
 ): T[] {
   if (!snapshots.length) {
     return []
   }
-  const startTimestamp = snapshots[0].timestamp
+
   const truePeriod = period ?? getDefaultPeriod(startTimestamp, endTimestamp)
   let snapshotIdx = 0
   const smoothSnapshots = []

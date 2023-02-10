@@ -23,7 +23,7 @@ import type {
   PromiseOrValue,
 } from "./common";
 
-export interface ArrakisPoolInterface extends utils.Interface {
+export interface ArrakisPoolL2Interface extends utils.Interface {
   functions: {
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
@@ -136,12 +136,12 @@ export interface ArrakisPoolInterface extends utils.Interface {
   events: {};
 }
 
-export interface ArrakisPool extends BaseContract {
+export interface ArrakisPoolL2 extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ArrakisPoolInterface;
+  interface: ArrakisPoolL2Interface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

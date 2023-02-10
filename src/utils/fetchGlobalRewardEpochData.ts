@@ -28,7 +28,7 @@ export type GlobalRewardEpochData = {
   tradingRewardConfig: GlobalTradingRewardsConfig
   MMVConfig: GlobalMMVConfig
   stakingRewardConfig: GlobalStakingConfig
-  wethLyraStakingRewardConfig?: GlobalArrakisConfig
+  wethLyraStakingL2RewardConfig?: GlobalArrakisConfig
 }
 
 export type GlobalTradingRewards = {

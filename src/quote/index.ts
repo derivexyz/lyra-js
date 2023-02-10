@@ -328,7 +328,8 @@ export class Quote {
       baseIv,
       isBuy,
       isForceClose,
-      priceType
+      priceType,
+      isOpen
     )
     if (disabledReason) {
       // For subset of disabled reasons, return empty quote

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql } from '@apollo/client/core'
 
 import { LyraMarketContractId } from '../constants/contracts'
 import { POSITION_QUERY_FRAGMENT } from '../constants/queries'
