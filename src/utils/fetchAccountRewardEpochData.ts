@@ -1,4 +1,3 @@
-import { LYRA_API_URL } from '../constants/links'
 import { RewardEpochTokenAmount } from '../global_reward_epoch'
 import Lyra, { Deployment } from '../lyra'
 import fetchWithCache from './fetchWithCache'
@@ -12,7 +11,7 @@ export type AccountRewardEpochData = {
   stakingRewards: AccountStakingRewards
   mmvRewards: AccountMMVRewards
   tradingRewards: AccountTradingRewards
-  arrakisRewards?: AccountArrakisRewards
+  integratorTradingRewards?: AccountTradingRewards
 }
 
 export type AccountStakingRewards = {
@@ -34,20 +33,12 @@ export type AccountTradingRewards = {
   fees: number
   effectiveRebateRate: number
   tradingRebateRewardDollars: number
-  shortCollateralRewardDollars: number
   totalTradingRewardDollars: number
   shortCallSeconds: number
   shortPutSeconds: number
   rewards: {
     trading: RewardEpochTokenAmount[]
-    shortCollateral: RewardEpochTokenAmount[]
   }
-}
-
-export type AccountArrakisRewards = {
-  rewards: RewardEpochTokenAmount[]
-  gUniTokensStaked: number
-  percentShare: number
 }
 
 export default async function fetchAccountRewardEpochData(
@@ -57,5 +48,5 @@ export default async function fetchAccountRewardEpochData(
   if (lyra.deployment !== Deployment.Mainnet) {
     return []
   }
-  return fetchWithCache(`${LYRA_API_URL}/rewards/account?network=${lyra.network}&account=${account}`)
+  return fetchWithCache(`${lyra.apiUri}/rewards/account?network=${lyra.network}&account=${account}`)
 }

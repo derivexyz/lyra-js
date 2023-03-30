@@ -15,6 +15,7 @@ export default function getQuoteIteration({
   option,
   isBuy,
   size,
+  spotPrice,
   baseIv,
   skew,
   netStdVega,
@@ -24,6 +25,7 @@ export default function getQuoteIteration({
   option: Option
   isBuy: boolean
   size: BigNumber
+  spotPrice: BigNumber
   baseIv: BigNumber
   skew: BigNumber
   netStdVega: BigNumber
@@ -34,9 +36,9 @@ export default function getQuoteIteration({
   const { newBaseIv: proposedNewBaseIv, newSkew } = getIVImpactForTrade(option, baseIv, skew, size, isBuy)
 
   // Calculate (force close) base bsc price per option
-  const basePriceData = getPrice(option, proposedNewBaseIv, newSkew)
+  const basePriceData = getPrice(option, spotPrice, proposedNewBaseIv, newSkew)
   const { price, volTraded } = isForceClose
-    ? getForceClosePrice(option, isBuy, proposedNewBaseIv, newSkew)
+    ? getForceClosePrice(option, isBuy, spotPrice, proposedNewBaseIv, newSkew)
     : basePriceData
   const basePrice = basePriceData.price
 
@@ -51,7 +53,7 @@ export default function getQuoteIteration({
   const optionPriceFee = getOptionPriceFee(option.board(), price, size)
 
   // Spot fee
-  const spotPriceFee = getSpotPriceFee(option.board(), size)
+  const spotPriceFee = getSpotPriceFee(option.board(), size, spotPrice)
 
   // Update AMM net standard vega
   const netStdVegaDiff = netStdVega
@@ -67,7 +69,7 @@ export default function getQuoteIteration({
   const newBaseIv = isForceClose ? baseIv : proposedNewBaseIv
 
   // Variance fee
-  const varianceFee = getVarianceFee(option, volTraded, newSkew, newBaseIv, size, isForceClose)
+  const varianceFee = getVarianceFee(option, spotPrice, volTraded, newSkew, newBaseIv, size, isForceClose)
 
   // Total fees
   const fees = optionPriceFee.add(spotPriceFee).add(vegaUtilFee.vegaUtilFee).add(varianceFee.varianceFee)
@@ -88,5 +90,6 @@ export default function getQuoteIteration({
     volTraded,
     newSkew,
     newBaseIv,
+    spotPrice,
   }
 }

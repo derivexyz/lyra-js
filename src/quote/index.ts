@@ -19,7 +19,6 @@ import getQuoteIteration from './getQuoteIteration'
 
 export enum QuoteDisabledReason {
   EmptySize = 'EmptySize',
-  EmptyPremium = 'EmptyPremium',
   Expired = 'Expired',
   TradingCutoff = 'TradingCutoff',
   InsufficientLiquidity = 'InsufficientLiquidity',
@@ -45,6 +44,7 @@ export type QuoteIteration = {
   newBaseIv: BigNumber
   newSkew: BigNumber
   postTradeAmmNetStdVega: BigNumber
+  spotPrice: BigNumber
 }
 
 export type QuoteFeeComponents = {
@@ -85,6 +85,7 @@ export type QuoteGreeks = {
 export type QuoteOptions = {
   isForceClose?: boolean
   isOpen?: boolean
+  isLong?: boolean
   iterations?: number
 }
 
@@ -112,6 +113,7 @@ export class Quote {
   isForceClose: boolean
   breakEven: BigNumber
   toBreakEven: BigNumber
+  spotPrice: BigNumber
   isDisabled: boolean
   disabledReason: QuoteDisabledReason | null
 
@@ -144,10 +146,11 @@ export class Quote {
     this.disabledReason = fields.disabledReason
     this.breakEven = fields.breakEven
     this.toBreakEven = fields.toBreakEven
+    this.spotPrice = fields.spotPrice
     this.iterations = fields.iterations
   }
 
-  private getDisabledFields(option: Option, disabledReason: QuoteDisabledReason) {
+  private getDisabledFields(option: Option, spotPrice: BigNumber, disabledReason: QuoteDisabledReason) {
     const skew = option.strike().skew
     const baseIv = option.board().baseIv
     const iv = skew.mul(baseIv).div(UNIT)
@@ -176,6 +179,7 @@ export class Quote {
       disabledReason,
       breakEven: ZERO_BN,
       toBreakEven: ZERO_BN,
+      spotPrice,
       iterations: [],
     }
   }
@@ -199,6 +203,7 @@ export class Quote {
     disabledReason: QuoteDisabledReason | null
     breakEven: BigNumber
     toBreakEven: BigNumber
+    spotPrice: BigNumber
     iterations: QuoteIteration[]
   } {
     const numIterations = options?.iterations ?? DEFAULT_ITERATIONS
@@ -214,6 +219,10 @@ export class Quote {
     const market = option.market()
     const isCall = option.isCall
 
+    // Read isLong for custom quotes (e.g. closing a position)
+    // Default to isLong = isBuy
+    const isLong = options?.isLong ?? isBuy
+
     let baseIv = board.baseIv
     let skew = strike.skew
     let preTradeAmmNetStdVega = market.params.netStdVega.mul(-1)
@@ -222,7 +231,7 @@ export class Quote {
 
     if (timeToExpiryAnnualized === 0) {
       // Early catch for expired positions
-      return this.getDisabledFields(option, QuoteDisabledReason.Expired)
+      return this.getDisabledFields(option, market.spotPrice, QuoteDisabledReason.Expired)
     }
 
     const iterationSize = size.div(numIterations)
@@ -230,11 +239,15 @@ export class Quote {
 
     const optionStdVega = strike.params.cachedStdVega.mul(-1)
 
+    const priceType = getPriceType(isCall, isForceClose, isLong, isOpen)
+    const spotPrice = getQuoteSpotPrice(market, priceType)
+
     for (let i = 0; i < numIterations; i++) {
       const quote = getQuoteIteration({
         option,
         isBuy,
         size: iterationSize,
+        spotPrice,
         baseIv,
         skew,
         netStdVega: optionStdVega,
@@ -250,8 +263,6 @@ export class Quote {
     }
 
     const fairIv = baseIv.mul(skew).div(UNIT)
-    const priceType = getPriceType(isCall, isForceClose, isBuy, isOpen)
-    const spotPrice = getQuoteSpotPrice(market, priceType)
     const strikePrice = option.strike().strikePrice
     const rate = option.market().params.rateAndCarry
 
@@ -321,6 +332,7 @@ export class Quote {
 
     const disabledReason = getQuoteDisabledReason(
       option,
+      spotPrice,
       size,
       premium,
       fairIv,
@@ -334,8 +346,6 @@ export class Quote {
     if (disabledReason) {
       // For subset of disabled reasons, return empty quote
       switch (disabledReason) {
-        case QuoteDisabledReason.DeltaOutOfRange:
-        case QuoteDisabledReason.EmptyPremium:
         case QuoteDisabledReason.EmptySize:
         case QuoteDisabledReason.Expired:
         case QuoteDisabledReason.IVTooHigh:
@@ -344,7 +354,7 @@ export class Quote {
         case QuoteDisabledReason.SkewTooLow:
         case QuoteDisabledReason.VolTooHigh:
         case QuoteDisabledReason.VolTooLow:
-          return this.getDisabledFields(option, disabledReason)
+          return this.getDisabledFields(option, spotPrice, disabledReason)
       }
     }
 
@@ -397,6 +407,7 @@ export class Quote {
       disabledReason,
       breakEven,
       toBreakEven,
+      spotPrice,
       iterations,
     }
   }

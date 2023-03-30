@@ -19,6 +19,7 @@ import getSettleDataFromSubgraph from './getSettleDataFromSubgraph'
 import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 import getTransferDataFromSubgraph from './getTransferDataFromSubgraph'
 import getUniqueBy from './getUniqueBy'
+import subgraphRequest from './subgraphRequest'
 
 // TODO: @dappbeast Handle more than 1k trade queries
 const positionEventsQuery = gql`
@@ -44,7 +45,7 @@ export default async function fetchPositionEventDataByIDs(
   positionIds: number[]
 ): Promise<Record<number, PositionEventData>> {
   const [subgraphData, recentContractEvents] = await Promise.all([
-    lyra.subgraphClient.query<
+    subgraphRequest<
       {
         trades: TradeQueryResult[]
         collateralUpdates: CollateralUpdateQueryResult[]
@@ -54,7 +55,7 @@ export default async function fetchPositionEventDataByIDs(
       {
         positionIds: string[]
       }
-    >({
+    >(lyra.subgraphClient, {
       query: positionEventsQuery,
       variables: {
         positionIds: positionIds.map(pid => `${market.address.toLowerCase()}-${pid}`),
@@ -72,10 +73,10 @@ export default async function fetchPositionEventDataByIDs(
   )
 
   // Initialise with subgraph values
-  const trades = subgraphData.data.trades.map(getTradeDataFromSubgraph)
-  const collateralUpdates = subgraphData.data.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
-  const transfers = subgraphData.data.optionTransfers.map(getTransferDataFromSubgraph)
-  const settles = subgraphData.data.settles.map(getSettleDataFromSubgraph)
+  const trades = subgraphData.data?.trades.map(getTradeDataFromSubgraph) ?? []
+  const collateralUpdates = subgraphData.data?.collateralUpdates.map(getCollateralUpdateDataFromSubgraph) ?? []
+  const transfers = subgraphData.data?.optionTransfers.map(getTransferDataFromSubgraph) ?? []
+  const settles = subgraphData.data?.settles.map(getSettleDataFromSubgraph) ?? []
   trades.forEach(trade => {
     eventsByPositionID[trade.positionId].trades.push(trade)
   })

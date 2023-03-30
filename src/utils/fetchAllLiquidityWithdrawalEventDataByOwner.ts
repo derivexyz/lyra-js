@@ -6,6 +6,7 @@ import { LIQUIDITY_WITHDRAWAL_FRAGMENT, LiquidityWithdrawalQueryResult } from '.
 import { LiquidityWithdrawalProcessedEvent, LiquidityWithdrawalQueuedEvent } from '../liquidity_withdrawal'
 import Lyra from '../lyra'
 import { Market } from '../market'
+import subgraphRequest from './subgraphRequest'
 
 const lpUserLiquiditiesQuery = gql`
   query lpuserLiquidities($user: String!, $pool: String!) {
@@ -31,10 +32,10 @@ export default async function fetchAllLiquidityWithdrawalEventDataByOwner(
   queued: LiquidityWithdrawalQueuedEvent[]
   processed: LiquidityWithdrawalProcessedEvent[]
 }> {
-  const { data } = await lyra.subgraphClient.query<
+  const { data } = await subgraphRequest<
     { lpuserLiquidities: LiquidityWithdrawalQueryResult[] },
     LiquidityWithdrawalVariables
-  >({
+  >(lyra.subgraphClient, {
     query: lpUserLiquiditiesQuery,
     variables: {
       user: owner.toLowerCase(),
@@ -42,31 +43,33 @@ export default async function fetchAllLiquidityWithdrawalEventDataByOwner(
     },
   })
 
-  const withdrawalQueuedEvents = data.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedWithdrawal => {
-    return {
-      withdrawer: owner,
-      beneficiary: owner,
-      withdrawalQueueId: BigNumber.from(queuedWithdrawal.queueID),
-      amountWithdrawn: BigNumber.from(queuedWithdrawal.pendingAmount),
-      totalQueuedWithdrawals: ZERO_BN,
-      timestamp: BigNumber.from(queuedWithdrawal.timestamp),
-      transactionHash: queuedWithdrawal.transactionHash,
-    }
-  })
+  const withdrawalQueuedEvents =
+    data?.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedWithdrawal => {
+      return {
+        withdrawer: owner,
+        beneficiary: owner,
+        withdrawalQueueId: BigNumber.from(queuedWithdrawal.queueID),
+        amountWithdrawn: BigNumber.from(queuedWithdrawal.pendingAmount),
+        totalQueuedWithdrawals: ZERO_BN,
+        timestamp: BigNumber.from(queuedWithdrawal.timestamp),
+        transactionHash: queuedWithdrawal.transactionHash,
+      }
+    }) ?? []
 
-  const withdrawalProcessedEvents = data.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedWithdrawal => {
-    return {
-      caller: owner,
-      beneficiary: owner,
-      withdrawalQueueId: ZERO_BN,
-      amountWithdrawn: BigNumber.from(processedWithdrawal.quoteAmount),
-      tokenPrice: BigNumber.from(processedWithdrawal.tokenPrice),
-      quoteReceived: BigNumber.from(processedWithdrawal.tokenAmount),
-      totalQueuedWithdrawals: ZERO_BN,
-      timestamp: BigNumber.from(processedWithdrawal.timestamp),
-      transactionHash: processedWithdrawal.transactionHash,
-    }
-  })
+  const withdrawalProcessedEvents =
+    data?.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedWithdrawal => {
+      return {
+        caller: owner,
+        beneficiary: owner,
+        withdrawalQueueId: ZERO_BN,
+        amountWithdrawn: BigNumber.from(processedWithdrawal.quoteAmount),
+        tokenPrice: BigNumber.from(processedWithdrawal.tokenPrice),
+        quoteReceived: BigNumber.from(processedWithdrawal.tokenAmount),
+        totalQueuedWithdrawals: ZERO_BN,
+        timestamp: BigNumber.from(processedWithdrawal.timestamp),
+        transactionHash: processedWithdrawal.transactionHash,
+      }
+    }) ?? []
 
   return {
     queued: withdrawalQueuedEvents,

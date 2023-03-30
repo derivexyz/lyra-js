@@ -1,17 +1,20 @@
 import { Block } from '@ethersproject/providers'
 
-import { Deployment, Market, MarketLiquiditySnapshot } from '..'
+import { Deployment, Market, MarketLiquiditySnapshot, Network, OP_OPTIMISM_MAINNET_ADDRESS } from '..'
 import { AccountRewardEpoch } from '../account_reward_epoch'
-import { SECONDS_IN_DAY, SECONDS_IN_WEEK, SECONDS_IN_YEAR } from '../constants/time'
+import { SECONDS_IN_DAY, SECONDS_IN_YEAR } from '../constants/time'
 import Lyra from '../lyra'
-import { LyraStaking } from '../lyra_staking'
 import fetchGlobalRewardEpochData, { GlobalRewardEpochData } from '../utils/fetchGlobalRewardEpochData'
-import fetchLyraTokenSpotPrice from '../utils/fetchLyraTokenSpotPrice'
-import fetchOpTokenSpotPrice from '../utils/fetchOpTokenSpotPrice'
+import fetchLyraPrice from '../utils/fetchLyraPrice'
+import fetchLyraStakingParams, { LyraStakingParams } from '../utils/fetchLyraStakingParams'
+import fetchTokenSpotPrice from '../utils/fetchTokenSpotPrice'
 import findMarketX from '../utils/findMarketX'
 import fromBigNumber from '../utils/fromBigNumber'
 import getEffectiveLiquidityTokens, { getMinimumStakedLyra } from '../utils/getEffectiveLiquidityTokens'
 import getEffectiveTradingFeeRebate from '../utils/getEffectiveTradingFeeRebate'
+import getUniqueBy from '../utils/getUniqueBy'
+import isMarketEqual from '../utils/isMarketEqual'
+import getEpochRewardTokenPrices from './getEpochRewardTokenPrices'
 
 export type GlobalRewardEpochTradingFeeRebateTier = {
   stakedLyraCutoff: number
@@ -24,11 +27,17 @@ export type RewardEpochToken = {
   decimals: number
 }
 
-export type RewardEpochTokenAmount = {
-  address: string
-  symbol: string
-  decimals: number
+export type RewardEpochTokenAmount = RewardEpochToken & {
   amount: number
+}
+
+export type RewardTokenPrices = {
+  lyraPrice: number
+  opPrice: number
+}
+
+export type RewardEpochTokenPriceMap = {
+  [address: string]: RewardEpochToken & { price: number }
 }
 
 export type RewardEpochTokenConfig = RewardEpochToken & {
@@ -36,15 +45,16 @@ export type RewardEpochTokenConfig = RewardEpochToken & {
 }
 
 export class GlobalRewardEpoch {
-  private lyra: Lyra
-  private epoch: GlobalRewardEpochData
+  lyra: Lyra
+  epoch: GlobalRewardEpochData
   id: number
   progressDays: number
   markets: Market[]
   marketsLiquidity: MarketLiquiditySnapshot[]
-  staking: LyraStaking
+  stakingParams: LyraStakingParams
   blockTimestamp: number
   startTimestamp: number
+  distributionTimestamp: number
   startEarningTimestamp?: number
   endTimestamp: number
   isDepositPeriod?: boolean
@@ -55,92 +65,74 @@ export class GlobalRewardEpoch {
   totalAverageStakedLyra: number
   minTradingFeeRebate: number
   maxTradingFeeRebate: number
-  stakingApy: RewardEpochTokenAmount[]
-  totalStakingRewards: RewardEpochTokenAmount[]
   tradingRewardsCap: RewardEpochTokenAmount[]
-  prices: RewardEpochTokenAmount[]
+  prices: RewardEpochTokenPriceMap
   tradingFeeRebateTiers: GlobalRewardEpochTradingFeeRebateTier[]
-  wethLyraStakingL2: RewardEpochTokenAmount[]
+  vaultRewardTokens: RewardEpochToken[]
+  tradingRewardTokens: RewardEpochToken[]
+  rewardTokens: RewardEpochToken[]
   constructor(
     lyra: Lyra,
     id: number,
     epoch: GlobalRewardEpochData,
-    prices: RewardEpochTokenAmount[],
+    prices: RewardTokenPrices,
     markets: Market[],
     marketsLiquidity: MarketLiquiditySnapshot[],
-    staking: LyraStaking,
+    stakingParams: LyraStakingParams,
     block: Block
   ) {
     this.lyra = lyra
     this.id = id
     this.epoch = epoch
-    this.prices = prices
-    this.tradingFeeRebateTiers = epoch.tradingRewardConfig?.rebateRateTable?.map(tier => {
-      return {
-        stakedLyraCutoff: tier?.cutoff ?? 0,
-        feeRebate: tier?.returnRate ?? 0,
-      }
-    })
+    this.markets = markets
+    this.stakingParams = stakingParams
+    this.marketsLiquidity = marketsLiquidity
+    this.prices = getEpochRewardTokenPrices(epoch, prices)
+    this.tradingFeeRebateTiers = epoch.tradingRewardConfig?.rebateRateTable?.map(tier => ({
+      stakedLyraCutoff: tier.cutoff,
+      feeRebate: tier.returnRate,
+    }))
+
     this.blockTimestamp = block.timestamp
     this.startTimestamp = epoch.startTimestamp
     this.lastUpdatedTimestamp = epoch.lastUpdated
     this.endTimestamp = epoch.endTimestamp
+    this.distributionTimestamp = epoch.distributionTimestamp ?? epoch.endTimestamp
     this.isDepositPeriod = epoch.isDepositPeriod
     this.startEarningTimestamp = epoch.startEarningTimestamp
     this.isCurrent = this.blockTimestamp >= this.startTimestamp && this.blockTimestamp <= this.endTimestamp
     this.isComplete = this.blockTimestamp > this.endTimestamp
-    this.markets = markets
-    this.staking = staking
-    this.marketsLiquidity = marketsLiquidity
 
     const durationSeconds = Math.max(0, this.endTimestamp - this.startTimestamp)
-    this.duration = durationSeconds
     const progressSeconds = durationSeconds - Math.max(0, this.endTimestamp - this.blockTimestamp)
+    this.duration = durationSeconds
     this.progressDays = progressSeconds / SECONDS_IN_DAY
     this.totalAverageStakedLyra = this.progressDays ? epoch.totalStkLyraDays / this.progressDays : 0
 
-    // Staking
-    const stkLyraPrice =
-      this.prices.find(token => ['lyra', 'stklyra'].includes(token.symbol.toLowerCase()))?.amount ?? 0 // TODO: @dillon refactor later
-    const stkLyraPerDollar = stkLyraPrice > 0 ? 1 / stkLyraPrice : 0
-    const totalStkLyra = this.isComplete ? this.totalAverageStakedLyra : fromBigNumber(staking.totalSupply)
-    const pctSharePerDollar = totalStkLyra > 0 ? stkLyraPerDollar / totalStkLyra : 0
-
-    this.stakingApy = this.epoch.stakingRewardConfig.map(tokenReward => {
-      const rewardAmount = tokenReward.amount
-      const perDollarPerSecond = durationSeconds > 0 ? (pctSharePerDollar * rewardAmount) / durationSeconds : 0
-      const price = this.findTokenPrice(tokenReward.address)
-      const apy = perDollarPerSecond * price * SECONDS_IN_YEAR
-      return {
-        address: tokenReward.address,
-        symbol: tokenReward.symbol,
-        decimals: tokenReward.decimals,
-        amount: apy,
-      }
-    })
-
-    this.totalStakingRewards = this.epoch.stakingRewardConfig.map(tokenReward => {
-      return {
-        address: tokenReward.address,
-        symbol: tokenReward.symbol,
-        decimals: tokenReward.decimals,
-        amount: tokenReward.amount,
-      }
-    })
-
+    // Trading
+    const totalStkLyra = this.isComplete ? this.totalAverageStakedLyra : fromBigNumber(stakingParams.totalSupply)
     this.minTradingFeeRebate = this.tradingFeeRebate(0)
     this.maxTradingFeeRebate = this.tradingFeeRebate(totalStkLyra)
+    this.tradingRewardsCap = epoch.tradingRewardConfig.tokens.map(token => ({
+      address: token.address,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      amount: token.cap,
+    }))
 
-    this.tradingRewardsCap = this.epoch.tradingRewardConfig.tokens.map(token => {
-      return {
-        address: token.address,
-        symbol: token.symbol,
-        decimals: token.decimals,
-        amount: token.cap,
-      }
-    })
+    this.tradingRewardTokens = getUniqueBy(
+      epoch.tradingRewardConfig.tokens.filter(t => t.cap > 0),
+      token => token.address.toLowerCase()
+    )
 
-    this.wethLyraStakingL2 = this.epoch?.wethLyraStakingL2RewardConfig ?? []
+    this.vaultRewardTokens = getUniqueBy(
+      Object.values(epoch.MMVConfig)
+        .flatMap(e => e.tokens)
+        .filter(t => t.amount > 0),
+      token => token.address.toLowerCase()
+    )
+
+    this.rewardTokens = getUniqueBy([...this.tradingRewardTokens, ...this.vaultRewardTokens], r => r.address)
   }
 
   // Getters
@@ -149,72 +141,30 @@ export class GlobalRewardEpoch {
     if (lyra.deployment !== Deployment.Mainnet) {
       return []
     }
-    const [epochs, lyraPrice, opPrice, markets, staking, block] = await Promise.all([
+
+    const [epochs, lyraPrice, opPrice, stakingParams, markets, block] = await Promise.all([
       fetchGlobalRewardEpochData(lyra),
-      fetchLyraTokenSpotPrice(lyra),
-      fetchOpTokenSpotPrice(lyra), // TODO: @dillon refactor later to map through tokens
+      fetchLyraPrice(lyra),
+      fetchTokenSpotPrice(lyra, OP_OPTIMISM_MAINNET_ADDRESS, Network.Optimism),
+      fetchLyraStakingParams(lyra),
       lyra.markets(),
-      lyra.lyraStaking(),
       lyra.provider.getBlock('latest'),
     ])
-
     const marketsLiquidity = await Promise.all(markets.map(market => market.liquidity()))
-
-    // TODO @dillon - come back think of better solution
-    const prices: { [address: string]: RewardEpochTokenAmount } = {}
-    epochs.forEach(epoch => {
-      const stakingRewardTokens: RewardEpochToken[] =
-        epoch?.globalStakingRewards.map(reward => {
-          return {
-            address: reward.address,
-            decimals: reward.decimals,
-            symbol: reward.symbol,
-          }
-        }) ?? []
-      const mmvRewardTokens: RewardEpochToken[] = Object.values(epoch?.globalMMVRewards)
-        .map(rewardTokens => {
-          return rewardTokens.map(reward => {
-            return {
-              address: reward.address,
-              decimals: reward.decimals,
-              symbol: reward.symbol,
-            }
-          })
-        })
-        .flat()
-      const tradingRewardTokens: RewardEpochToken[] =
-        epoch.globalTradingRewards?.totalRewards?.map(reward => {
-          return {
-            address: reward.address,
-            decimals: reward.decimals,
-            symbol: reward.symbol,
-          }
-        }) ?? []
-      const tokens = [...stakingRewardTokens, ...mmvRewardTokens, ...tradingRewardTokens]
-      tokens.forEach(token => {
-        if (['lyra', 'stklyra'].includes(token.symbol.toLowerCase())) {
-          prices[token.address] = {
-            amount: lyraPrice,
-            address: token.address,
-            decimals: token.decimals,
-            symbol: token.symbol,
-          }
-        }
-        if (['op'].includes(token.symbol.toLowerCase())) {
-          prices[token.address] = {
-            amount: opPrice,
-            address: token.address,
-            decimals: token.decimals,
-            symbol: token.symbol,
-          }
-        }
-      })
-    })
 
     return epochs
       .map(
         (epoch, idx) =>
-          new GlobalRewardEpoch(lyra, idx + 1, epoch, Object.values(prices), markets, marketsLiquidity, staking, block)
+          new GlobalRewardEpoch(
+            lyra,
+            idx + 1,
+            epoch,
+            { lyraPrice, opPrice },
+            markets,
+            marketsLiquidity,
+            stakingParams,
+            block
+          )
       )
       .sort((a, b) => a.endTimestamp - b.endTimestamp)
   }
@@ -242,12 +192,11 @@ export class GlobalRewardEpoch {
   vaultApy(
     marketAddressOrName: string,
     stakedLyraBalance: number,
-    _vaultTokenBalance: number
+    vaultTokenBalance: number
   ): RewardEpochTokenAmount[] {
-    const market = findMarketX(this.markets, marketAddressOrName)
+    const marketIdx = this.markets.findIndex(m => isMarketEqual(m, marketAddressOrName))
+    const market = this.markets[marketIdx]
     const marketKey = market.baseToken.symbol
-
-    const vaultTokenBalance = _vaultTokenBalance
 
     const totalAvgVaultTokens = this.totalAverageVaultTokens(marketAddressOrName)
     const mmvConfig = this.epoch.MMVConfig[marketKey]
@@ -256,7 +205,6 @@ export class GlobalRewardEpoch {
       return []
     }
 
-    const x = mmvConfig.x
     const totalAvgScaledStkLyra = this.progressDays ? scaledStkLyraDays / this.progressDays : 0
 
     const effectiveLpTokensPerLpToken = getEffectiveLiquidityTokens(
@@ -264,9 +212,8 @@ export class GlobalRewardEpoch {
       totalAvgVaultTokens,
       stakedLyraBalance,
       totalAvgScaledStkLyra,
-      x
+      mmvConfig.x
     )
-
     const totalAvgBoostedVaultTokens = this.totalAverageBoostedVaultTokens(marketAddressOrName)
     const boostedPortionOfLiquidity =
       totalAvgBoostedVaultTokens > 0 ? effectiveLpTokensPerLpToken / totalAvgBoostedVaultTokens : 0
@@ -277,12 +224,10 @@ export class GlobalRewardEpoch {
     const apyMultiplier = basePortionOfLiquidity > 0 ? boostedPortionOfLiquidity / basePortionOfLiquidity : 0
 
     // Calculate total vault token balance, including pending deposits
-    const marketIdx = this.markets.findIndex(m => m.address === market.address)
     const tokenPrice = fromBigNumber(this.marketsLiquidity[marketIdx].tokenPrice)
     const totalQueuedVaultTokens =
       tokenPrice > 0 ? fromBigNumber(this.marketsLiquidity[marketIdx].pendingDeposits) / tokenPrice : 0
     const totalAvgAndQueuedVaultTokens = totalAvgVaultTokens + totalQueuedVaultTokens
-
     const vaultTokensPerDollar = tokenPrice > 0 ? 1 / tokenPrice : 0
     const pctSharePerDollar = totalAvgAndQueuedVaultTokens > 0 ? vaultTokensPerDollar / totalAvgAndQueuedVaultTokens : 0
 
@@ -340,8 +285,7 @@ export class GlobalRewardEpoch {
   totalVaultRewards(marketAddressOrName: string): RewardEpochTokenAmount[] {
     const market = findMarketX(this.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
-    this.epoch.globalMMVRewards[marketKey]
-    return this.epoch.globalMMVRewards[marketKey]
+    return this.epoch.globalMMVRewards[marketKey] ?? []
   }
 
   totalAverageVaultTokens(marketAddressOrName: string): number {
@@ -379,80 +323,25 @@ export class GlobalRewardEpoch {
   }
 
   tradingRewards(tradingFees: number, stakedLyraBalance: number): RewardEpochTokenAmount[] {
-    return this.epoch.tradingRewardConfig.tokens.map(token => {
-      const currentPrice = this.findTokenPrice(token.address)
-      const price = this.isComplete ? token.fixedPrice : Math.max(currentPrice, token.floorTokenPrice)
-      const feeRebate = this.tradingFeeRebate(stakedLyraBalance)
-      const feesRebated = feeRebate * tradingFees
-      const rewardAmount = (feesRebated * token.portion) / price
-      return {
-        amount: rewardAmount,
-        address: token.address,
-        decimals: token.decimals,
-        symbol: token.symbol,
-      }
-    })
+    return this.epoch.tradingRewardConfig.tokens
+      .map(token => {
+        const currentPrice = this.findTokenPrice(token.address)
+        const price = this.isComplete ? token.fixedPrice : Math.max(currentPrice, token.floorTokenPrice)
+        const feeRebate = this.tradingFeeRebate(stakedLyraBalance)
+        const feesRebated = feeRebate * tradingFees
+        const rewardAmount = (feesRebated * token.portion) / price
+        return {
+          amount: rewardAmount,
+          address: token.address,
+          decimals: token.decimals,
+          symbol: token.symbol,
+        }
+      })
+      .filter(e => e.amount > 0.0001)
   }
 
-  shortCollateralRewards(shortCollateralRebate: number): RewardEpochTokenAmount[] {
-    return this.epoch.tradingRewardConfig.tokens.map(token => {
-      const currentPrice = this.findTokenPrice(token.address)
-      const price = this.isComplete ? token.fixedPrice : Math.max(currentPrice, token.floorTokenPrice)
-      const rewardAmount = (shortCollateralRebate * token.portion) / price
-      return {
-        amount: rewardAmount,
-        address: token.address,
-        decimals: token.decimals,
-        symbol: token.symbol,
-      }
-    })
-  }
-
-  shortCollateralYieldPerDay(
-    contracts: number,
-    delta: number,
-    expiryTimestamp: number,
-    marketBaseSymbol: string
-  ): RewardEpochTokenAmount[] {
-    const timeToExpiry = Math.max(0, expiryTimestamp - this.blockTimestamp)
-    const absDelta = Math.abs(delta)
-    if (
-      !this.epoch.tradingRewardConfig.shortCollateralRewards ||
-      !this.epoch.tradingRewardConfig.shortCollateralRewards[marketBaseSymbol] ||
-      absDelta < 0.1 ||
-      absDelta > 0.9 ||
-      this.isComplete
-    ) {
-      return []
-    }
-
-    const { longDatedPenalty, tenDeltaRebatePerOptionDay, ninetyDeltaRebatePerOptionDay } =
-      this.epoch.tradingRewardConfig.shortCollateralRewards[marketBaseSymbol]
-    const timeDiscount = timeToExpiry >= SECONDS_IN_WEEK * 4 ? longDatedPenalty : 1
-
-    const rebatePerDay =
-      (tenDeltaRebatePerOptionDay +
-        (ninetyDeltaRebatePerOptionDay - tenDeltaRebatePerOptionDay) *
-          ((absDelta - 0.1) / (0.9 - 0.1)) *
-          timeDiscount) *
-      contracts
-
-    return this.epoch.tradingRewardConfig.tokens.map(token => {
-      const currentPrice = this.findTokenPrice(token.address)
-      const price = Math.max(currentPrice, token.floorTokenPrice)
-      const tokenRebatePerDay = token.portion * rebatePerDay
-      const rewardAmount = price > 0 ? tokenRebatePerDay / price : 0
-      return {
-        amount: rewardAmount,
-        address: token.address,
-        decimals: token.decimals,
-        symbol: token.symbol,
-      }
-    })
-  }
-
-  findTokenPrice(address: string): number {
-    return this.prices.find(tokenPrice => tokenPrice.address.toLowerCase() === address.toLowerCase())?.amount ?? 0
+  private findTokenPrice(address: string): number {
+    return this.prices[address]?.price ?? 0
   }
 
   // Edge

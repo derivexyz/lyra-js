@@ -306,11 +306,20 @@ export class Position {
   // Trade
 
   async trade(isBuy: boolean, size: BigNumber, slippage: number, options?: PositionTradeOptions): Promise<Trade> {
-    return await Trade.get(this.lyra, this.owner, this.marketAddress, this.strikeId, this.isCall, isBuy, size, {
+    return await Trade.get(
+      this.lyra,
+      this.owner,
+      this.marketAddress,
+      this.strikeId,
+      this.isCall,
+      isBuy,
+      size,
       slippage,
-      positionId: this.id,
-      ...options,
-    })
+      {
+        positionId: this.id,
+        ...options,
+      }
+    )
   }
 
   async open(size: BigNumber, slippage: number, options?: PositionTradeOptions): Promise<Trade> {

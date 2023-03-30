@@ -9,6 +9,7 @@ import toBigNumber from '../utils/toBigNumber'
 
 export default function getPrice(
   option: Option,
+  spotPrice: BigNumber,
   newBaseIv: BigNumber,
   newSkew: BigNumber
 ): {
@@ -20,8 +21,8 @@ export default function getPrice(
 
   const newVol = newBaseIv.mul(newSkew).div(UNIT)
 
-  const spotPrice = option.market().spotPrice
   const strikePrice = option.strike().strikePrice
+
   const price = toBigNumber(
     getBlackScholesPrice(
       timeToExpiryAnnualized,

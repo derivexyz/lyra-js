@@ -21,19 +21,20 @@ export default function getQuoteSpotPrice(market: Market, priceType: PriceType) 
     gmxMinPrice: forceMinSpotPrice,
     marketPricingParams,
   } = market.params.adapterView
+
   const { gmxUsageThreshold } = marketPricingParams
   const minVariance = getPriceVariance(forceMinSpotPrice, spotPrice)
   const maxVariance = getPriceVariance(forceMaxSpotPrice, spotPrice)
 
   // In the case where the gmxUsageThreshold is crossed, we want to use the worst case price between cl and gmx
   let useWorstCase = false
-  if (minVariance > gmxUsageThreshold || maxVariance > gmxUsageThreshold) {
+  if (minVariance.gt(gmxUsageThreshold) || maxVariance.gt(gmxUsageThreshold)) {
     useWorstCase = true
   }
 
   if (priceType == PriceType.FORCE_MIN || priceType == PriceType.MIN_PRICE) {
-    return useWorstCase && forceMinSpotPrice > spotPrice ? spotPrice : forceMinSpotPrice
+    return useWorstCase && forceMinSpotPrice.gt(spotPrice) ? spotPrice : forceMinSpotPrice
   } else {
-    return useWorstCase && forceMaxSpotPrice < spotPrice ? spotPrice : forceMaxSpotPrice
+    return useWorstCase && forceMaxSpotPrice.lt(spotPrice) ? spotPrice : forceMaxSpotPrice
   }
 }

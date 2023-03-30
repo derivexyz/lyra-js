@@ -8,16 +8,15 @@ import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import toBigNumber from '../utils/toBigNumber'
 import getPrice from './getPrice'
 
-const getParity = (option: Option): BigNumber => {
-  const diff = !option.isCall
-    ? option.strike().strikePrice.sub(option.market().spotPrice)
-    : option.market().spotPrice.sub(option.strike().strikePrice)
+const getParity = (option: Option, spotPrice: BigNumber): BigNumber => {
+  const diff = !option.isCall ? option.strike().strikePrice.sub(spotPrice) : spotPrice.sub(option.strike().strikePrice)
   return diff.gt(0) ? diff : ZERO_BN
 }
 
 export default function getForceClosePrice(
   option: Option,
   isBuy: boolean,
+  spotPrice: BigNumber,
   newBaseIv: BigNumber,
   newSkew: BigNumber
 ): {
@@ -36,7 +35,6 @@ export default function getForceClosePrice(
   const forceCloseGwavIv = option.board().params.forceCloseGwavIv
   const forceCloseSkew = option.strike().params.forceCloseSkew
 
-  const spotPrice = market.spotPrice
   const strikePrice = option.strike().strikePrice
 
   const callDelta = toBigNumber(
@@ -78,8 +76,8 @@ export default function getForceClosePrice(
     )
 
     if (isBuy) {
-      const parity = getParity(option)
-      const factor = option.market().spotPrice.mul(market.params.shortSpotMin).div(UNIT)
+      const parity = getParity(option, spotPrice)
+      const factor = spotPrice.mul(market.params.shortSpotMin).div(UNIT)
       const minPrice = parity.add(factor)
       price = price.gt(minPrice) ? price : minPrice
     }
@@ -90,6 +88,6 @@ export default function getForceClosePrice(
     }
   } else {
     // Default to black scholes pricing
-    return getPrice(option, newBaseIv, newSkew)
+    return getPrice(option, spotPrice, newBaseIv, newSkew)
   }
 }

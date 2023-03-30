@@ -5,6 +5,7 @@ import Lyra from '..'
 import { ZERO_BN } from '../constants/bn'
 import { MARKET_GREEKS_SNAPSHOT_FRAGMENT, MarketGreeksSnapshotQueryResult, SnapshotPeriod } from '../constants/queries'
 import { Market, MarketNetGreeksSnapshot } from '../market'
+import subgraphRequest from './subgraphRequest'
 
 const marketGreeksSnapshotsQuery = gql`
   query marketGreeksSnapshots($market: String!) {
@@ -26,17 +27,17 @@ const EMPTY: Omit<MarketNetGreeksSnapshot, 'timestamp'> = {
 }
 
 export default async function fetchLatestNetGreeks(lyra: Lyra, market: Market): Promise<MarketNetGreeksSnapshot> {
-  const { data } = await lyra.subgraphClient.query<
+  const { data } = await subgraphRequest<
     { marketGreeksSnapshots: MarketGreeksSnapshotQueryResult[] },
     { market: string }
-  >({
+  >(lyra.subgraphClient, {
     query: marketGreeksSnapshotsQuery,
     variables: {
       market: market.address.toLowerCase(),
     },
   })
 
-  if (data.marketGreeksSnapshots.length === 0) {
+  if (!data || data.marketGreeksSnapshots.length === 0) {
     return { ...EMPTY, timestamp: market.block.timestamp }
   }
 

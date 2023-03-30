@@ -56,6 +56,7 @@ export type MarketContractAddresses = {
 }
 
 export type MarketLiquiditySnapshot = {
+  market: Market
   tvl: BigNumber
   freeLiquidity: BigNumber
   burnableLiquidity: BigNumber
@@ -80,6 +81,7 @@ export type MarketNetGreeksSnapshot = {
 export type MarketTradingVolumeSnapshot = {
   premiumVolume: BigNumber
   notionalVolume: BigNumber
+  totalShortOpenInterestUSD: BigNumber
   vaultFees: BigNumber
   vaultFeeComponents: {
     spotPriceFees: BigNumber
@@ -169,6 +171,7 @@ export type MarketParameters = {
   NAV: BigNumber
   tokenPrice: BigNumber
   netStdVega: BigNumber
+  netDelta: BigNumber
   hedgerView: PoolHedgerView | null
   adapterView: ExchangeAdapterView | null
   isMarketPaused: boolean
@@ -326,6 +329,7 @@ export class Market {
       freeLiquidity: marketView.liquidity.freeLiquidity,
       tokenPrice,
       netStdVega: marketView.globalNetGreeks.netStdVega,
+      netDelta: marketView.globalNetGreeks.netDelta,
       isGlobalPaused,
       isMarketPaused: marketView.isPaused,
       owner,
@@ -563,6 +567,8 @@ export class Market {
     }
   }
 
+  // Transactions
+
   async trade(
     owner: string,
     strikeId: number,
@@ -572,10 +578,29 @@ export class Market {
     slippage: number,
     options?: MarketTradeOptions
   ): Promise<Trade> {
-    return await Trade.get(this.lyra, owner, this.address, strikeId, isCall, isBuy, size, {
-      slippage,
+    return await Trade.get(this.lyra, owner, this.address, strikeId, isCall, isBuy, size, slippage, {
       ...options,
     })
+  }
+
+  approveDeposit(owner: string, amountQuote: BigNumber): PopulatedTransaction {
+    return LiquidityDeposit.approve(this, owner, amountQuote)
+  }
+
+  initiateDeposit(beneficiary: string, amountQuote: BigNumber): PopulatedTransaction {
+    return LiquidityDeposit.initiateDeposit(this, beneficiary, amountQuote)
+  }
+
+  initiateWithdraw(beneficiary: string, amountLiquidityTokens: BigNumber): PopulatedTransaction {
+    return LiquidityWithdrawal.initiateWithdraw(this, beneficiary, amountLiquidityTokens)
+  }
+
+  approveTradeQuote(owner: string, amountQuote: BigNumber): PopulatedTransaction {
+    return Trade.approveQuote(this, owner, amountQuote)
+  }
+
+  approveTradeBase(owner: string, amountBase: BigNumber): PopulatedTransaction {
+    return Trade.approveBase(this, owner, amountBase)
   }
 
   // Dynamic fields
@@ -606,15 +631,5 @@ export class Market {
 
   async owner(): Promise<string> {
     return await fetchMarketOwner(this.lyra, this.contractAddresses)
-  }
-
-  // Transactions
-
-  async deposit(beneficiary: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    return await LiquidityDeposit.deposit(this.lyra, this.address, beneficiary, amount)
-  }
-
-  async withdraw(beneficiary: string, amount: BigNumber): Promise<PopulatedTransaction> {
-    return await LiquidityWithdrawal.withdraw(this.lyra, this.address, beneficiary, amount)
   }
 }

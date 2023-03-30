@@ -9,6 +9,7 @@ import {
   SnapshotPeriod,
 } from '../constants/queries'
 import fromBigNumber from './fromBigNumber'
+import subgraphRequest from './subgraphRequest'
 
 const marketTotalValueSnapshotsQuery = gql`
   query marketTotalValueSnapshots(
@@ -26,7 +27,7 @@ const marketTotalValueSnapshotsQuery = gql`
   }
 `
 
-const EMPTY: Omit<MarketLiquiditySnapshot, 'timestamp'> = {
+const EMPTY: Omit<MarketLiquiditySnapshot, 'market' | 'timestamp'> = {
   tvl: ZERO_BN,
   freeLiquidity: ZERO_BN,
   burnableLiquidity: ZERO_BN,
@@ -43,6 +44,7 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
   if (market.liveBoards().length === 0) {
     // No boards, deposits only
     return {
+      market,
       tvl: market.params.NAV,
       freeLiquidity: market.params.NAV,
       burnableLiquidity: ZERO_BN,
@@ -57,18 +59,18 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
     }
   }
 
-  const { data } = await lyra.subgraphClient.query<
+  const { data } = await subgraphRequest<
     { marketTotalValueSnapshots: MarketTotalValueSnapshotQueryResult[] },
     { market: string }
-  >({
+  >(lyra.subgraphClient, {
     query: marketTotalValueSnapshotsQuery,
     variables: {
       market: market.address.toLowerCase(),
     },
   })
 
-  if (data.marketTotalValueSnapshots.length === 0) {
-    return { ...EMPTY, timestamp: market.block.timestamp }
+  if (!data || data.marketTotalValueSnapshots.length === 0) {
+    return { ...EMPTY, market, timestamp: market.block.timestamp }
   }
 
   const latestLiquiditySnapshot = data.marketTotalValueSnapshots[0]
@@ -81,6 +83,7 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
   const tokenPrice = BigNumber.from(latestLiquiditySnapshot.tokenPrice)
 
   return {
+    market,
     timestamp: latestLiquiditySnapshot.timestamp,
     freeLiquidity,
     burnableLiquidity,

@@ -10,6 +10,7 @@ import { QuoteVarianceFeeComponents } from '.'
 
 export default function getVarianceFee(
   option: Option,
+  spotPrice: BigNumber,
   volTraded: BigNumber,
   newSkew: BigNumber,
   newBaseIv: BigNumber,
@@ -28,7 +29,7 @@ export default function getVarianceFee(
     getVega(
       timeToExpiryAnnualized,
       fromBigNumber(volTraded),
-      fromBigNumber(option.market().spotPrice),
+      fromBigNumber(spotPrice),
       fromBigNumber(option.strike().strikePrice),
       fromBigNumber(rate)
     ) * 100

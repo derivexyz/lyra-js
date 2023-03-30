@@ -26,6 +26,7 @@ const marketVolumeAndFeesSnapshotsQuery = gql`
 const EMPTY: Omit<MarketTradingVolumeSnapshot, 'startTimestamp' | 'endTimestamp'> = {
   premiumVolume: ZERO_BN,
   notionalVolume: ZERO_BN,
+  totalShortOpenInterestUSD: ZERO_BN,
   vaultFees: ZERO_BN,
   vaultFeeComponents: {
     spotPriceFees: ZERO_BN,
@@ -71,9 +72,12 @@ export default async function fetchTradingVolumeHistory(
     const varianceFees = BigNumber.from(marketVolumeAndFeesSnapshot.varianceFees)
     const forceCloseFees = BigNumber.from(marketVolumeAndFeesSnapshot.deltaCutoffFees)
     const liquidationFees = BigNumber.from(marketVolumeAndFeesSnapshot.lpLiquidationFees)
+    const totalShortPutOpenInterestUSD = BigNumber.from(marketVolumeAndFeesSnapshot.totalShortPutOpenInterestUSD)
+    const totalShortCallOpenInterestUSD = BigNumber.from(marketVolumeAndFeesSnapshot.totalShortCallOpenInterestUSD)
     return {
       premiumVolume: BigNumber.from(marketVolumeAndFeesSnapshot.premiumVolume),
       notionalVolume: BigNumber.from(marketVolumeAndFeesSnapshot.notionalVolume),
+      totalShortOpenInterestUSD: totalShortCallOpenInterestUSD.add(totalShortPutOpenInterestUSD),
       vaultFees: spotPriceFees
         .add(optionPriceFees)
         .add(vegaUtilFees)

@@ -7,6 +7,6 @@ export default function isMarketEqual(market: Market, marketAddressOrName: strin
   if (isAddress(marketAddressOrName)) {
     return market.address === getAddress(marketAddressOrName)
   } else {
-    return market.baseToken.symbol === parseBaseSymbol(market.lyra, marketAddressOrName)
+    return market.baseToken.symbol.toLowerCase() === parseBaseSymbol(market.lyra, marketAddressOrName).toLowerCase()
   }
 }

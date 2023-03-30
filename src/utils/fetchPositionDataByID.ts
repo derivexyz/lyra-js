@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client/core'
 
 import { LyraMarketContractId } from '../constants/contracts'
-import { POSITION_QUERY_FRAGMENT } from '../constants/queries'
+import { POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queries'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
@@ -14,6 +14,7 @@ import getPositionDataFromSubgraph from './getPositionDataFromSubgraph'
 import getSettleDataFromSubgraph from './getSettleDataFromSubgraph'
 import getTradeDataFromSubgraph from './getTradeDataFromSubgraph'
 import getTransferDataFromSubgraph from './getTransferDataFromSubgraph'
+import subgraphRequest from './subgraphRequest'
 
 const positionsQuery = gql`
   query positions($positionId: Int!, $market: String!) {
@@ -56,14 +57,17 @@ export default async function fetchPositionDataByID(
       settle
     )
   } catch (e) {
-    const { data } = await lyra.subgraphClient.query({
+    const { data } = await subgraphRequest<{ positions: PositionQueryResult[] }>(lyra.subgraphClient, {
       query: positionsQuery,
       variables: {
         positionId,
         market: market.address.toLowerCase(),
       },
     })
-    const pos = data.positions[0]
+    const pos = data?.positions[0]
+    if (!pos) {
+      throw new Error('Failed to fetch position')
+    }
     const trades = pos.trades.map(getTradeDataFromSubgraph)
     const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
     const transfers = pos.transfers.map(getTransferDataFromSubgraph)

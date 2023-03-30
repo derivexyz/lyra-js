@@ -1,7 +1,7 @@
 {
   "name": "@lyrafinance/lyra-js",
   "version": "0.0.25",
-  "description": "A JavaScript SDK for Optimistic Ethereum and the Lyra Protocol.",
+  "description": "A JavaScript SDK for the Lyra Protocol.",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
@@ -21,11 +21,12 @@
     "tsc": "yarn build",
     "watch": "concurrently \"tsc --project tsconfig.esm.json --watch\" \"tsc --project tsconfig.cjs.json --watch\"",
     "script": "env-cmd -f scripts/.env.local ts-node --project tsconfig.node.json scripts/index.ts",
-    "generate-types": "ts-node --project tsconfig.node.json src/contracts/generate-types.ts",
+    "typegen": "ts-node --project tsconfig.node.json src/contracts/typegen.ts",
     "sync": "ts-node --project tsconfig.node.json src/contracts/sync.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint '**/*.ts'",
     "clean": "rimraf node_modules dist",
+    "ts-prune": "ts-prune -p tsconfig.esm.json -i 'src/contracts/.*/typechain/|src/index.ts'",
     "prepare": "yarn build",
     "preversion": "yarn lint",
     "version": "yarn format && git add -A src",
@@ -34,7 +35,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.3",
     "cross-fetch": "^3.1.5",
-    "ethers": "5.6.0",
+    "ethers": "^5.6.0",
     "graphql": "^16.6.0"
   },
   "devDependencies": {
@@ -55,6 +56,7 @@
     "prettier": "^2.7.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.5.0",
+    "ts-prune": "^0.10.3",
     "tslib": "^2.4.0",
     "typechain": "^8.1.1",
     "typescript": "^4.7.3",

@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 
 import { PoolHedgerParams } from '../admin'
+import { ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
 import { LyraContractId, LyraMarketContractId } from '../constants/contracts'
 import { LyraContractMap, LyraMarketContractMap } from '../constants/mappings'
 import { GMXAdapter } from '../contracts/newport/typechain/NewportGMXAdapter'
@@ -10,6 +11,7 @@ import Lyra, { Version } from '../lyra'
 import fetchMarketAddresses from './fetchMarketAddresses'
 import getLyraContract from './getLyraContract'
 import getLyraMarketContract from './getLyraMarketContract'
+import isTestnet from './isTestnet'
 import multicall, { MulticallRequest } from './multicall'
 
 type RequestGlobalOwner = MulticallRequest<LyraContractMap<any, LyraContractId.ExchangeAdapter>, 'owner'>
@@ -29,6 +31,78 @@ type RequestGetTokenPrice = MulticallRequest<
   LyraMarketContractMap<Version.Newport, LyraMarketContractId.LiquidityPool>,
   'getTokenPrice'
 >
+
+const TESTNET_HEDGER_VIEW: GMXFuturesPoolHedger.GMXFuturesPoolHedgerViewStruct = {
+  currentPositions: {
+    longPosition: {
+      size: ZERO_BN,
+      collateral: ZERO_BN,
+      averagePrice: ZERO_BN,
+      entryFundingRate: ZERO_BN,
+      unrealisedPnl: ZERO_BN,
+      lastIncreasedTime: ZERO_BN,
+      isLong: true,
+    },
+    shortPosition: {
+      size: ZERO_BN,
+      collateral: ZERO_BN,
+      averagePrice: ZERO_BN,
+      entryFundingRate: ZERO_BN,
+      unrealisedPnl: ZERO_BN,
+      lastIncreasedTime: ZERO_BN,
+      isLong: false,
+    },
+    amountOpen: ZERO_BN,
+    isLong: true,
+  },
+  futuresPoolHedgerParams: {
+    acceptableSpotSlippage: ZERO_BN,
+    deltaThreshold: ZERO_BN,
+    marketDepthBuffer: ZERO_BN,
+    targetLeverage: ZERO_BN,
+    maxLeverage: ZERO_BN,
+    minCancelDelay: ZERO_BN,
+    minCollateralUpdate: ZERO_BN,
+    vaultLiquidityCheckEnabled: false,
+  },
+  hedgerAddresses: {
+    router: ZERO_ADDRESS,
+    positionRouter: ZERO_ADDRESS,
+    vault: ZERO_ADDRESS,
+    quoteAsset: ZERO_ADDRESS,
+    baseAsset: ZERO_ADDRESS,
+    weth: ZERO_ADDRESS,
+  },
+  gmxView: {
+    basePoolAmount: ZERO_BN,
+    baseReservedAmount: ZERO_BN,
+    quotePoolAmount: ZERO_BN,
+    quoteReservedAmount: ZERO_BN,
+    maxGlobalLongSize: ZERO_BN,
+    guaranteedUSD: ZERO_BN,
+    maxGlobalShortSize: ZERO_BN,
+    shortSize: ZERO_BN,
+    minExecutionFee: ZERO_BN,
+    remainingLongDollars: ZERO_BN,
+    remainingShortDollars: ZERO_BN,
+  },
+  referralCode: '',
+  pendingOrderKey: '',
+  lastOrderTimestamp: ZERO_BN,
+  spotPrice: ZERO_BN,
+  expectedHedge: ZERO_BN,
+  currentHedge: ZERO_BN,
+  currentLeverage: ZERO_BN,
+  pendingCollateralDelta: ZERO_BN,
+  baseBal: ZERO_BN,
+  quoteBal: ZERO_BN,
+  wethBal: ZERO_BN,
+}
+
+const TESTNET_POOL_HEDGER_PARAMS: PoolHedgerParams = {
+  interactionDelay: ZERO_BN,
+  hedgeCap: ZERO_BN,
+}
 
 export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
   marketViews: {
@@ -51,14 +125,21 @@ export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
   }
 
   const allMarketAddresses = await fetchMarketAddresses(lyra)
-  const hedgerRequests: RequestGetHedgerState[] = allMarketAddresses.map(marketAddresses => {
-    const poolHedger = getLyraMarketContract(lyra, marketAddresses, Version.Newport, LyraMarketContractId.PoolHedger)
-    return {
-      contract: poolHedger,
-      function: 'getHedgerState',
-      args: [],
-    }
-  })
+  const hedgerRequests: RequestGetHedgerState[] = !isTestnet(lyra)
+    ? allMarketAddresses.map(marketAddresses => {
+        const poolHedger = getLyraMarketContract(
+          lyra,
+          marketAddresses,
+          Version.Newport,
+          LyraMarketContractId.PoolHedger
+        )
+        return {
+          contract: poolHedger,
+          function: 'getHedgerState',
+          args: [],
+        }
+      })
+    : []
   const adapterRequests: RequestGetAdapterState[] = allMarketAddresses.map(marketAddresses => {
     return {
       contract: exchangeAdapterContract,
@@ -66,14 +147,21 @@ export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
       args: [marketAddresses.optionMarket],
     }
   })
-  const hedgerParamsRequests: RequestGetPoolHedgerParams[] = allMarketAddresses.map(marketAddresses => {
-    const poolHedger = getLyraMarketContract(lyra, marketAddresses, Version.Newport, LyraMarketContractId.PoolHedger)
-    return {
-      contract: poolHedger,
-      function: 'getPoolHedgerParams',
-      args: [],
-    }
-  })
+  const hedgerParamsRequests: RequestGetPoolHedgerParams[] = !isTestnet(lyra)
+    ? allMarketAddresses.map(marketAddresses => {
+        const poolHedger = getLyraMarketContract(
+          lyra,
+          marketAddresses,
+          Version.Newport,
+          LyraMarketContractId.PoolHedger
+        )
+        return {
+          contract: poolHedger,
+          function: 'getPoolHedgerParams',
+          args: [],
+        }
+      })
+    : []
 
   const tokenPriceRequests: RequestGetTokenPrice[] = allMarketAddresses.map(marketAddresses => {
     const liquidityPool = getLyraMarketContract(
@@ -113,27 +201,29 @@ export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
 
   const hedgerViews: GMXFuturesPoolHedger.GMXFuturesPoolHedgerViewStructOutput[] = hedgerAndAdapterViews.slice(
     0,
-    allMarketAddresses.length
+    hedgerRequests.length
   )
   const adapterViews: GMXAdapter.GMXAdapterStateStructOutput[] = hedgerAndAdapterViews.slice(
-    allMarketAddresses.length,
-    allMarketAddresses.length * 2
+    hedgerRequests.length,
+    hedgerRequests.length + adapterRequests.length
   )
   const poolHedgerParams: PoolHedgerParams[] = hedgerAndAdapterViews.slice(
-    allMarketAddresses.length * 2,
-    allMarketAddresses.length * 3
+    hedgerRequests.length + adapterRequests.length,
+    hedgerRequests.length + adapterRequests.length + hedgerParamsRequests.length
   )
   const tokenPrices: BigNumber[] = hedgerAndAdapterViews.slice(
-    allMarketAddresses.length * 3,
-    allMarketAddresses.length * 4
+    hedgerRequests.length + adapterRequests.length + hedgerParamsRequests.length
   )
   const { isPaused, markets } = marketViewsRes
   const marketViews = markets.map((marketView, i) => {
     return {
       marketView,
-      hedgerView: hedgerViews[i],
+      hedgerView: !isTestnet(lyra)
+        ? hedgerViews[i]
+        : // HACK: Cast ViewStruct to ViewStructOutput
+          (TESTNET_HEDGER_VIEW as GMXFuturesPoolHedger.GMXFuturesPoolHedgerViewStructOutput),
       adapterView: adapterViews[i],
-      poolHedgerParams: poolHedgerParams[i],
+      poolHedgerParams: !isTestnet(lyra) ? poolHedgerParams[i] : TESTNET_POOL_HEDGER_PARAMS,
       tokenPrice: tokenPrices[i],
     }
   })

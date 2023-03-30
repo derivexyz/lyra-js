@@ -1,3 +1,4 @@
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { Contract } from 'ethers'
 
 import Lyra from '..'
@@ -16,12 +17,17 @@ type MulticallResponses<Reqs extends MulticallRequest[]> = { [K in keyof Reqs]: 
 
 export default async function multicall<Reqs extends MulticallRequest[]>(
   lyra: Lyra,
-  requests: Reqs
+  requests: Reqs,
+  customProvider?: JsonRpcProvider
 ): Promise<{
   returnData: MulticallResponses<Reqs>
   blockNumber: number
 }> {
-  const multicall3Contract = getGlobalContract(lyra, LyraGlobalContractId.Multicall3, lyra.provider)
+  const multicall3Contract = getGlobalContract(
+    lyra,
+    LyraGlobalContractId.Multicall3,
+    customProvider ? customProvider : lyra.provider
+  )
   const calls = requests.map(req => ({
     target: req.contract.address,
     callData: req.contract.interface.encodeFunctionData(req.function, req.args),

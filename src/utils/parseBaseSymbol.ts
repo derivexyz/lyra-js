@@ -1,4 +1,4 @@
-import Lyra, { Deployment, Version } from '../lyra'
+import Lyra, { Version } from '../lyra'
 
 export default function parseBaseSymbol(lyra: Lyra, marketAddressOrName: string): string {
   const [rawBaseKey] = marketAddressOrName.split('-')
@@ -25,8 +25,7 @@ export default function parseBaseSymbol(lyra: Lyra, marketAddressOrName: string)
         return 'WETH'
       case 'btc':
       case 'wbtc':
-        // TODO: @michaelxuwu remove this if testnet is updated
-        return lyra.deployment === Deployment.Mainnet ? 'WBTC' : 'wBTC'
+        return 'WBTC'
       default:
         // Add overrides for markets as individual cases
         return rawBaseKey.toUpperCase()

@@ -1,4 +1,3 @@
-import { LYRA_API_URL } from '../constants/links'
 import { RewardEpochToken, RewardEpochTokenAmount, RewardEpochTokenConfig } from '../global_reward_epoch'
 import Lyra, { Deployment } from '../lyra'
 import fetchWithCache from './fetchWithCache'
@@ -8,6 +7,7 @@ export type GlobalRewardEpochData = {
   startTimestamp: number // indexed
   startEarningTimestamp?: number
   endTimestamp: number
+  distributionTimestamp: number
   isDepositPeriod?: boolean
   lastUpdated: number
   totalStkLyraDays: number
@@ -27,12 +27,10 @@ export type GlobalRewardEpochData = {
   globalTradingRewards: GlobalTradingRewards
   tradingRewardConfig: GlobalTradingRewardsConfig
   MMVConfig: GlobalMMVConfig
-  stakingRewardConfig: GlobalStakingConfig
-  wethLyraStakingL2RewardConfig?: GlobalArrakisConfig
 }
 
 export type GlobalTradingRewards = {
-  totalRewards: RewardEpochTokenAmount[]
+  totalRewards?: RewardEpochTokenAmount[]
   totalFees: number
   totalTradingRebateRewards: RewardEpochTokenAmount[]
   totalShortCollateralRewards: RewardEpochTokenAmount[]
@@ -50,13 +48,6 @@ export type GlobalTradingRewardsConfig = {
   vertIntercept: number // param c // minReward // vertIntercept
   stretchiness: number // param d // stretchiness
   tokens: GlobalTradingRewardsRewardEpochTokenConfig[]
-  shortCollateralRewards: {
-    [market: string]: {
-      tenDeltaRebatePerOptionDay: number
-      ninetyDeltaRebatePerOptionDay: number
-      longDatedPenalty: number
-    }
-  }
 }
 
 export type GlobalMMVConfig = {
@@ -75,13 +66,11 @@ type GlobalTradingRewardsRewardEpochTokenConfig = RewardEpochToken & {
   portion: number
 }
 
-export type GlobalStakingConfig = RewardEpochTokenConfig[]
-
-export type GlobalArrakisConfig = RewardEpochTokenConfig[]
+const EMPTY: GlobalRewardEpochData[] = []
 
 export default async function fetchGlobalRewardEpochData(lyra: Lyra): Promise<GlobalRewardEpochData[]> {
   if (lyra.deployment !== Deployment.Mainnet) {
-    return []
+    return EMPTY
   }
-  return fetchWithCache(`${LYRA_API_URL}/rewards/global?network=${lyra.network}`)
+  return fetchWithCache(`${lyra.apiUri}/rewards/global?network=${lyra.network}`)
 }

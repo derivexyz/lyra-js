@@ -38,8 +38,6 @@ export default function getTradeDisabledReason({
       !collateral.amount.eq(position.collateral.amount)
     ) {
       // Skip disabled flag for collateral adjustments
-    } else if (disabledReason === TradeDisabledReason.EmptyPremium && !isOpen) {
-      // Skip disabled flag for empty premium when closing
     } else if (disabledReason === TradeDisabledReason.InsufficientLiquidity && !isOpen) {
       // Skip disabled flag for closing trades with insufficient liquidity
     } else {

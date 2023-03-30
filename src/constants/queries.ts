@@ -211,6 +211,8 @@ export const MARKET_VOLUME_AND_FEES_SNAPSHOT_FRAGMENT = `
   liquidatorFees
   smLiquidationFees
   lpLiquidationFees
+  totalShortPutOpenInterestUSD
+  totalShortCallOpenInterestUSD
 `
 
 export const MARKET_PENDING_LIQUIDITY_SNAPSHOT_FRAGMENT = `
@@ -366,6 +368,24 @@ export const LIQUIDITY_WITHDRAWAL_FRAGMENT = `
     timestamp
     transactionHash
   }
+`
+
+export const CLAIM_ADDED_FRAGMENT = `
+  amount
+  blockNumber
+  claimer
+  epochTimestamp
+  rewardToken
+  tag
+  timestamp
+`
+
+export const CLAIM_FRAGMENT = `
+  amount
+  blockNumber
+  claimer
+  rewardToken
+  timestamp
 `
 
 export type TradeQueryResult = {
@@ -565,6 +585,8 @@ export type MarketVolumeAndFeesSnapshotQueryResult = {
   liquidatorFees: string
   smLiquidationFees: string
   lpLiquidationFees: string
+  totalShortPutOpenInterestUSD: string
+  totalShortCallOpenInterestUSD: string
 }
 
 export type MarketPendingLiquiditySnapshotQueryResult = {
@@ -667,4 +689,22 @@ export type LiquidityWithdrawalQueryResult = {
     timestamp: number
     transactionHash: string
   }[]
+}
+
+export type ClaimAddedQueryResult = {
+  amount: string
+  blockNumber: number
+  claimer: string
+  epochTimestamp: string
+  rewardToken: string
+  tag: string
+  timestamp: number
+}
+
+export type ClaimQueryResult = {
+  amount: string
+  blockNumber: number
+  claimer: string
+  rewardToken: string
+  timestamp: number
 }

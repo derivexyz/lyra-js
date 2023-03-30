@@ -6,6 +6,7 @@ import { LIQUIDITY_DEPOSIT_FRAGMENT, LiquidityDepositQueryResult } from '../cons
 import { LiquidityDepositProcessedEvent, LiquidityDepositQueuedEvent } from '../liquidity_deposit'
 import Lyra from '../lyra'
 import { Market } from '../market'
+import subgraphRequest from './subgraphRequest'
 
 const lpUserLiquiditiesQuery = gql`
   query lpuserLiquidities($user: String!, $pool: String!) {
@@ -31,10 +32,10 @@ export default async function fetchAllLiquidityDepositEventDataByOwner(
   queued: LiquidityDepositQueuedEvent[]
   processed: LiquidityDepositProcessedEvent[]
 }> {
-  const { data } = await lyra.subgraphClient.query<
+  const { data } = await subgraphRequest<
     { lpuserLiquidities: LiquidityDepositQueryResult[] },
     LiquidityDepositVariables
-  >({
+  >(lyra.subgraphClient, {
     query: lpUserLiquiditiesQuery,
     variables: {
       user: owner.toLowerCase(),
@@ -42,30 +43,32 @@ export default async function fetchAllLiquidityDepositEventDataByOwner(
     },
   })
 
-  const depositQueuedEvents = data.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedDeposit => {
-    return {
-      depositor: owner,
-      beneficiary: owner,
-      depositQueueId: BigNumber.from(queuedDeposit.queueID),
-      amountDeposited: BigNumber.from(queuedDeposit.pendingAmount),
-      totalQueuedDeposits: ZERO_BN,
-      timestamp: BigNumber.from(queuedDeposit.timestamp),
-      transactionHash: queuedDeposit.transactionHash,
-    }
-  })
+  const depositQueuedEvents =
+    data?.lpuserLiquidities[0]?.pendingDepositsAndWithdrawals.map(queuedDeposit => {
+      return {
+        depositor: owner,
+        beneficiary: owner,
+        depositQueueId: BigNumber.from(queuedDeposit.queueID),
+        amountDeposited: BigNumber.from(queuedDeposit.pendingAmount),
+        totalQueuedDeposits: ZERO_BN,
+        timestamp: BigNumber.from(queuedDeposit.timestamp),
+        transactionHash: queuedDeposit.transactionHash,
+      }
+    }) ?? []
 
-  const depositProcessedEvents = data.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedDeposit => {
-    return {
-      caller: owner,
-      beneficiary: owner,
-      depositQueueId: ZERO_BN,
-      amountDeposited: BigNumber.from(processedDeposit.quoteAmount),
-      tokenPrice: BigNumber.from(processedDeposit.tokenPrice),
-      tokensReceived: BigNumber.from(processedDeposit.tokenAmount),
-      timestamp: BigNumber.from(processedDeposit.timestamp),
-      transactionHash: processedDeposit.transactionHash,
-    }
-  })
+  const depositProcessedEvents =
+    data?.lpuserLiquidities[0]?.depositsAndWithdrawals.map(processedDeposit => {
+      return {
+        caller: owner,
+        beneficiary: owner,
+        depositQueueId: ZERO_BN,
+        amountDeposited: BigNumber.from(processedDeposit.quoteAmount),
+        tokenPrice: BigNumber.from(processedDeposit.tokenPrice),
+        tokensReceived: BigNumber.from(processedDeposit.tokenAmount),
+        timestamp: BigNumber.from(processedDeposit.timestamp),
+        transactionHash: processedDeposit.transactionHash,
+      }
+    }) ?? []
 
   return {
     queued: depositQueuedEvents,

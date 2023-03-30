@@ -54,9 +54,11 @@ export interface MultiDistributorInterface extends utils.Interface {
 
   events: {
     "ClaimAdded(address,address,uint256,uint256,string)": EventFragment;
+    "Claimed(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ClaimAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Claimed"): EventFragment;
 }
 
 export interface ClaimAddedEventObject {
@@ -72,6 +74,18 @@ export type ClaimAddedEvent = TypedEvent<
 >;
 
 export type ClaimAddedEventFilter = TypedEventFilter<ClaimAddedEvent>;
+
+export interface ClaimedEventObject {
+  rewardToken: string;
+  claimer: string;
+  amount: BigNumber;
+}
+export type ClaimedEvent = TypedEvent<
+  [string, string, BigNumber],
+  ClaimedEventObject
+>;
+
+export type ClaimedEventFilter = TypedEventFilter<ClaimedEvent>;
 
 export interface MultiDistributor extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -151,6 +165,17 @@ export interface MultiDistributor extends BaseContract {
       epochTimestamp?: PromiseOrValue<BigNumberish> | null,
       tag?: null
     ): ClaimAddedEventFilter;
+
+    "Claimed(address,address,uint256)"(
+      rewardToken?: PromiseOrValue<string> | null,
+      claimer?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ClaimedEventFilter;
+    Claimed(
+      rewardToken?: PromiseOrValue<string> | null,
+      claimer?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ClaimedEventFilter;
   };
 
   estimateGas: {

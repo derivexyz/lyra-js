@@ -4,6 +4,5 @@
   "LyraStakingModule": "0xcb9f85730f57732fc899fb158164b9ed60c77d49",
   "LyraStakingModuleProxy": "0xb9619D73C08076bC5d4f0470593e98b9eb19a219",
   "MultiDistributor": "0x019F0233C0277B9422FCDb1213B09C86f5f27D87",
-  "WethLyraStakingRewardsL2": "0xb02e538a08cFA00E9900cf94e33B161323d8D162",
   "Multicall3": "0xcA11bde05977b3631167028862bE2a173976CA11"
 }
