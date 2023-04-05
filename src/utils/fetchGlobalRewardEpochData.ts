@@ -1,4 +1,9 @@
-import { RewardEpochToken, RewardEpochTokenAmount, RewardEpochTokenConfig } from '../global_reward_epoch'
+import {
+  RewardEpochToken,
+  RewardEpochTokenAmount,
+  RewardEpochTokenConfig,
+  RewardEpochTokenPrice,
+} from '../global_reward_epoch'
 import Lyra, { Deployment } from '../lyra'
 import fetchWithCache from './fetchWithCache'
 
@@ -27,6 +32,7 @@ export type GlobalRewardEpochData = {
   globalTradingRewards: GlobalTradingRewards
   tradingRewardConfig: GlobalTradingRewardsConfig
   MMVConfig: GlobalMMVConfig
+  tokenPrices?: RewardEpochTokenPrice[]
 }
 
 export type GlobalTradingRewards = {

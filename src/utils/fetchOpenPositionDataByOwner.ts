@@ -48,7 +48,6 @@ export default async function fetchOpenPositionDataByOwner(
             try {
               option = market.liveOption(strikeId, isCall)
             } catch (_error) {
-              console.warn(`Failed to find live strike with ID ${strikeId}`)
               return null
             }
             return getOpenPositionDataFromStruct(

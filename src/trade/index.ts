@@ -7,6 +7,8 @@ import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
 import { MAX_BN, UNIT, ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS, LyraMarketContractId } from '../constants/contracts'
+import { AvalonOptionMarket } from '../contracts/avalon/typechain'
+import { NewportOptionMarket } from '../contracts/newport/typechain'
 import Lyra, { Version } from '../lyra'
 import { Market, MarketToken } from '../market'
 import { Option } from '../option'
@@ -24,7 +26,6 @@ import getERC20Contract from '../utils/getERC20Contract'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
 import getOptionType from '../utils/getOptionType'
 import getProjectedSettlePnl from '../utils/getProjectedSettlePnl'
-import getTimeToExpiryAnnualized from '../utils/getTimeToExpiryAnnualized'
 import getTradePnl from '../utils/getTradePnl'
 import parsePartialPositionUpdatedEventsFromLogs from '../utils/parsePartialPositionUpdatedEventsFromLogs'
 import parsePartialTradeEventsFromLogs from '../utils/parsePartialTradeEventsFromLogs'
@@ -132,8 +133,10 @@ export class Trade {
   disabledReason: TradeDisabledReason | null
   tx: PopulatedTransaction
   iterations: QuoteIteration[]
-  params: any
-  measurements?: Record<string, number>
+  contract: AvalonOptionMarket | NewportOptionMarket
+  method: 'openPosition' | 'closePosition' | 'forceClosePosition'
+  params: Parameters<(AvalonOptionMarket | NewportOptionMarket)['openPosition']>
+  data: string
 
   private constructor(
     lyra: Lyra,
@@ -311,59 +314,50 @@ export class Trade {
     const minTotalCost = !isBuy && minOrMaxPremium.gt(ZERO_BN) ? minOrMaxPremium : ZERO_BN
     const maxTotalCost = isBuy ? minOrMaxPremium : MAX_BN
 
-    let data: string
+    this.contract = getLyraMarketContract(
+      lyra,
+      market.contractAddresses,
+      lyra.version,
+      LyraMarketContractId.OptionMarket
+    )
+    this.method =
+      this.isOpen || this.isCollateralUpdate
+        ? 'openPosition'
+        : !this.isForceClose
+        ? 'closePosition'
+        : 'forceClosePosition'
+
     if (lyra.version === Version.Avalon) {
-      const optionMarket = getLyraMarketContract(
-        lyra,
-        market.contractAddresses,
-        Version.Avalon,
-        LyraMarketContractId.OptionMarket
-      )
-      const params = {
-        strikeId: strikeIdBN,
-        positionId: positionIdBN,
-        iterations: iterationsBN,
-        optionType,
-        amount,
-        setCollateralTo,
-        minTotalCost,
-        maxTotalCost,
-      }
-      this.params = params
-      data =
-        this.isOpen || this.isCollateralUpdate
-          ? optionMarket.interface.encodeFunctionData('openPosition', [params])
-          : !this.isForceClose
-          ? optionMarket.interface.encodeFunctionData('closePosition', [params])
-          : optionMarket.interface.encodeFunctionData('forceClosePosition', [params])
+      this.params = [
+        {
+          strikeId: strikeIdBN,
+          positionId: positionIdBN,
+          iterations: iterationsBN,
+          optionType,
+          amount,
+          setCollateralTo,
+          minTotalCost,
+          maxTotalCost,
+        },
+      ]
     } else {
-      const optionMarket = getLyraMarketContract(
-        lyra,
-        market.contractAddresses,
-        Version.Newport,
-        LyraMarketContractId.OptionMarket
-      )
-      const params = {
-        strikeId: strikeIdBN,
-        positionId: positionIdBN,
-        iterations: iterationsBN,
-        optionType,
-        amount,
-        setCollateralTo,
-        minTotalCost,
-        maxTotalCost,
-        referrer: ZERO_ADDRESS,
-      }
-      this.params = params
-      data =
-        this.isOpen || this.isCollateralUpdate
-          ? optionMarket.interface.encodeFunctionData('openPosition', [params])
-          : !this.isForceClose
-          ? optionMarket.interface.encodeFunctionData('closePosition', [params])
-          : optionMarket.interface.encodeFunctionData('forceClosePosition', [params])
+      this.params = [
+        {
+          strikeId: strikeIdBN,
+          positionId: positionIdBN,
+          iterations: iterationsBN,
+          optionType,
+          amount,
+          setCollateralTo,
+          minTotalCost,
+          maxTotalCost,
+          referrer: ZERO_ADDRESS,
+        },
+      ]
     }
 
-    // TODO: @dappbeast Pass individual args instead of "this" to constructor
+    this.data = this.contract.interface.encodeFunctionData(this.method as any, this.params as any)
+
     this.disabledReason = getTradeDisabledReason({
       isOpen: this.isOpen,
       owner: this.owner,
@@ -376,6 +370,7 @@ export class Trade {
       quoteTransfer: this.quoteToken.transfer,
       baseTransfer: this.baseToken.transfer,
     })
+
     this.isDisabled = !!this.disabledReason
 
     this.tx = buildTx(
@@ -383,7 +378,7 @@ export class Trade {
       this.lyra.provider.network.chainId,
       getLyraMarketContract(lyra, market.contractAddresses, lyra.version, LyraMarketContractId.OptionMarket).address,
       owner,
-      data
+      this.data
     )
   }
 
@@ -407,46 +402,13 @@ export class Trade {
       maybeFetchPosition(),
       lyra.account(owner).marketBalances(marketAddressOrName),
     ])
+
     const option = balances.market.liveOption(strikeId, isCall)
-    const trade = new Trade(lyra, owner, option, isBuy, size, slippage, balances, {
+
+    return new Trade(lyra, owner, option, isBuy, size, slippage, balances, {
       ...options,
       position,
     })
-
-    if (trade.disabledReason) {
-      return trade
-    }
-
-    const optionMarket = getLyraMarketContract(
-      lyra,
-      balances.market.contractAddresses,
-      lyra.version,
-      LyraMarketContractId.OptionMarket
-    )
-
-    // Sanity check trade, use for internal testing
-    const txName = trade.isOpen ? 'openPosition' : trade.isForceClose ? 'forceClosePosition' : 'closePosition'
-
-    const res = await optionMarket.callStatic[txName](trade.params, { from: owner })
-
-    const costDiff = trade.quoted.gt(0)
-      ? fromBigNumber(trade.quoted.sub(res.totalCost).abs()) / fromBigNumber(trade.quoted)
-      : 0
-
-    trade.measurements = {
-      sdkCost: fromBigNumber(trade.quoted),
-      contractCost: fromBigNumber(res.totalCost),
-      costDiff,
-      sdkFees: fromBigNumber(trade.fee),
-      contractFees: fromBigNumber(res.totalFee),
-      feesDiff: trade.fee.gt(0) ? fromBigNumber(trade.fee.sub(res.totalFee).abs()) / fromBigNumber(trade.fee) : 0,
-      sdkSpotPrice: fromBigNumber(trade.spotPrice),
-      sdkTimeToExpiryAnnualized: getTimeToExpiryAnnualized(trade.board()),
-    }
-
-    console.debug(trade.measurements)
-
-    return trade
   }
 
   static getSync(

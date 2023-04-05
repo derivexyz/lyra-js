@@ -1,16 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { PopulatedTransaction } from '@ethersproject/contracts'
 
-import { MAX_BN } from '../constants/bn'
-import {
-  LYRA_ETHEREUM_KOVAN_ADDRESS,
-  LYRA_ETHEREUM_MAINNET_ADDRESS,
-  LyraGlobalContractId,
-} from '../constants/contracts'
-import Lyra, { Deployment } from '../lyra'
-import buildTx from '../utils/buildTx'
+import { LyraGlobalContractId } from '../constants/contracts'
+import Lyra from '../lyra'
 import fetchLyraStakingParams, { LyraStakingParams } from '../utils/fetchLyraStakingParams'
-import getERC20Contract from '../utils/getERC20Contract'
 import getGlobalContract from '../utils/getGlobalContract'
 
 export type LyraStakingAccount = {
@@ -83,59 +75,6 @@ export class LyraStaking {
       unstakeWindowStartTimestamp,
       unstakeWindowEndTimestamp,
     }
-  }
-
-  // Transactions
-
-  static approve(lyra: Lyra, address: string): PopulatedTransaction {
-    const proxyContract = getGlobalContract(lyra, LyraGlobalContractId.LyraStakingModule, lyra.ethereumProvider)
-    const lyraContract = getERC20Contract(
-      lyra.ethereumProvider ?? lyra.provider,
-      lyra.deployment === Deployment.Mainnet ? LYRA_ETHEREUM_MAINNET_ADDRESS : LYRA_ETHEREUM_KOVAN_ADDRESS
-    )
-    const data = lyraContract.interface.encodeFunctionData('approve', [proxyContract.address, MAX_BN])
-    return buildTx(lyra.ethereumProvider ?? lyra.provider, 1, lyraContract.address, address, data)
-  }
-
-  static stake(lyra: Lyra, address: string, amount: BigNumber): PopulatedTransaction {
-    const lyraStakingModuleProxyContract = getGlobalContract(
-      lyra,
-      LyraGlobalContractId.LyraStakingModule,
-      lyra.ethereumProvider
-    )
-    const txData = lyraStakingModuleProxyContract.interface.encodeFunctionData('stake', [address, amount])
-    return buildTx(lyra.ethereumProvider ?? lyra.provider, 1, lyraStakingModuleProxyContract.address, address, txData)
-  }
-
-  static requestUnstake(lyra: Lyra, address: string): PopulatedTransaction {
-    const lyraStakingModuleProxyContract = getGlobalContract(
-      lyra,
-      LyraGlobalContractId.LyraStakingModule,
-      lyra.ethereumProvider
-    )
-    const data = lyraStakingModuleProxyContract.interface.encodeFunctionData('cooldown')
-    return buildTx(lyra.ethereumProvider ?? lyra.provider, 1, lyraStakingModuleProxyContract.address, address, data)
-  }
-
-  static unstake(lyra: Lyra, address: string, amount: BigNumber): PopulatedTransaction {
-    const lyraStakingModuleProxyContract = getGlobalContract(
-      lyra,
-      LyraGlobalContractId.LyraStakingModule,
-      lyra.ethereumProvider
-    )
-    const txData = lyraStakingModuleProxyContract.interface.encodeFunctionData('redeem', [address, amount])
-    return buildTx(lyra.ethereumProvider ?? lyra.provider, 1, lyraStakingModuleProxyContract.address, address, txData)
-  }
-
-  static async claim(lyra: Lyra, address: string): Promise<PopulatedTransaction> {
-    const lyraStakingModuleContract = getGlobalContract(
-      lyra,
-      LyraGlobalContractId.LyraStakingModule,
-      lyra.ethereumProvider
-    )
-    const totalRewardsBalance = await lyraStakingModuleContract.getTotalRewardsBalance(address)
-    const data = lyraStakingModuleContract.interface.encodeFunctionData('claimRewards', [address, totalRewardsBalance])
-    return buildTx(lyra.ethereumProvider ?? lyra.provider, 1, lyraStakingModuleContract.address, address, data)
   }
 
   // TODO: move claimable rewards into get()

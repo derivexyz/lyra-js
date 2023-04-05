@@ -2,6 +2,7 @@ import { BigNumber, PopulatedTransaction } from 'ethers'
 
 import { AccountBalances, AccountLiquidityTokenBalance, AccountLyraBalances } from '../account'
 import { Deployment, LyraGlobalContractId } from '../constants/contracts'
+import { MIN_REWARD_AMOUNT } from '../constants/rewards'
 import { GlobalRewardEpoch, RewardEpochToken } from '../global_reward_epoch'
 import { RewardEpochTokenAmount } from '../global_reward_epoch'
 import Lyra from '../lyra'
@@ -121,7 +122,8 @@ export class AccountRewardEpoch {
       const isIgnored = !!mmvRewards?.isIgnored
       return {
         ...map,
-        [market.baseToken.symbol]: mmvRewards && !isIgnored ? mmvRewards.rewards.filter(r => r.amount > 0.0001) : [],
+        [market.baseToken.symbol]:
+          mmvRewards && !isIgnored ? mmvRewards.rewards.filter(r => r.amount > MIN_REWARD_AMOUNT) : [],
       }
     }, {})
     this.isVaultRewardsDistributedMap = globalEpoch.markets.reduce(

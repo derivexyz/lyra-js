@@ -316,28 +316,8 @@ export default class Lyra {
     return await LyraStaking.getByOwner(this, address)
   }
 
-  async approveStaking(address: string) {
-    return await LyraStaking.approve(this, address)
-  }
-
-  async stake(address: string, amount: BigNumber) {
-    return await LyraStaking.stake(this, address, amount)
-  }
-
-  async unstake(address: string, amount: BigNumber) {
-    return await LyraStaking.unstake(this, address, amount)
-  }
-
   async claimableStakingRewards(address: string) {
     return LyraStaking.claimableRewards(this, address)
-  }
-
-  async claimStakingRewards(address: string) {
-    return await LyraStaking.claim(this, address)
-  }
-
-  async requestUnstake(address: string): Promise<PopulatedTransaction> {
-    return await LyraStaking.requestUnstake(this, address)
   }
 
   async globalRewardEpochs(): Promise<GlobalRewardEpoch[]> {

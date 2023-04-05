@@ -1,16 +1,15 @@
 import { Chain } from '../constants/chain'
 
-const getLyraDeploymentSubgraphURI = (chain: Chain | 'ethereum'): string => {
+const getLyraDeploymentSubgraphURI = (chain: Chain): string => {
   switch (chain) {
-    case 'ethereum':
     case Chain.Optimism:
-      return 'https://api.lyra.finance/subgraph/optimism/v1/api'
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/optimism-mainnet/api'
     case Chain.OptimismGoerli:
-      return 'https://api.lyra.finance/subgraph/optimism-goerli/v1/api'
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/optimism-goerli/api'
     case Chain.Arbitrum:
-      return 'https://api.lyra.finance/subgraph/arbitrum/v2/api'
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/arbitrum-mainnet/api'
     case Chain.ArbitrumGoerli:
-      return `https://api.lyra.finance/subgraph/arbitrum-goerli/v2/api`
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/arbitrum-goerli/api'
   }
 }
 

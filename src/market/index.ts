@@ -6,7 +6,8 @@ import { parseBytes32String } from '@ethersproject/strings'
 import { PoolHedgerParams } from '../admin'
 import { Board, BoardQuotes } from '../board'
 import { ZERO_BN } from '../constants/bn'
-import { DataSource } from '../constants/contracts'
+import { DataSource, LyraMarketContractId } from '../constants/contracts'
+import { LyraMarketContractMap } from '../constants/mappings'
 import { SnapshotOptions } from '../constants/snapshots'
 import { BoardViewStructOutput, MarketViewWithBoardsStructOutput } from '../constants/views'
 import { OptionMarketViewer as AvalonOptionMarketViewer } from '../contracts/avalon/typechain/AvalonOptionMarketViewer'
@@ -33,6 +34,7 @@ import fetchTradingVolumeHistory from '../utils/fetchTradingVolumeHistory'
 import findMarket from '../utils/findMarket'
 import getBoardView from '../utils/getBoardView'
 import getBoardViewForStrikeId from '../utils/getBoardViewForStrikeId'
+import getLyraMarketContract from '../utils/getLyraMarketContract'
 import getMarketName from '../utils/getMarketName'
 import isMarketEqual from '../utils/isMarketEqual'
 
@@ -565,6 +567,15 @@ export class Market {
       boards: this.liveBoards().map(board => board.quoteAllSync(size, options)),
       market: this,
     }
+  }
+
+  contract<C extends LyraMarketContractId, V extends Version>(contractId: C): LyraMarketContractMap<V, C> {
+    return getLyraMarketContract(
+      this.lyra,
+      this.contractAddresses,
+      this.lyra.version,
+      contractId
+    ) as LyraMarketContractMap<V, C>
   }
 
   // Transactions

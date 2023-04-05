@@ -10,16 +10,19 @@ import MULTIDISTRIBUTOR_ABI from '../contracts/common/abis/MultiDistributor.json
 import COMMON_ARBITRUM_MAINNET_ADDRESS_MAP from '../contracts/common/addresses/arbitrum.addresses.json'
 import COMMON_ARBITRUM_TESTNET_ADDRESS_MAP from '../contracts/common/addresses/arbitrum-goerli.addresses.json'
 import COMMON_ETHEREUM_MAINNET_ADDRESS_MAP from '../contracts/common/addresses/ethereum.addresses.json'
+import COMMON_ETHEREUM_TESTNET_ADDRESS_MAP from '../contracts/common/addresses/ethereum-goerli.addresses.json'
 import COMMON_OPTIMISM_MAINNET_ADDRESS_MAP from '../contracts/common/addresses/optimism.addresses.json'
 import COMMON_OPTIMISM_TESTNET_ADDRESS_MAP from '../contracts/common/addresses/optimism-goerli.addresses.json'
 
 const getGlobalContractAddress = (
   lyra: Lyra,
   contractId: LyraGlobalContractId,
-  useEthereumAddressMap?: boolean
+  customChainId?: number
 ): string | undefined => {
-  if (useEthereumAddressMap) {
+  if (customChainId === 1) {
     return (COMMON_ETHEREUM_MAINNET_ADDRESS_MAP as Record<string, string>)[contractId]
+  } else if (customChainId === 5) {
+    return (COMMON_ETHEREUM_TESTNET_ADDRESS_MAP as Record<string, string>)[contractId]
   }
   switch (lyra.chain) {
     case Chain.Arbitrum:
@@ -50,7 +53,7 @@ export default function getGlobalContract<C extends LyraGlobalContractId>(
   customProvider?: JsonRpcProvider
 ): LyraGlobalContractMap[C] {
   const { provider } = lyra
-  const address = getGlobalContractAddress(lyra, contractId, customProvider?.network.chainId === 1)
+  const address = getGlobalContractAddress(lyra, contractId, customProvider?.network.chainId)
   if (!address) {
     throw new Error('Contract does not exist for specified chain')
   }

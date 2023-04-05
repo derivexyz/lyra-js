@@ -45,7 +45,6 @@ export type AccountLyraBalances = {
   ethereumStkLyra: BigNumber
   optimismStkLyra: BigNumber
   arbitrumStkLyra: BigNumber
-  migrationAllowance: BigNumber
   stakingAllowance: BigNumber
 }
 

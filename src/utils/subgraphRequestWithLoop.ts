@@ -4,6 +4,9 @@ import Lyra from '..'
 import { SNAPSHOT_RESULT_LIMIT } from '../constants/queries'
 import subgraphRequest from './subgraphRequest'
 
+// GraphQL supports 32 bit signed int, i.e. max 2^31 - 1
+const MAX_SAFE_32_BIT_INT = 2147483647
+
 type IteratorVariables = { min: number; max: number; limit?: number }
 
 export default async function subgraphRequestWithLoop<
@@ -22,7 +25,6 @@ export default async function subgraphRequestWithLoop<
   let allFound = false
   let data: Snapshot[] = []
   let min = variables.min
-
   const limit = variables.limit ?? SNAPSHOT_RESULT_LIMIT
 
   while (!allFound) {
@@ -35,7 +37,7 @@ export default async function subgraphRequestWithLoop<
         varArr.push({
           ...variables,
           min,
-          max: min + increment - 1,
+          max: Math.min(min + increment - 1, MAX_SAFE_32_BIT_INT),
         })
         min += increment
       }

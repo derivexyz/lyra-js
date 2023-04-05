@@ -20,5 +20,8 @@ export * from './constants/contracts'
 export * from './constants/queries'
 export * from './constants/network'
 export * from './constants/chain'
+export * from './utils/getGlobalContract'
+export * from './utils/getLyraContract'
+export * from './utils/getLyraMarketContract'
 import Lyra from './lyra'
 export default Lyra
