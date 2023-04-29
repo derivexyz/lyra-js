@@ -22,7 +22,7 @@ export default async function fetchPositionEventDataByHash(
       : transactionHashOrReceipt
   const transactionHash = receipt.transactionHash
 
-  const tradeEvents = parsePartialTradeEventsFromLogs(receipt.logs)
+  const tradeEvents = parsePartialTradeEventsFromLogs(lyra, receipt.logs)
   const updateEvents = parsePartialPositionUpdatedEventsFromLogs(receipt.logs) // Also covers settle events
 
   let marketAddress: string | null = null

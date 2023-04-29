@@ -426,14 +426,20 @@ export class Trade {
 
   // Helper Functions
 
-  static getPositionIdsForLogs(logs: Log[]): number[] {
-    const trades = parsePartialTradeEventsFromLogs(logs)
+  static getPositionIdsForLogs(lyra: Lyra, logs: Log[]): number[] {
+    const trades = parsePartialTradeEventsFromLogs(lyra, logs)
     const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
     const positionIds = [
       ...trades.map(t => t.args.positionId.toNumber()),
       ...updates.map(u => u.args.positionId.toNumber()),
     ]
     return Array.from(new Set(positionIds))
+  }
+
+  static getEventsForLogs(lyra: Lyra, logs: Log[]) {
+    const trades = parsePartialTradeEventsFromLogs(lyra, logs)
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
+    return { trades, updates }
   }
 
   // Transactions
