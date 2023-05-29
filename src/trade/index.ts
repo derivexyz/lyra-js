@@ -438,6 +438,12 @@ export class Trade {
     return Array.from(new Set(positionIds))
   }
 
+  static getEventsForLogs(logs: Log[], network: Network) {
+    const trades = parsePartialTradeEventsFromLogs(logs, network)
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs, network)
+    return { trades, updates }
+  }
+
   // Transactions
 
   static approveQuote(market: Market, owner: string, amountQuote: BigNumber): PopulatedTransaction {
