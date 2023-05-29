@@ -111,6 +111,7 @@ export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
     adapterView: GMXAdapter.GMXAdapterStateStructOutput
     poolHedgerParams: PoolHedgerParams
     tokenPrice: BigNumber
+    baseLimit: null
   }[]
   isGlobalPaused: boolean
   owner: string
@@ -225,6 +226,7 @@ export default async function fetchNewportMarketViews(lyra: Lyra): Promise<{
       adapterView: adapterViews[i],
       poolHedgerParams: !isTestnet(lyra) ? poolHedgerParams[i] : TESTNET_POOL_HEDGER_PARAMS,
       tokenPrice: tokenPrices[i],
+      baseLimit: null,
     }
   })
 

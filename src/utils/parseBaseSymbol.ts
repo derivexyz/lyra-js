@@ -26,6 +26,9 @@ export default function parseBaseSymbol(lyra: Lyra, marketAddressOrName: string)
       case 'btc':
       case 'wbtc':
         return 'WBTC'
+      case 'lyarb':
+      case 'arb':
+        return 'LyARB'
       default:
         // Add overrides for markets as individual cases
         return rawBaseKey.toUpperCase()

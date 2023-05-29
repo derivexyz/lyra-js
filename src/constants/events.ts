@@ -12,15 +12,16 @@ import {
   PositionUpdatedEvent as AvalonPositionUpdatedEvent,
   TransferEvent as AvalonTransferEvent,
 } from '../contracts/avalon/typechain/AvalonOptionToken'
-import {
-  DepositProcessedEvent as NewportDepositProcessedEvent,
-  DepositQueuedEvent as NewportDepositQueuedEvent,
-} from '../contracts/newport/typechain/NewportLiquidityPool'
+import { TradeEvent as NewportArbitrumTradeEvent } from '../contracts/newport/arbitrum/typechain/NewportOptionMarket'
+import { TradeEvent as NewportOptimismTradeEvent } from '../contracts/newport/optimism/typechain/NewportOptionMarket'
 import {
   WithdrawProcessedEvent as NewportWithdrawProcessedEvent,
   WithdrawQueuedEvent as NewportWithdrawQueuedEvent,
 } from '../contracts/newport/typechain/NewportLiquidityPool'
-import { TradeEvent as NewportTradeEvent } from '../contracts/newport/typechain/NewportOptionMarket'
+import {
+  DepositProcessedEvent as NewportDepositProcessedEvent,
+  DepositQueuedEvent as NewportDepositQueuedEvent,
+} from '../contracts/newport/typechain/NewportLiquidityPool'
 import {
   PositionUpdatedEvent as NewportPositionUpdatedEvent,
   TransferEvent as NewportTransferEvent,
@@ -42,7 +43,7 @@ export type PartialTradeEvent = {
   blockNumber: number
   transactionHash: string
   logIndex: number
-  args: (AvalonTradeEvent | NewportTradeEvent)['args']
+  args: (AvalonTradeEvent | NewportArbitrumTradeEvent | NewportOptimismTradeEvent)['args']
 }
 
 export type PartialTransferEvent = {

@@ -1,19 +1,13 @@
 import { LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'
 import { Market } from '../market'
-import { Option } from '../option'
 import { PositionData } from '../position'
 import fetchPositionEventDataByIDs from './fetchPositionEventDataByIDs'
-import filterNulls from './filterNulls'
 import getIsCall from './getIsCall'
 import getLyraContract from './getLyraContract'
 import getOpenPositionDataFromStruct from './getOpenPositionDataFromStruct'
 
-export default async function fetchOpenPositionDataByOwner(
-  lyra: Lyra,
-  owner: string,
-  markets: Market[]
-): Promise<PositionData[]> {
+export default async function fetchOpenPositionDataByOwner(lyra: Lyra, owner: string): Promise<PositionData[]> {
   // Fetch all owner positions across all markets
   const positionsByMarketAddress = await getLyraContract(
     lyra,
@@ -21,50 +15,37 @@ export default async function fetchOpenPositionDataByOwner(
     LyraContractId.OptionMarketViewer
   ).getOwnerPositions(owner)
 
+  const positionIds = positionsByMarketAddress.flatMap(({ market, positions }) =>
+    positions.map(position => ({ positionId: position.positionId.toNumber(), marketAddress: market }))
+  )
+
+  const [positionEventsDict, markets] = await Promise.all([
+    fetchPositionEventDataByIDs(lyra, positionIds),
+    lyra.markets(),
+  ])
+
   const marketsByAddress: Record<string, Market> = markets.reduce(
     (dict, market) => ({ ...dict, [market.address]: market }),
     {} as Record<string, Market>
   )
 
-  const positionStructsByMarket = positionsByMarketAddress.map(
-    ({ positions: positionStructs, market: marketAddress }) => ({
-      positionStructs,
-      market: marketsByAddress[marketAddress],
+  return positionsByMarketAddress.flatMap(({ positions: openPositionStructs, market: marketAddress }) => {
+    return openPositionStructs.map(openPositionStruct => {
+      const positionId = openPositionStruct.positionId.toNumber()
+
+      const strikeId = openPositionStruct.strikeId.toNumber()
+      const isCall = getIsCall(openPositionStruct.optionType)
+      const { trades, collateralUpdates, transfers, settle } = positionEventsDict[marketAddress][positionId]
+      const option = marketsByAddress[marketAddress].liveOption(strikeId, isCall)
+      return getOpenPositionDataFromStruct(
+        owner,
+        openPositionStruct,
+        option,
+        trades,
+        collateralUpdates,
+        transfers,
+        settle
+      )
     })
-  )
-
-  const positions = (
-    await Promise.all(
-      positionStructsByMarket.map(async ({ market, positionStructs }) => {
-        const positionIds = positionStructs.map(p => p.positionId.toNumber())
-        const eventsByPositionID = await fetchPositionEventDataByIDs(lyra, market, positionIds)
-        const positions = filterNulls(
-          positionStructs.map(positionStruct => {
-            const positionId = positionStruct.positionId.toNumber()
-            const strikeId = positionStruct.strikeId.toNumber()
-            const isCall = getIsCall(positionStruct.optionType)
-            const { trades, collateralUpdates, transfers, settle } = eventsByPositionID[positionId]
-            let option: Option
-            try {
-              option = market.liveOption(strikeId, isCall)
-            } catch (_error) {
-              return null
-            }
-            return getOpenPositionDataFromStruct(
-              owner,
-              positionStruct,
-              option,
-              trades,
-              collateralUpdates,
-              transfers,
-              settle
-            )
-          })
-        )
-        return positions
-      })
-    )
-  ).flat()
-
-  return positions
+  })
 }

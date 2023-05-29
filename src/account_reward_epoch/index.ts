@@ -1,6 +1,5 @@
 import { BigNumber, PopulatedTransaction } from 'ethers'
 
-import { AccountBalances, AccountLiquidityTokenBalance, AccountLyraBalances } from '../account'
 import { Deployment, LyraGlobalContractId } from '../constants/contracts'
 import { MIN_REWARD_AMOUNT } from '../constants/rewards'
 import { GlobalRewardEpoch, RewardEpochToken } from '../global_reward_epoch'
@@ -43,15 +42,10 @@ export class AccountRewardEpoch {
   account: string
   globalEpoch: GlobalRewardEpoch
   accountEpoch: AccountRewardEpochData
-  stakedLyraBalance: number
-  tradingFeeRebate: number
-  tradingFees: number
-  lyraBalances: AccountLyraBalances
   tradingRewards: RewardEpochTokenAmount[]
   isTradingRewardsDistributed: boolean
   totalClaimableRewards: RewardEpochTokenAmount[]
   totalClaimableTradingRewards: RewardEpochTokenAmount[]
-  private vaultTokenBalancesMap: Record<string, AccountLiquidityTokenBalance>
   private totalClaimableVaultRewardsMap: Record<string, RewardEpochTokenAmount[]>
   private distributedVaultRewardsMap: Record<string, RewardEpochTokenAmount[]>
   private calculatedVaultRewardsMap: Record<string, RewardEpochTokenAmount[]>
@@ -62,8 +56,6 @@ export class AccountRewardEpoch {
     account: string,
     accountEpoch: AccountRewardEpochData,
     globalEpoch: GlobalRewardEpoch,
-    balances: AccountBalances[],
-    lyraBalances: AccountLyraBalances,
     claimAddedEvents: ClaimAddedEvent[],
     claimEvents: ClaimEvent[],
     rewardTokens: RewardEpochToken[],
@@ -73,32 +65,14 @@ export class AccountRewardEpoch {
     this.account = account
     this.globalEpoch = globalEpoch
     this.accountEpoch = accountEpoch
-    this.lyraBalances = lyraBalances
-    const avgStkLyraBalance =
-      globalEpoch.progressDays > 0 ? accountEpoch.stakingRewards.stkLyraDays / globalEpoch.progressDays : 0
-    this.stakedLyraBalance = globalEpoch.isComplete
-      ? avgStkLyraBalance
-      : fromBigNumber(lyraBalances.ethereumStkLyra.add(lyraBalances.optimismStkLyra).add(lyraBalances.arbitrumStkLyra))
 
-    this.vaultTokenBalancesMap = balances.reduce(
-      (lpTokenBalances, balance) => ({
-        ...lpTokenBalances,
-        [balance.baseAsset.symbol]: balance.liquidityToken,
-      }),
-      {}
-    )
-
-    this.tradingFeeRebate = globalEpoch.tradingFeeRebate(this.stakedLyraBalance)
-    const integratorTradingFees = accountEpoch.integratorTradingRewards?.fees ?? 0
-    this.tradingFees = integratorTradingFees > 0 ? integratorTradingFees : accountEpoch.tradingRewards.fees
-
-    this.tradingRewards = globalEpoch.tradingRewards(this.tradingFees, this.stakedLyraBalance)
-
+    const hasNewRewards = !!accountEpoch.tradingRewards.newRewards
+    const oldTradingRewardTokens = accountEpoch.tradingRewards?.rewards?.trading ?? []
+    const newTradingRewardTokens = accountEpoch?.tradingRewards?.newRewards?.tokens ?? []
+    const tradingRewardTokens = hasNewRewards ? newTradingRewardTokens : oldTradingRewardTokens
     const distributedTradingRewards = getDistributedTradingRewards(globalEpoch, claimAddedEvents)
     this.isTradingRewardsDistributed = !!distributedTradingRewards.find(d => d.amount > 0)
-    this.tradingRewards = this.isTradingRewardsDistributed
-      ? distributedTradingRewards
-      : globalEpoch.tradingRewards(this.tradingFees, this.stakedLyraBalance)
+    this.tradingRewards = this.isTradingRewardsDistributed ? distributedTradingRewards : tradingRewardTokens
 
     this.totalClaimableRewards = totalClaimableRewards
     this.totalClaimableTradingRewards = getTotalClaimableTradingRewards(rewardTokens, claimAddedEvents, claimEvents)
@@ -137,17 +111,15 @@ export class AccountRewardEpoch {
 
   // Getters
 
-  static async getByOwner(lyra: Lyra, address: string): Promise<AccountRewardEpoch[]> {
+  static async getByOwner(lyra: Lyra, owner: string): Promise<AccountRewardEpoch[]> {
     if (lyra.deployment !== Deployment.Mainnet) {
       return []
     }
-    const [accountEpochDatas, globalEpochs, lyraBalances, balances, claimAddedEvents, claimEvents] = await Promise.all([
-      fetchAccountRewardEpochData(lyra, address),
+    const [accountEpochDatas, globalEpochs, claimAddedEvents, claimEvents] = await Promise.all([
+      fetchAccountRewardEpochData(lyra, owner),
       GlobalRewardEpoch.getAll(lyra),
-      lyra.account(address).lyraBalances(),
-      lyra.account(address).balances(),
-      fetchClaimAddedEvents(lyra, lyra.chain, address),
-      fetchClaimEvents(lyra, lyra.chain, address),
+      fetchClaimAddedEvents(lyra, owner),
+      fetchClaimEvents(lyra, owner),
     ])
 
     const uniqueRewardTokens = getUniqueBy(
@@ -161,7 +133,7 @@ export class AccountRewardEpoch {
       uniqueRewardTokens.map(({ address: tokenAddress }) => ({
         contract: distributorContract,
         function: 'claimableBalances',
-        args: [address, tokenAddress],
+        args: [owner, tokenAddress],
       }))
     )
     const totalClaimableBalances = (returnData as BigNumber[])
@@ -183,11 +155,9 @@ export class AccountRewardEpoch {
         }
         return new AccountRewardEpoch(
           lyra,
-          address,
+          owner,
           accountEpochData,
           globalEpoch,
-          balances,
-          lyraBalances,
           claimAddedEvents,
           claimEvents,
           uniqueRewardTokens,
@@ -217,46 +187,6 @@ export class AccountRewardEpoch {
   }
 
   // Dynamic Fields
-
-  vaultApy(marketAddressOrName: string): RewardEpochTokenAmount[] {
-    const vaultTokenBalance = this.vaultTokenBalance(marketAddressOrName)
-    if (vaultTokenBalance === 0) {
-      return this.globalEpoch.minVaultApy(marketAddressOrName)
-    } else {
-      return this.globalEpoch.vaultApy(marketAddressOrName, this.stakedLyraBalance, vaultTokenBalance)
-    }
-  }
-
-  vaultMaxBoost(marketAddressOrName: string): number {
-    const vaultTokenBalance = this.vaultTokenBalance(marketAddressOrName)
-    if (vaultTokenBalance === 0) {
-      return this.globalEpoch.vaultMaxBoost(marketAddressOrName, 0)
-    } else {
-      return this.globalEpoch.vaultMaxBoost(marketAddressOrName, vaultTokenBalance)
-    }
-  }
-
-  vaultApyMultiplier(marketAddressOrName: string): number {
-    const vaultTokenBalance = this.vaultTokenBalance(marketAddressOrName)
-    if (vaultTokenBalance === 0) {
-      return 1
-    } else {
-      return this.globalEpoch.vaultApyMultiplier(marketAddressOrName, this.stakedLyraBalance, vaultTokenBalance)
-    }
-  }
-
-  vaultTokenBalance(marketAddressOrName: string): number {
-    const market = findMarketX(this.globalEpoch.markets, marketAddressOrName)
-    const marketKey = market.baseToken.symbol
-    const boostedLpDays: number = this.accountEpoch.mmvRewards
-      ? this.accountEpoch.mmvRewards[marketKey]?.boostedLpDays ?? 0
-      : 0
-    const avgVaultTokenBalance = this.globalEpoch.progressDays > 0 ? boostedLpDays / this.globalEpoch.progressDays : 0
-    const currVaultTokenBalance = fromBigNumber(this.vaultTokenBalancesMap[marketKey].balance)
-    // Uses average for historical epochs, realtime for current epoch
-    const vaultTokenBalance = this.globalEpoch.isComplete ? avgVaultTokenBalance : currVaultTokenBalance
-    return vaultTokenBalance
-  }
 
   vaultRewards(marketAddressOrName: string): RewardEpochTokenAmount[] {
     const market = findMarketX(this.globalEpoch.markets, marketAddressOrName)

@@ -143,8 +143,8 @@ export interface NewportLiquidityPoolInterface extends utils.Interface {
     "initiateWithdraw(address,uint256)": FunctionFragment;
     "insolventSettlementAmount()": FunctionFragment;
     "liquidationInsolventAmount()": FunctionFragment;
-    "lockCallCollateral(uint256,uint256,uint256)": FunctionFragment;
-    "lockPutCollateral(uint256,uint256)": FunctionFragment;
+    "lockCallCollateral(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "lockPutCollateral(uint256,uint256,uint256)": FunctionFragment;
     "lockedCollateral()": FunctionFragment;
     "lpParams()": FunctionFragment;
     "nextQueuedDepositId()": FunctionFragment;
@@ -165,7 +165,7 @@ export interface NewportLiquidityPoolInterface extends utils.Interface {
     "reclaimInsolventQuote(uint256)": FunctionFragment;
     "recoverFunds(address,address)": FunctionFragment;
     "sendSettlementValue(address,uint256)": FunctionFragment;
-    "sendShortPremium(address,uint256,uint256,uint256,uint256,bool)": FunctionFragment;
+    "sendShortPremium(address,uint256,uint256,uint256,uint256,bool,uint256)": FunctionFragment;
     "setCircuitBreakerParameters((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))": FunctionFragment;
     "setLiquidityPoolParameters((uint256,uint256,uint256,uint256,address,uint256,uint256,uint256,uint256))": FunctionFragment;
     "setPoolHedger(address)": FunctionFragment;
@@ -336,12 +336,17 @@ export interface NewportLiquidityPoolInterface extends utils.Interface {
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "lockPutCollateral",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "lockedCollateral",
@@ -425,7 +430,8 @@ export interface NewportLiquidityPoolInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<boolean>
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
@@ -1204,12 +1210,14 @@ export interface NewportLiquidityPool extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       spotPrice: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     lockPutCollateral(
       amount: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1331,6 +1339,7 @@ export interface NewportLiquidityPool extends BaseContract {
       freeLiquidity: PromiseOrValue<BigNumberish>,
       reservedFee: PromiseOrValue<BigNumberish>,
       isCall: PromiseOrValue<boolean>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1492,12 +1501,14 @@ export interface NewportLiquidityPool extends BaseContract {
     amount: PromiseOrValue<BigNumberish>,
     spotPrice: PromiseOrValue<BigNumberish>,
     freeLiquidity: PromiseOrValue<BigNumberish>,
+    strikeId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   lockPutCollateral(
     amount: PromiseOrValue<BigNumberish>,
     freeLiquidity: PromiseOrValue<BigNumberish>,
+    strikeId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1619,6 +1630,7 @@ export interface NewportLiquidityPool extends BaseContract {
     freeLiquidity: PromiseOrValue<BigNumberish>,
     reservedFee: PromiseOrValue<BigNumberish>,
     isCall: PromiseOrValue<boolean>,
+    strikeId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1774,12 +1786,14 @@ export interface NewportLiquidityPool extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       spotPrice: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     lockPutCollateral(
       amount: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1901,6 +1915,7 @@ export interface NewportLiquidityPool extends BaseContract {
       freeLiquidity: PromiseOrValue<BigNumberish>,
       reservedFee: PromiseOrValue<BigNumberish>,
       isCall: PromiseOrValue<boolean>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -2304,12 +2319,14 @@ export interface NewportLiquidityPool extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       spotPrice: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     lockPutCollateral(
       amount: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2389,6 +2406,7 @@ export interface NewportLiquidityPool extends BaseContract {
       freeLiquidity: PromiseOrValue<BigNumberish>,
       reservedFee: PromiseOrValue<BigNumberish>,
       isCall: PromiseOrValue<boolean>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2523,12 +2541,14 @@ export interface NewportLiquidityPool extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       spotPrice: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     lockPutCollateral(
       amount: PromiseOrValue<BigNumberish>,
       freeLiquidity: PromiseOrValue<BigNumberish>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2614,6 +2634,7 @@ export interface NewportLiquidityPool extends BaseContract {
       freeLiquidity: PromiseOrValue<BigNumberish>,
       reservedFee: PromiseOrValue<BigNumberish>,
       isCall: PromiseOrValue<boolean>,
+      strikeId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

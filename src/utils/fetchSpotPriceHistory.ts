@@ -50,7 +50,6 @@ export default async function fetchSpotPriceHistory(
 
   const estNumCandles = candleDuration > 0 ? (endTimestamp - startTimestamp) / candleDuration : 0
   const numBatches = Math.ceil(estNumCandles / SPOT_PRICE_SNAPSHOT_LIMIT)
-
   const data = await subgraphRequestWithLoop<SpotPriceSnapshotQueryResult>(
     lyra,
     spotPriceSnapshotsQuery,

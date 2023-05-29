@@ -5,12 +5,11 @@ import fetchOpenPositionDataByOwner from './fetchOpenPositionDataByOwner'
 import getUniqueBy from './getUniqueBy'
 
 export default async function fetchPositionDataByOwner(lyra: Lyra, owner: string): Promise<PositionData[]> {
-  const markets = await lyra.markets()
   const [openPositions, allPositions] = await Promise.all([
     // Contract (realtime) data
-    fetchOpenPositionDataByOwner(lyra, owner, markets),
+    fetchOpenPositionDataByOwner(lyra, owner),
     // Subgraph data
-    fetchAllPositionDataByOwner(lyra, owner, markets),
+    fetchAllPositionDataByOwner(lyra, owner),
   ])
 
   const positions = openPositions.concat(allPositions)

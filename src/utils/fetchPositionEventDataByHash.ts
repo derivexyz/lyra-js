@@ -1,6 +1,6 @@
 import { TransactionReceipt } from '@ethersproject/providers'
 
-import Lyra, { CollateralUpdateEvent, Market, SettleEvent, TradeEvent } from '..'
+import Lyra, { CollateralUpdateEvent, SettleEvent, TradeEvent } from '..'
 import { TransferEvent } from '../transfer_event'
 import fetchPositionEventDataByIDs from './fetchPositionEventDataByIDs'
 import filterNulls from './filterNulls'
@@ -22,8 +22,8 @@ export default async function fetchPositionEventDataByHash(
       : transactionHashOrReceipt
   const transactionHash = receipt.transactionHash
 
-  const tradeEvents = parsePartialTradeEventsFromLogs(receipt.logs)
-  const updateEvents = parsePartialPositionUpdatedEventsFromLogs(receipt.logs) // Also covers settle events
+  const tradeEvents = parsePartialTradeEventsFromLogs(receipt.logs, lyra.network)
+  const updateEvents = parsePartialPositionUpdatedEventsFromLogs(receipt.logs, lyra.network) // Also covers settle events
 
   let marketAddress: string | null = null
   if (tradeEvents.length) {
@@ -43,8 +43,6 @@ export default async function fetchPositionEventDataByHash(
     return { trades: [], collateralUpdates: [], transfers: [], settles: [] }
   }
 
-  const market = await Market.get(lyra, marketAddress)
-
   const positionIds = Array.from(
     new Set([
       ...tradeEvents.map(trade => trade.args.positionId.toNumber()),
@@ -53,7 +51,12 @@ export default async function fetchPositionEventDataByHash(
   )
 
   // Get event data for unique positions in tx hash
-  const eventsByPositionID = await fetchPositionEventDataByIDs(lyra, market, positionIds)
+  const eventsByPositionID = (
+    await fetchPositionEventDataByIDs(
+      lyra,
+      positionIds.map(positionId => ({ positionId, marketAddress })) as { positionId: number; marketAddress: string }[]
+    )
+  )[marketAddress]
 
   const events = Object.values(eventsByPositionID).map(({ trades, collateralUpdates, transfers, settle: _settle }) => {
     const tradeData = trades.find(trade => trade.transactionHash === transactionHash)

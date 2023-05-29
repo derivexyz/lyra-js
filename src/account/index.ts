@@ -5,7 +5,6 @@ import { Deployment, LyraContractId } from '../constants/contracts'
 import Lyra from '../lyra'
 import { Market } from '../market'
 import buildTx from '../utils/buildTx'
-import fetchLyraBalances from '../utils/fetchLyraBalances'
 import getLyraContract from '../utils/getLyraContract'
 import fetchAccountBalancesAndAllowances from './fetchAccountBalancesAndAllowances'
 
@@ -35,17 +34,6 @@ export type AccountBalances = {
   quoteAsset: AccountQuoteBalance
   baseAsset: AccountBaseBalance
   liquidityToken: AccountLiquidityTokenBalance
-}
-
-export type AccountLyraBalances = {
-  ethereumLyra: BigNumber
-  optimismLyra: BigNumber
-  arbitrumLyra: BigNumber
-  optimismOldStkLyra: BigNumber
-  ethereumStkLyra: BigNumber
-  optimismStkLyra: BigNumber
-  arbitrumStkLyra: BigNumber
-  stakingAllowance: BigNumber
 }
 
 export type AccountPnlSnapshot = {
@@ -81,10 +69,6 @@ export class Account {
       throw new Error(`No balances exist for market`)
     }
     return balance
-  }
-
-  async lyraBalances(): Promise<AccountLyraBalances> {
-    return await fetchLyraBalances(this.lyra, this.address)
   }
 
   drip(): PopulatedTransaction {

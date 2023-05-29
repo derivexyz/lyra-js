@@ -1,15 +1,13 @@
 import { Chain } from '../constants/chain'
-import Lyra from '../lyra'
 
-const getLyraGovernanceSubgraphURI = (lyra: Lyra, chain: Chain | 'ethereum'): string => {
+const getLyraGovernanceSubgraphURI = (chain: Chain): string => {
   switch (chain) {
-    case 'ethereum':
     case Chain.Optimism:
     case Chain.OptimismGoerli:
-      return new URL(`/subgraph/optimism-governance/v1/api`, lyra.apiUri).toString()
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/optimism-governance/api'
     case Chain.Arbitrum:
     case Chain.ArbitrumGoerli:
-      return new URL(`/subgraph/arbitrum-governance/v1/api`, lyra.apiUri).toString()
+      return 'https://subgraph.satsuma-prod.com/d14de8f7fd46/lyra/arbitrum-governance/api'
   }
 }
 

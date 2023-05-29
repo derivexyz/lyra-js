@@ -12,10 +12,6 @@ export default function getLyra(): Lyra {
   const rpcUrl = process.env.RPC_URL ?? getLyraDeploymentRPCURL(chain)
   const lyra = new Lyra({
     provider: new StaticJsonRpcProvider(rpcUrl, chainId),
-    optimismProvider: new StaticJsonRpcProvider(
-      getLyraDeploymentRPCURL(Chain.Optimism),
-      getLyraDeploymentChainId(Chain.Optimism)
-    ),
   })
   return lyra
 }

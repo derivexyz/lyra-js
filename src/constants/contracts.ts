@@ -9,7 +9,6 @@ export enum LyraContractId {
 }
 
 export enum LyraGlobalContractId {
-  LyraStakingModule = 'LyraStakingModule',
   MultiDistributor = 'MultiDistributor',
   Multicall3 = 'Multicall3',
 }

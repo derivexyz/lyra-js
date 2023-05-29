@@ -114,6 +114,7 @@ export const TRANSFER_QUERY_FRAGMENT = `
   transactionHash
   blockNumber
   position {
+    id
     positionId
   }
 `
@@ -315,6 +316,12 @@ export const LIQUIDITY_DEPOSIT_FRAGMENT = `
     market {
       id
     }
+    cbEvents(first:1, orderBy:cbTimestamp, orderDirection:desc) {
+      cbTimestamp
+      ivVarianceCrossed
+      skewVarianceCrossed
+      liquidityVarianceCrossed
+    }
   }
   user
   pendingDepositsAndWithdrawals(where: {
@@ -388,6 +395,13 @@ export const CLAIM_FRAGMENT = `
   timestamp
 `
 
+export const CIRCUIT_BREAKER_FRAGMENT = `
+  cbTimestamp
+  ivVarianceCrossed
+  skewVarianceCrossed
+  liquidityVarianceCrossed
+`
+
 export type TradeQueryResult = {
   timestamp: number
   blockNumber: number
@@ -438,6 +452,7 @@ export type TransferQueryResult = {
   transactionHash: string
   blockNumber: number
   position: {
+    id: string
     positionId: number
   }
 }
@@ -637,6 +652,13 @@ export enum SnapshotPeriod {
   EightHours = 28800,
   OneDay = 86400,
   SevenDays = 604800,
+}
+
+export type CircuitBreakerQueryResult = {
+  cbTimestamp: number
+  ivVarianceCrossed: boolean
+  skewVarianceCrossed: boolean
+  liquidityVarianceCrossed: boolean
 }
 
 export type LiquidityDepositQueryResult = {

@@ -16,33 +16,32 @@ import { Network } from './constants/network'
 import { GlobalRewardEpoch } from './global_reward_epoch'
 import { LiquidityDeposit } from './liquidity_deposit'
 import { LiquidityWithdrawal } from './liquidity_withdrawal'
-import { LyraStaking } from './lyra_staking'
 import { Market, MarketContractAddresses, MarketQuotes, MarketTradeOptions } from './market'
 import { Option, OptionQuotes } from './option'
-import { Position, PositionFilter, PositionLeaderboard, PositionLeaderboardFilter } from './position'
+import { Position } from './position'
 import { Quote, QuoteOptions } from './quote'
 import { SettleEvent } from './settle_event'
 import { Strike, StrikeQuotes } from './strike'
 import { Trade } from './trade'
 import { TradeEvent, TradeEventListener, TradeEventListenerCallback, TradeEventListenerOptions } from './trade_event'
 import { TransferEvent } from './transfer_event'
-import fetchLeaderboard from './utils/fetchLeaderboard'
 import fetchMarketAddresses from './utils/fetchMarketAddresses'
 import fetchPositionEventDataByHash from './utils/fetchPositionEventDataByHash'
+import getDefaultVersionForChain from './utils/getDefaultVersionForChain'
 import getLyraChainForChainId from './utils/getLyraChainForChainId'
 import getLyraChainIdForChain from './utils/getLyraChainIdForChain'
 import getLyraDeploymentForChain from './utils/getLyraDeploymentForChain'
 import getLyraDeploymentProvider from './utils/getLyraDeploymentProvider'
 import getLyraDeploymentSubgraphURI from './utils/getLyraDeploymentSubgraphURI'
+import getLyraGovernanceSubgraphURI from './utils/getLyraGovernanceSubgraphURI'
 import getNetworkForChain from './utils/getLyraNetworkForChain'
-import getVersionForChain from './utils/getVersionForChain'
 
 export type LyraConfig = {
   provider: JsonRpcProvider
-  optimismProvider?: JsonRpcProvider
-  ethereumProvider?: JsonRpcProvider
   subgraphUri?: string
+  govSubgraphUri?: string
   apiUri?: string
+  version?: Version
 }
 
 export enum Version {
@@ -56,10 +55,10 @@ export default class Lyra {
   chain: Chain
   chainId: number
   provider: JsonRpcProvider
-  optimismProvider?: JsonRpcProvider
-  ethereumProvider?: JsonRpcProvider
   subgraphUri: string
   subgraphClient: ApolloClient<NormalizedCacheObject>
+  govSubgraphUri: string
+  govSubgraphClient: ApolloClient<NormalizedCacheObject>
   apiUri: string
   deployment: Deployment
   network: Network
@@ -69,32 +68,40 @@ export default class Lyra {
       // Config
       const configObj = config as LyraConfig
       this.provider = config.provider
-      this.optimismProvider = config.optimismProvider
-      this.ethereumProvider = config.ethereumProvider
       this.chain = getLyraChainForChainId(this.provider.network.chainId)
-      this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.chain)
       this.apiUri = configObj.apiUri ?? LYRA_API_URL
+      this.version = config.version ?? getDefaultVersionForChain(this.chain)
+      this.subgraphUri = configObj?.subgraphUri ?? getLyraDeploymentSubgraphURI(this.chain, this.version)
+      this.govSubgraphUri = configObj?.govSubgraphUri ?? getLyraGovernanceSubgraphURI(this.chain)
     } else if (typeof config === 'number') {
       // Chain ID
       this.chain = getLyraChainForChainId(config)
       this.provider = getLyraDeploymentProvider(this.chain)
-      this.subgraphUri = getLyraDeploymentSubgraphURI(this.chain)
+      this.version = getDefaultVersionForChain(this.chain)
+      this.subgraphUri = getLyraDeploymentSubgraphURI(this.chain, this.version)
+      this.govSubgraphUri = getLyraGovernanceSubgraphURI(this.chain)
     } else {
       // String
       this.chain = config
       this.provider = getLyraDeploymentProvider(this.chain)
-      this.subgraphUri = getLyraDeploymentSubgraphURI(this.chain)
+      this.version = getDefaultVersionForChain(this.chain)
+      this.subgraphUri = getLyraDeploymentSubgraphURI(this.chain, this.version)
+      this.govSubgraphUri = getLyraGovernanceSubgraphURI(this.chain)
     }
-
     this.subgraphClient = new ApolloClient({
+      connectToDevTools: true,
       link: new HttpLink({ uri: this.subgraphUri, fetch }),
       cache: new InMemoryCache(),
     })
+    this.govSubgraphClient = new ApolloClient({
+      connectToDevTools: true,
+      link: new HttpLink({ uri: this.govSubgraphUri, fetch }),
+      cache: new InMemoryCache(),
+    })
+    this.network = getNetworkForChain(this.chain)
     this.apiUri = LYRA_API_URL
     this.chainId = getLyraChainIdForChain(this.chain)
     this.deployment = getLyraDeploymentForChain(this.chain)
-    this.network = getNetworkForChain(this.chain)
-    this.version = getVersionForChain(this.network)
   }
 
   // Quote
@@ -225,10 +232,6 @@ export default class Lyra {
     return await Position.getByOwner(this, owner)
   }
 
-  async allPositions(options?: PositionFilter): Promise<Position[]> {
-    return await Position.getAll(this, options)
-  }
-
   async position(marketAddressOrName: string, positionId: number): Promise<Position> {
     return await Position.get(this, marketAddressOrName, positionId)
   }
@@ -242,10 +245,6 @@ export default class Lyra {
     return await fetchPositionEventDataByHash(this, transactionHashOrReceipt)
   }
 
-  async leaderboard(options?: PositionLeaderboardFilter): Promise<PositionLeaderboard[]> {
-    return await fetchLeaderboard(this, options)
-  }
-
   // Account
 
   account(address: string): Account {
@@ -257,10 +256,11 @@ export default class Lyra {
     return account.drip()
   }
 
-  // Liquidity Deposits
+  // Deposits
 
   async deposits(marketAddressOrName: string, owner: string): Promise<LiquidityDeposit[]> {
-    return await LiquidityDeposit.getByOwner(this, marketAddressOrName, owner)
+    const market = await this.market(marketAddressOrName)
+    return await LiquidityDeposit.getByOwner(this, market, owner)
   }
 
   async approveDeposit(
@@ -281,10 +281,11 @@ export default class Lyra {
     return market.initiateDeposit(beneficiary, amountQuote)
   }
 
-  // Liquidity Withdrawals
+  // Withdrawals
 
   async withdrawals(marketAddressOrName: string, owner: string): Promise<LiquidityWithdrawal[]> {
-    return await LiquidityWithdrawal.getByOwner(this, marketAddressOrName, owner)
+    const market = await this.market(marketAddressOrName)
+    return await LiquidityWithdrawal.getByOwner(this, market, owner)
   }
 
   async initiateWithdraw(
@@ -304,31 +305,15 @@ export default class Lyra {
 
   // Rewards
 
-  async claimRewards(address: string, tokenAddresses: string[]) {
-    return await AccountRewardEpoch.claim(this, address, tokenAddresses)
-  }
-
-  async lyraStaking(): Promise<LyraStaking> {
-    return await LyraStaking.get(this)
-  }
-
-  async lyraStakingAccount(address: string) {
-    return await LyraStaking.getByOwner(this, address)
-  }
-
-  async claimableStakingRewards(address: string) {
-    return LyraStaking.claimableRewards(this, address)
+  async claimRewards(owner: string, tokenAddresses: string[]) {
+    return await AccountRewardEpoch.claim(this, owner, tokenAddresses)
   }
 
   async globalRewardEpochs(): Promise<GlobalRewardEpoch[]> {
     return await GlobalRewardEpoch.getAll(this)
   }
 
-  async latestGlobalRewardEpoch(): Promise<GlobalRewardEpoch | null> {
-    return await GlobalRewardEpoch.getLatest(this)
-  }
-
-  async accountRewardEpochs(address: string): Promise<AccountRewardEpoch[]> {
-    return await AccountRewardEpoch.getByOwner(this, address)
+  async accountRewardEpochs(owner: string): Promise<AccountRewardEpoch[]> {
+    return await AccountRewardEpoch.getByOwner(this, owner)
   }
 }

@@ -10,6 +10,7 @@ export type TransferEventData = {
   blockNumber: number
   from: string
   to: string
+  marketAddress: string
   positionId: number
 }
 
@@ -21,6 +22,7 @@ export class TransferEvent {
   blockNumber: number
   from: string
   to: string
+  marketAddress: string
   positionId: number
 
   constructor(lyra: Lyra, transfer: TransferEventData) {
@@ -31,6 +33,7 @@ export class TransferEvent {
     this.blockNumber = transfer.blockNumber
     this.from = transfer.from
     this.to = transfer.to
+    this.marketAddress = transfer.marketAddress
     this.positionId = transfer.positionId
   }
 

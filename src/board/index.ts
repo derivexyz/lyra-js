@@ -90,7 +90,8 @@ export class Board {
       varianceGwavIv = avalonBoardView.forceCloseGwavIV
       forceCloseGwavIv = avalonBoardView.forceCloseGwavIV
     } else {
-      const newportBoardView = boardView as NewportOptionMarketViewer.BoardViewStructOutput
+      const newportBoardView: NewportOptionMarketViewer.BoardViewStructOutput =
+        boardView as NewportOptionMarketViewer.BoardViewStructOutput
       varianceGwavIv = newportBoardView.varianceGwavIv
       forceCloseGwavIv = newportBoardView.forceCloseGwavIv
     }

@@ -29,16 +29,69 @@ export type AccountMMVRewards = {
   }
 }
 
-export type AccountTradingRewards = {
+export type DailyPoint = {
+  points: number
+  day: number
   fees: number
-  effectiveRebateRate: number
+  premium: number
+  size: number
+  volume: number
+  durationInSeconds: number
+  startOfDayTimestamp: number
+  endOfDayTimestamp: number
+  stakingBoost: number
+  tradingBoost: number
+  referralBoost: number
+  referrer: string | null
+  referrerFees: number
+  referrerBoost: number
+}
+
+export type DailyPoints = {
+  [startTimestamp: number]: DailyPoint
+}
+
+export type NewTradingRewardsReferredTraders = {
+  [trader: string]: {
+    trader: string
+    trades: number
+    fees: number
+    premium: number
+    volume: number
+    tokens: RewardEpochTokenAmount[]
+  }
+}
+
+export type NewTradingRewards = {
+  points: {
+    daily: DailyPoints
+    trades: number
+    fees: number
+    premium: number
+    size: number
+    durationInSeconds: number
+    averageBoost: number
+    total: number
+    volume: number
+    totalPercent: number
+  }
+  tokens: RewardEpochTokenAmount[]
+  referredTraders: NewTradingRewardsReferredTraders
+}
+
+export type AccountTradingRewards = {
+  fees: number // USD
+  effectiveRebateRate: number // post xLyra percentage
   tradingRebateRewardDollars: number
+  shortCollateralRewardDollars: number
   totalTradingRewardDollars: number
   shortCallSeconds: number
   shortPutSeconds: number
   rewards: {
     trading: RewardEpochTokenAmount[]
+    shortCollateral: RewardEpochTokenAmount[]
   }
+  newRewards: NewTradingRewards
 }
 
 export default async function fetchAccountRewardEpochData(
@@ -48,5 +101,7 @@ export default async function fetchAccountRewardEpochData(
   if (lyra.deployment !== Deployment.Mainnet) {
     return []
   }
-  return fetchWithCache(`${lyra.apiUri}/rewards/account?network=${lyra.network}&account=${account}`)
+  return fetchWithCache(
+    `${lyra.apiUri}/rewards/account?network=${lyra.network}&account=${account}&version=${lyra.version}`
+  )
 }

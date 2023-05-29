@@ -5,6 +5,7 @@ import { POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queri
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
+import filterNulls from './filterNulls'
 import getCollateralUpdateDataFromSubgraph from './getCollateralUpdateDataFromSubgraph'
 import getPositionDataFromSubgraph from './getPositionDataFromSubgraph'
 import getSettleDataFromSubgraph from './getSettleDataFromSubgraph'
@@ -36,23 +37,22 @@ type PositionVariables = {
   owner: string
 }
 
-export default async function fetchAllPositionDataByOwner(
-  lyra: Lyra,
-  owner: string,
-  markets: Market[]
-): Promise<PositionData[]> {
-  const { data } = await subgraphRequest<
-    {
-      optionTransfers: { position: PositionQueryResult }[]
-      trades: { position: PositionQueryResult }[]
-    },
-    PositionVariables
-  >(lyra.subgraphClient, {
-    query: positionsQuery,
-    variables: {
-      owner: owner.toLowerCase(),
-    },
-  })
+export default async function fetchAllPositionDataByOwner(lyra: Lyra, owner: string): Promise<PositionData[]> {
+  const [{ data }, markets] = await Promise.all([
+    subgraphRequest<
+      {
+        optionTransfers: { position: PositionQueryResult }[]
+        trades: { position: PositionQueryResult }[]
+      },
+      PositionVariables
+    >(lyra.subgraphClient, {
+      query: positionsQuery,
+      variables: {
+        owner: owner.toLowerCase(),
+      },
+    }),
+    lyra.markets(),
+  ])
 
   const transferPositions = data?.optionTransfers.map(t => t.position) ?? []
   const tradedPositions = data?.trades.map(t => t.position) ?? []
@@ -63,12 +63,18 @@ export default async function fetchAllPositionDataByOwner(
     {} as Record<string, Market>
   )
 
-  return positions.map(pos => {
-    const trades = pos.trades.map(getTradeDataFromSubgraph)
-    const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
-    const transfers = pos.transfers.map(getTransferDataFromSubgraph)
-    const market = marketsByAddress[getAddress(pos.market.id)]
-    const settle = pos.settle ? getSettleDataFromSubgraph(pos.settle) : null
-    return getPositionDataFromSubgraph(pos, market, trades, collateralUpdates, transfers, settle)
-  })
+  return filterNulls(
+    positions.map(pos => {
+      const market = marketsByAddress[getAddress(pos.market.id)]
+      if (!market) {
+        // Handle positions from previous versions
+        return null
+      }
+      const trades = pos.trades.map(getTradeDataFromSubgraph)
+      const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
+      const transfers = pos.transfers.map(getTransferDataFromSubgraph)
+      const settle = pos.settle ? getSettleDataFromSubgraph(pos.settle) : null
+      return getPositionDataFromSubgraph(pos, market, trades, collateralUpdates, transfers, settle)
+    })
+  )
 }

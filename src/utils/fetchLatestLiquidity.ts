@@ -27,7 +27,7 @@ const marketTotalValueSnapshotsQuery = gql`
   }
 `
 
-const EMPTY: Omit<MarketLiquiditySnapshot, 'market' | 'timestamp'> = {
+const EMPTY: Omit<MarketLiquiditySnapshot, 'timestamp'> = {
   tvl: ZERO_BN,
   freeLiquidity: ZERO_BN,
   burnableLiquidity: ZERO_BN,
@@ -44,7 +44,6 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
   if (market.liveBoards().length === 0) {
     // No boards, deposits only
     return {
-      market,
       tvl: market.params.NAV,
       freeLiquidity: market.params.NAV,
       burnableLiquidity: ZERO_BN,
@@ -70,7 +69,7 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
   })
 
   if (!data || data.marketTotalValueSnapshots.length === 0) {
-    return { ...EMPTY, market, timestamp: market.block.timestamp }
+    return { ...EMPTY, timestamp: market.block.timestamp }
   }
 
   const latestLiquiditySnapshot = data.marketTotalValueSnapshots[0]
@@ -83,7 +82,6 @@ export default async function fetchLatestLiquidity(lyra: Lyra, market: Market): 
   const tokenPrice = BigNumber.from(latestLiquiditySnapshot.tokenPrice)
 
   return {
-    market,
     timestamp: latestLiquiditySnapshot.timestamp,
     freeLiquidity,
     burnableLiquidity,

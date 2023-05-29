@@ -1,45 +1,131 @@
 [
-  { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
   {
-    "inputs": [{ "internalType": "address", "name": "thrower", "type": "address" }],
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      }
+    ],
     "name": "AlreadyInitialised",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "int256", "name": "strikeCallDelta", "type": "int256" },
-      { "internalType": "int256", "name": "minDelta", "type": "int256" },
-      { "internalType": "int256", "name": "maxDelta", "type": "int256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "strikeCallDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "minDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "maxDelta",
+        "type": "int256"
+      }
     ],
     "name": "ForceCloseDeltaOutOfRange",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "bool", "name": "isBuy", "type": "bool" },
-      { "internalType": "uint256", "name": "newSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "maxSkew", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isBuy",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxSkew",
+        "type": "uint256"
+      }
     ],
     "name": "ForceCloseSkewOutOfRange",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "standardSize", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "standardSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.PricingParameters",
         "name": "pricingParams",
@@ -51,21 +137,73 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
       {
         "components": [
-          { "internalType": "int256", "name": "minDelta", "type": "int256" },
-          { "internalType": "int256", "name": "minForceCloseDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-          { "internalType": "uint256", "name": "minBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMinSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMaxSkew", "type": "uint256" },
-          { "internalType": "bool", "name": "capSkewsToAbs", "type": "bool" }
+          {
+            "internalType": "int256",
+            "name": "minDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "minForceCloseDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tradingCutoff",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMinSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMaxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "capSkewsToAbs",
+            "type": "bool"
+          }
         ],
         "internalType": "struct OptionMarketPricer.TradeLimitParameters",
         "name": "tradeLimitParams",
@@ -77,60 +215,148 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "nominatedOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "nominatedOwner",
+        "type": "address"
+      }
     ],
     "name": "OnlyNominatedOwner",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "optionMarket", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "optionMarket",
+        "type": "address"
+      }
     ],
     "name": "OnlyOptionMarket",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "owner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
     ],
     "name": "OnlyOwner",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "int256", "name": "strikeCallDelta", "type": "int256" },
-      { "internalType": "int256", "name": "minDelta", "type": "int256" },
-      { "internalType": "int256", "name": "maxDelta", "type": "int256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "strikeCallDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "minDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "maxDelta",
+        "type": "int256"
+      }
     ],
     "name": "TradeDeltaOutOfRange",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-      { "internalType": "uint256", "name": "boardExpiry", "type": "uint256" },
-      { "internalType": "uint256", "name": "currentTime", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tradingCutoff",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "boardExpiry",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentTime",
+        "type": "uint256"
+      }
     ],
     "name": "TradingCutoffReached",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "bool", "name": "isBuy", "type": "bool" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isBuy",
+        "type": "bool"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "vol", "type": "uint256" },
-          { "internalType": "uint256", "name": "baseIv", "type": "uint256" },
-          { "internalType": "uint256", "name": "skew", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "vol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "baseIv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skew",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VolComponents",
         "name": "currentVol",
@@ -138,9 +364,21 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "vol", "type": "uint256" },
-          { "internalType": "uint256", "name": "baseIv", "type": "uint256" },
-          { "internalType": "uint256", "name": "skew", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "vol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "baseIv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skew",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VolComponents",
         "name": "newVol",
@@ -148,9 +386,21 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "vol", "type": "uint256" },
-          { "internalType": "uint256", "name": "baseIv", "type": "uint256" },
-          { "internalType": "uint256", "name": "skew", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "vol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "baseIv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skew",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VolComponents",
         "name": "tradeBounds",
@@ -163,15 +413,32 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "address", "name": "oldOwner", "type": "address" },
-      { "indexed": false, "internalType": "address", "name": "newOwner", "type": "address" }
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
     "name": "OwnerChanged",
     "type": "event"
   },
   {
     "anonymous": false,
-    "inputs": [{ "indexed": false, "internalType": "address", "name": "newOwner", "type": "address" }],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
     "name": "OwnerNominated",
     "type": "event"
   },
@@ -180,15 +447,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "standardSize", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "standardSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentFactor",
+            "type": "uint256"
+          }
         ],
         "indexed": false,
         "internalType": "struct OptionMarketPricer.PricingParameters",
@@ -204,18 +507,66 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "int256", "name": "minDelta", "type": "int256" },
-          { "internalType": "int256", "name": "minForceCloseDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-          { "internalType": "uint256", "name": "minBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMinSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMaxSkew", "type": "uint256" },
-          { "internalType": "bool", "name": "capSkewsToAbs", "type": "bool" }
+          {
+            "internalType": "int256",
+            "name": "minDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "minForceCloseDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tradingCutoff",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMinSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMaxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "capSkewsToAbs",
+            "type": "bool"
+          }
         ],
         "indexed": false,
         "internalType": "struct OptionMarketPricer.TradeLimitParameters",
@@ -231,15 +582,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "defaultVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "forceCloseVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "referenceSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticSkewAdjustment", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticVega", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticIvVariance", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "defaultVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "forceCloseVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticSkewAdjustment",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticVega",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticIvVariance",
+            "type": "uint256"
+          }
         ],
         "indexed": false,
         "internalType": "struct OptionMarketPricer.VarianceFeeParameters",
@@ -250,22 +637,64 @@
     "name": "VarianceFeeParametersSet",
     "type": "event"
   },
-  { "inputs": [], "name": "acceptOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
   {
     "inputs": [],
     "name": "getPricingParams",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "standardSize", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "standardSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.PricingParameters",
         "name": "pricingParameters",
@@ -277,13 +706,35 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-      { "internalType": "uint256", "name": "pointA", "type": "uint256" },
-      { "internalType": "uint256", "name": "pointB", "type": "uint256" },
-      { "internalType": "uint256", "name": "coefficient", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "expiry",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointA",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointB",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "coefficient",
+        "type": "uint256"
+      }
     ],
     "name": "getTimeWeightedFee",
-    "outputs": [{ "internalType": "uint256", "name": "timeWeightedFee", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "timeWeightedFee",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -293,18 +744,66 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "int256", "name": "minDelta", "type": "int256" },
-          { "internalType": "int256", "name": "minForceCloseDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-          { "internalType": "uint256", "name": "minBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMinSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMaxSkew", "type": "uint256" },
-          { "internalType": "bool", "name": "capSkewsToAbs", "type": "bool" }
+          {
+            "internalType": "int256",
+            "name": "minDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "minForceCloseDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tradingCutoff",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMinSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMaxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "capSkewsToAbs",
+            "type": "bool"
+          }
         ],
         "internalType": "struct OptionMarketPricer.TradeLimitParameters",
         "name": "tradeLimitParameters",
@@ -318,23 +817,83 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isBuy", "type": "bool" },
-          { "internalType": "bool", "name": "isForceClose", "type": "bool" },
-          { "internalType": "enum OptionMarket.TradeDirection", "name": "tradeDirection", "type": "uint8" },
-          { "internalType": "enum OptionMarket.OptionType", "name": "optionType", "type": "uint8" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isBuy",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceClose",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum OptionMarket.TradeDirection",
+            "name": "tradeDirection",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "freeLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "burnableLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "reservedCollatLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "pendingDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "usedDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "longScaleFactor",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct LiquidityPool.Liquidity",
             "name": "liquidity",
@@ -347,37 +906,113 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPrice", "type": "uint256" },
-          { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "callDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-          { "internalType": "uint256", "name": "vega", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "preTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "postTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "callDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVariance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vega",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionGreekCache.TradePricing",
         "name": "pricing",
         "type": "tuple"
       },
-      { "internalType": "uint256", "name": "newBaseIv", "type": "uint256" },
-      { "internalType": "uint256", "name": "newSkew", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "newBaseIv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newSkew",
+        "type": "uint256"
+      }
     ],
     "name": "getTradeResult",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "premium", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "premium",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-              { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-              { "internalType": "uint256", "name": "vegaUtil", "type": "uint256" },
-              { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "vegaUtilFee", "type": "uint256" }
+              {
+                "internalType": "int256",
+                "name": "preTradeAmmNetStdVega",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "postTradeAmmNetStdVega",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaUtil",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "volTraded",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaUtilFee",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct OptionMarketPricer.VegaUtilFeeComponents",
             "name": "vegaUtilFee",
@@ -385,24 +1020,76 @@
           },
           {
             "components": [
-              { "internalType": "uint256", "name": "varianceFeeCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "vega", "type": "uint256" },
-              { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "skew", "type": "uint256" },
-              { "internalType": "uint256", "name": "skewCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-              { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "varianceFee", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "varianceFeeCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vega",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "skew",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "skewCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "ivVariance",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "ivVarianceCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "varianceFee",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct OptionMarketPricer.VarianceFeeComponents",
             "name": "varianceFee",
             "type": "tuple"
           },
-          { "internalType": "uint256", "name": "totalFee", "type": "uint256" },
-          { "internalType": "uint256", "name": "totalCost", "type": "uint256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "newBaseIv", "type": "uint256" },
-          { "internalType": "uint256", "name": "newSkew", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newBaseIv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newSkew",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.TradeResult",
         "name": "tradeResult",
@@ -416,23 +1103,83 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isBuy", "type": "bool" },
-          { "internalType": "bool", "name": "isForceClose", "type": "bool" },
-          { "internalType": "enum OptionMarket.TradeDirection", "name": "tradeDirection", "type": "uint8" },
-          { "internalType": "enum OptionMarket.OptionType", "name": "optionType", "type": "uint8" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isBuy",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceClose",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum OptionMarket.TradeDirection",
+            "name": "tradeDirection",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "freeLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "burnableLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "reservedCollatLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "pendingDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "usedDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "longScaleFactor",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct LiquidityPool.Liquidity",
             "name": "liquidity",
@@ -445,32 +1192,96 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPrice", "type": "uint256" },
-          { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "callDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-          { "internalType": "uint256", "name": "vega", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "preTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "postTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "callDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVariance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vega",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionGreekCache.TradePricing",
         "name": "pricing",
         "type": "tuple"
       },
-      { "internalType": "uint256", "name": "skew", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "skew",
+        "type": "uint256"
+      }
     ],
     "name": "getVarianceFee",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "varianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "vega", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "skew", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "varianceFee", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "varianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vega",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVariance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "varianceFee",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VarianceFeeComponents",
         "name": "varianceFeeComponents",
@@ -486,15 +1297,51 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "defaultVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "forceCloseVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "referenceSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticSkewAdjustment", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticVega", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticIvVariance", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "defaultVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "forceCloseVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticSkewAdjustment",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticVega",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticIvVariance",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VarianceFeeParameters",
         "name": "varianceFeeParameters",
@@ -508,23 +1355,83 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isBuy", "type": "bool" },
-          { "internalType": "bool", "name": "isForceClose", "type": "bool" },
-          { "internalType": "enum OptionMarket.TradeDirection", "name": "tradeDirection", "type": "uint8" },
-          { "internalType": "enum OptionMarket.OptionType", "name": "optionType", "type": "uint8" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isBuy",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceClose",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum OptionMarket.TradeDirection",
+            "name": "tradeDirection",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "freeLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "burnableLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "reservedCollatLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "pendingDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "usedDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "longScaleFactor",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct LiquidityPool.Liquidity",
             "name": "liquidity",
@@ -537,13 +1444,41 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPrice", "type": "uint256" },
-          { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "callDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-          { "internalType": "uint256", "name": "vega", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "preTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "postTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "callDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVariance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vega",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionGreekCache.TradePricing",
         "name": "pricing",
@@ -554,12 +1489,36 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-          { "internalType": "uint256", "name": "vegaUtil", "type": "uint256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaUtilFee", "type": "uint256" }
+          {
+            "internalType": "int256",
+            "name": "preTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "postTradeAmmNetStdVega",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaUtil",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "NAV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaUtilFee",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VegaUtilFeeComponents",
         "name": "vegaUtilFeeComponents",
@@ -571,8 +1530,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_optionMarket", "type": "address" },
-      { "internalType": "contract OptionGreekCache", "name": "_greekCache", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_optionMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "contract OptionGreekCache",
+        "name": "_greekCache",
+        "type": "address"
+      }
     ],
     "name": "init",
     "outputs": [],
@@ -583,23 +1550,83 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isBuy", "type": "bool" },
-          { "internalType": "bool", "name": "isForceClose", "type": "bool" },
-          { "internalType": "enum OptionMarket.TradeDirection", "name": "tradeDirection", "type": "uint8" },
-          { "internalType": "enum OptionMarket.OptionType", "name": "optionType", "type": "uint8" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isBuy",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceClose",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum OptionMarket.TradeDirection",
+            "name": "tradeDirection",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "freeLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "burnableLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "reservedCollatLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "pendingDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "usedDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "longScaleFactor",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct LiquidityPool.Liquidity",
             "name": "liquidity",
@@ -610,19 +1637,41 @@
         "name": "trade",
         "type": "tuple"
       },
-      { "internalType": "uint256", "name": "boardBaseIv", "type": "uint256" },
-      { "internalType": "uint256", "name": "strikeSkew", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "boardBaseIv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeSkew",
+        "type": "uint256"
+      }
     ],
     "name": "ivImpactForTrade",
     "outputs": [
-      { "internalType": "uint256", "name": "newBaseIv", "type": "uint256" },
-      { "internalType": "uint256", "name": "newSkew", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "newBaseIv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newSkew",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "_owner", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
     "name": "nominateNewOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -631,14 +1680,26 @@
   {
     "inputs": [],
     "name": "nominatedOwner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -646,15 +1707,51 @@
     "inputs": [],
     "name": "pricingParams",
     "outputs": [
-      { "internalType": "uint256", "name": "optionPriceFeeCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "optionPriceFee1xPoint", "type": "uint256" },
-      { "internalType": "uint256", "name": "optionPriceFee2xPoint", "type": "uint256" },
-      { "internalType": "uint256", "name": "spotPriceFeeCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "spotPriceFee1xPoint", "type": "uint256" },
-      { "internalType": "uint256", "name": "spotPriceFee2xPoint", "type": "uint256" },
-      { "internalType": "uint256", "name": "vegaFeeCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "standardSize", "type": "uint256" },
-      { "internalType": "uint256", "name": "skewAdjustmentFactor", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "optionPriceFeeCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionPriceFee1xPoint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionPriceFee2xPoint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spotPriceFeeCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spotPriceFee1xPoint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spotPriceFee2xPoint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "vegaFeeCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "standardSize",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewAdjustmentFactor",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -663,15 +1760,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "optionPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee1xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee2xPoint", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "standardSize", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee1xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee2xPoint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "standardSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.PricingParameters",
         "name": "_pricingParams",
@@ -687,18 +1820,66 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "int256", "name": "minDelta", "type": "int256" },
-          { "internalType": "int256", "name": "minForceCloseDelta", "type": "int256" },
-          { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-          { "internalType": "uint256", "name": "minBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxBaseIV", "type": "uint256" },
-          { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxVol", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMinSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "absMaxSkew", "type": "uint256" },
-          { "internalType": "bool", "name": "capSkewsToAbs", "type": "bool" }
+          {
+            "internalType": "int256",
+            "name": "minDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "minForceCloseDelta",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tradingCutoff",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxBaseIV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxVol",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMinSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "absMaxSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "capSkewsToAbs",
+            "type": "bool"
+          }
         ],
         "internalType": "struct OptionMarketPricer.TradeLimitParameters",
         "name": "_tradeLimitParams",
@@ -714,15 +1895,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "defaultVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "forceCloseVarianceFeeCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewAdjustmentCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "referenceSkew", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticSkewAdjustment", "type": "uint256" },
-          { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticVega", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-          { "internalType": "uint256", "name": "minimumStaticIvVariance", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "defaultVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "forceCloseVarianceFeeCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewAdjustmentCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceSkew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticSkewAdjustment",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "vegaCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticVega",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCoefficient",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumStaticIvVariance",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.VarianceFeeParameters",
         "name": "_varianceFeeParams",
@@ -738,18 +1955,66 @@
     "inputs": [],
     "name": "tradeLimitParams",
     "outputs": [
-      { "internalType": "int256", "name": "minDelta", "type": "int256" },
-      { "internalType": "int256", "name": "minForceCloseDelta", "type": "int256" },
-      { "internalType": "uint256", "name": "tradingCutoff", "type": "uint256" },
-      { "internalType": "uint256", "name": "minBaseIV", "type": "uint256" },
-      { "internalType": "uint256", "name": "maxBaseIV", "type": "uint256" },
-      { "internalType": "uint256", "name": "minSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "maxSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "minVol", "type": "uint256" },
-      { "internalType": "uint256", "name": "maxVol", "type": "uint256" },
-      { "internalType": "uint256", "name": "absMinSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "absMaxSkew", "type": "uint256" },
-      { "internalType": "bool", "name": "capSkewsToAbs", "type": "bool" }
+      {
+        "internalType": "int256",
+        "name": "minDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "minForceCloseDelta",
+        "type": "int256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tradingCutoff",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minBaseIV",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxBaseIV",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minVol",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxVol",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "absMinSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "absMaxSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "capSkewsToAbs",
+        "type": "bool"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -758,15 +2023,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "skew", "type": "uint256" },
-          { "internalType": "uint256", "name": "longCall", "type": "uint256" },
-          { "internalType": "uint256", "name": "shortCallBase", "type": "uint256" },
-          { "internalType": "uint256", "name": "shortCallQuote", "type": "uint256" },
-          { "internalType": "uint256", "name": "longPut", "type": "uint256" },
-          { "internalType": "uint256", "name": "shortPut", "type": "uint256" },
-          { "internalType": "uint256", "name": "boardId", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skew",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "longCall",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "shortCallBase",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "shortCallQuote",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "longPut",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "shortPut",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "boardId",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarket.Strike",
         "name": "strike",
@@ -774,23 +2075,83 @@
       },
       {
         "components": [
-          { "internalType": "bool", "name": "isBuy", "type": "bool" },
-          { "internalType": "bool", "name": "isForceClose", "type": "bool" },
-          { "internalType": "enum OptionMarket.TradeDirection", "name": "tradeDirection", "type": "uint8" },
-          { "internalType": "enum OptionMarket.OptionType", "name": "optionType", "type": "uint8" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "expiry", "type": "uint256" },
-          { "internalType": "uint256", "name": "strikePrice", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
+          {
+            "internalType": "bool",
+            "name": "isBuy",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceClose",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum OptionMarket.TradeDirection",
+            "name": "tradeDirection",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum OptionMarket.OptionType",
+            "name": "optionType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiry",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "freeLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "burnableLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "reservedCollatLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "pendingDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "usedDeltaLiquidity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "longScaleFactor",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct LiquidityPool.Liquidity",
             "name": "liquidity",
@@ -801,25 +2162,73 @@
         "name": "trade",
         "type": "tuple"
       },
-      { "internalType": "uint256", "name": "boardBaseIv", "type": "uint256" },
-      { "internalType": "uint256", "name": "boardExpiry", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "boardBaseIv",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "boardExpiry",
+        "type": "uint256"
+      }
     ],
     "name": "updateCacheAndGetTradeResult",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
-          { "internalType": "uint256", "name": "premium", "type": "uint256" },
-          { "internalType": "uint256", "name": "optionPriceFee", "type": "uint256" },
-          { "internalType": "uint256", "name": "spotPriceFee", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "premium",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "optionPriceFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spotPriceFee",
+            "type": "uint256"
+          },
           {
             "components": [
-              { "internalType": "int256", "name": "preTradeAmmNetStdVega", "type": "int256" },
-              { "internalType": "int256", "name": "postTradeAmmNetStdVega", "type": "int256" },
-              { "internalType": "uint256", "name": "vegaUtil", "type": "uint256" },
-              { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-              { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-              { "internalType": "uint256", "name": "vegaUtilFee", "type": "uint256" }
+              {
+                "internalType": "int256",
+                "name": "preTradeAmmNetStdVega",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "postTradeAmmNetStdVega",
+                "type": "int256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaUtil",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "volTraded",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "NAV",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaUtilFee",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct OptionMarketPricer.VegaUtilFeeComponents",
             "name": "vegaUtilFee",
@@ -827,24 +2236,76 @@
           },
           {
             "components": [
-              { "internalType": "uint256", "name": "varianceFeeCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "vega", "type": "uint256" },
-              { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "skew", "type": "uint256" },
-              { "internalType": "uint256", "name": "skewCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "ivVariance", "type": "uint256" },
-              { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-              { "internalType": "uint256", "name": "varianceFee", "type": "uint256" }
+              {
+                "internalType": "uint256",
+                "name": "varianceFeeCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vega",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "vegaCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "skew",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "skewCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "ivVariance",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "ivVarianceCoefficient",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "varianceFee",
+                "type": "uint256"
+              }
             ],
             "internalType": "struct OptionMarketPricer.VarianceFeeComponents",
             "name": "varianceFee",
             "type": "tuple"
           },
-          { "internalType": "uint256", "name": "totalFee", "type": "uint256" },
-          { "internalType": "uint256", "name": "totalCost", "type": "uint256" },
-          { "internalType": "uint256", "name": "volTraded", "type": "uint256" },
-          { "internalType": "uint256", "name": "newBaseIv", "type": "uint256" },
-          { "internalType": "uint256", "name": "newSkew", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalCost",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "volTraded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newBaseIv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newSkew",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct OptionMarketPricer.TradeResult",
         "name": "tradeResult",
@@ -858,15 +2319,51 @@
     "inputs": [],
     "name": "varianceFeeParams",
     "outputs": [
-      { "internalType": "uint256", "name": "defaultVarianceFeeCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "forceCloseVarianceFeeCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "skewAdjustmentCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "referenceSkew", "type": "uint256" },
-      { "internalType": "uint256", "name": "minimumStaticSkewAdjustment", "type": "uint256" },
-      { "internalType": "uint256", "name": "vegaCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "minimumStaticVega", "type": "uint256" },
-      { "internalType": "uint256", "name": "ivVarianceCoefficient", "type": "uint256" },
-      { "internalType": "uint256", "name": "minimumStaticIvVariance", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "defaultVarianceFeeCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "forceCloseVarianceFeeCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewAdjustmentCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "referenceSkew",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumStaticSkewAdjustment",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "vegaCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumStaticVega",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ivVarianceCoefficient",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumStaticIvVariance",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"

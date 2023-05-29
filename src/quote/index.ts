@@ -341,7 +341,8 @@ export class Quote {
       isBuy,
       isForceClose,
       priceType,
-      isOpen
+      isOpen,
+      this.lyra.network
     )
     if (disabledReason) {
       // For subset of disabled reasons, return empty quote

@@ -1,10 +1,10 @@
-import { BigNumber } from 'ethers'
-
 import { LyraMarketContractId } from '../constants/contracts'
-import Lyra from '../lyra'
-import callContractWithMulticall from '../utils/callContractWithMulticall'
+import { LyraMarketContractMap } from '../constants/mappings'
+import { ERC20 } from '../contracts/common/typechain'
+import Lyra, { Version } from '../lyra'
 import getERC20Contract from '../utils/getERC20Contract'
 import getLyraMarketContract from '../utils/getLyraMarketContract'
+import multicall, { MulticallRequest } from '../utils/multicall'
 import { AccountBalances } from '.'
 
 export default async function fetchAccountBalancesAndAllowances(lyra: Lyra, owner: string): Promise<AccountBalances[]> {
@@ -33,80 +33,82 @@ export default async function fetchAccountBalancesAndAllowances(lyra: Lyra, owne
         LyraMarketContractId.LiquidityToken
       )
 
-      const [
-        [quoteSymbol],
-        [quoteDecimals],
-        [quoteBalance],
-        [quoteTradeAllowance],
-        [quoteDepositAllowance],
-        [baseSymbol],
-        [baseDecimals],
-        [baseBalance],
-        [baseTradeAllowance],
-        [liquidityBalance],
-      ] = await callContractWithMulticall<
+      const {
+        returnData: [
+          quoteSymbol,
+          quoteDecimals,
+          quoteBalance,
+          quoteTradeAllowance,
+          quoteDepositAllowance,
+          baseSymbol,
+          baseDecimals,
+          baseBalance,
+          baseTradeAllowance,
+          liquidityBalance,
+        ],
+      } = await multicall<
         [
-          [string],
-          [number],
-          [BigNumber],
-          [BigNumber],
-          [BigNumber],
-          [string],
-          [number],
-          [BigNumber],
-          [BigNumber],
-          [BigNumber]
+          MulticallRequest<ERC20, 'symbol'>,
+          MulticallRequest<ERC20, 'decimals'>,
+          MulticallRequest<ERC20, 'balanceOf'>,
+          MulticallRequest<ERC20, 'allowance'>,
+          MulticallRequest<ERC20, 'allowance'>,
+          MulticallRequest<ERC20, 'symbol'>,
+          MulticallRequest<ERC20, 'decimals'>,
+          MulticallRequest<ERC20, 'balanceOf'>,
+          MulticallRequest<ERC20, 'allowance'>,
+          MulticallRequest<LyraMarketContractMap<Version.Newport, LyraMarketContractId.LiquidityToken>, 'balanceOf'>
         ]
       >(lyra, [
         {
-          callData: quoteToken.interface.encodeFunctionData('symbol'),
           contract: quoteToken,
-          functionFragment: 'symbol',
+          function: 'symbol',
+          args: [],
         },
         {
-          callData: quoteToken.interface.encodeFunctionData('decimals'),
           contract: quoteToken,
-          functionFragment: 'decimals',
+          function: 'decimals',
+          args: [],
         },
         {
-          callData: quoteToken.interface.encodeFunctionData('balanceOf', [owner]),
           contract: quoteToken,
-          functionFragment: 'balanceOf',
+          function: 'balanceOf',
+          args: [owner],
         },
         {
-          callData: quoteToken.interface.encodeFunctionData('allowance', [owner, optionMarket.address]),
           contract: quoteToken,
-          functionFragment: 'allowance',
+          function: 'allowance',
+          args: [owner, optionMarket.address],
         },
         {
-          callData: quoteToken.interface.encodeFunctionData('allowance', [owner, liquidityPool.address]),
           contract: quoteToken,
-          functionFragment: 'allowance',
+          function: 'allowance',
+          args: [owner, liquidityPool.address],
         },
         {
-          callData: baseToken.interface.encodeFunctionData('symbol'),
           contract: baseToken,
-          functionFragment: 'symbol',
+          function: 'symbol',
+          args: [],
         },
         {
-          callData: baseToken.interface.encodeFunctionData('decimals'),
           contract: baseToken,
-          functionFragment: 'decimals',
+          function: 'decimals',
+          args: [],
         },
         {
-          callData: baseToken.interface.encodeFunctionData('balanceOf', [owner]),
           contract: baseToken,
-          functionFragment: 'balanceOf',
+          function: 'balanceOf',
+          args: [owner],
         },
         {
-          callData: baseToken.interface.encodeFunctionData('allowance', [owner, optionMarket.address]),
           contract: baseToken,
-          functionFragment: 'allowance',
+          function: 'allowance',
+          args: [owner, optionMarket.address],
         },
         {
-          callData: liquidityToken.interface.encodeFunctionData('balanceOf', [owner]),
           contract: liquidityToken,
-          functionFragment: 'balanceOf',
+          function: 'balanceOf',
+          args: [owner],
         },
       ])
 

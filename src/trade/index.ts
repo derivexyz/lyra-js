@@ -7,8 +7,9 @@ import { Board } from '../board'
 import { CollateralUpdateEvent } from '../collateral_update_event'
 import { MAX_BN, UNIT, ZERO_ADDRESS, ZERO_BN } from '../constants/bn'
 import { DataSource, DEFAULT_ITERATIONS, LyraMarketContractId } from '../constants/contracts'
+import { Network } from '../constants/network'
 import { AvalonOptionMarket } from '../contracts/avalon/typechain'
-import { NewportOptionMarket } from '../contracts/newport/typechain'
+import { NewportOptionMarket } from '../contracts/newport/arbitrum/typechain'
 import Lyra, { Version } from '../lyra'
 import { Market, MarketToken } from '../market'
 import { Option } from '../option'
@@ -79,6 +80,7 @@ export type TradeOptions = {
   setToFullCollateral?: boolean
   isBaseCollateral?: boolean
   iterations?: number
+  referrer?: string
 }
 
 export type TradeOptionsSync = {
@@ -154,6 +156,7 @@ export class Trade {
       setToFullCollateral = false,
       iterations = DEFAULT_ITERATIONS,
       isBaseCollateral: _isBaseCollateral,
+      referrer = ZERO_ADDRESS,
     } = options ?? {}
 
     this.__option = option
@@ -326,7 +329,6 @@ export class Trade {
         : !this.isForceClose
         ? 'closePosition'
         : 'forceClosePosition'
-
     if (lyra.version === Version.Avalon) {
       this.params = [
         {
@@ -351,7 +353,7 @@ export class Trade {
           setCollateralTo,
           minTotalCost,
           maxTotalCost,
-          referrer: ZERO_ADDRESS,
+          referrer: referrer,
         },
       ]
     }
@@ -426,9 +428,9 @@ export class Trade {
 
   // Helper Functions
 
-  static getPositionIdsForLogs(logs: Log[]): number[] {
-    const trades = parsePartialTradeEventsFromLogs(logs)
-    const updates = parsePartialPositionUpdatedEventsFromLogs(logs)
+  static getPositionIdsForLogs(logs: Log[], network: Network): number[] {
+    const trades = parsePartialTradeEventsFromLogs(logs, network)
+    const updates = parsePartialPositionUpdatedEventsFromLogs(logs, network)
     const positionIds = [
       ...trades.map(t => t.args.positionId.toNumber()),
       ...updates.map(u => u.args.positionId.toNumber()),

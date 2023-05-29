@@ -9,8 +9,8 @@ export default function getDistributedTradingRewards(
 ): RewardEpochTokenAmount[] {
   const tradingRewardsMap: Record<string, RewardEpochTokenAmount> = claimAddedEvents
     .filter(event => {
-      const [program] = event.tag.split('-')
-      return program === CLAIM_ADDED_TRADING_TAG && event.epochTimestamp === globalRewardEpoch.startTimestamp
+      const tags = event.tag.split('-')
+      return tags.includes(CLAIM_ADDED_TRADING_TAG) && event.epochTimestamp === globalRewardEpoch.startTimestamp
     })
     .reduce((tradingRewardsMap, event) => {
       const rewardToken = globalRewardEpoch.tradingRewardTokens.find(

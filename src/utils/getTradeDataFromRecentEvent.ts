@@ -1,8 +1,10 @@
 import { UNIT, ZERO_BN } from '../constants/bn'
 import { DataSource, TradeDirection } from '../constants/contracts'
 import { PartialTradeEvent, PartialTransferEvent } from '../constants/events'
+import { Network } from '../constants/network'
 import { TradeEvent as AvalonTradeEvent } from '../contracts/avalon/typechain/AvalonOptionMarket'
-import { TradeEvent as NewportTradeEvent } from '../contracts/newport/typechain/NewportOptionMarket'
+import { TradeEvent as NewportArbitrumTradeEvent } from '../contracts/newport/arbitrum/typechain/NewportOptionMarket'
+import { TradeEvent as NewportOptimismTradeEvent } from '../contracts/newport/optimism/typechain/NewportOptionMarket'
 import { Version } from '../lyra'
 import { Market } from '../market'
 import { TradeEventData } from '../trade_event'
@@ -25,7 +27,14 @@ export default function getTradeDataFromRecentEvent(
 
   let strikeId: number
   if (market.lyra.version === Version.Newport) {
-    strikeId = (trade.args as NewportTradeEvent['args']).trade.strikeId.toNumber()
+    switch (market.lyra.network) {
+      case Network.Arbitrum:
+        strikeId = (trade.args as NewportArbitrumTradeEvent['args']).trade.strikeId.toNumber()
+        break
+      case Network.Optimism:
+        strikeId = (trade.args as NewportOptimismTradeEvent['args']).trade.strikeId.toNumber()
+        break
+    }
   } else {
     strikeId = (trade.args as AvalonTradeEvent['args']).strikeId.toNumber()
   }

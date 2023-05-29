@@ -25,7 +25,10 @@ export default function fetchTradeListener(
 
   let timeout: NodeJS.Timeout | null
 
-  const optionMarket = new Contract(ZERO_ADDRESS, getMarketContractABI(lyra.version, LyraMarketContractId.OptionMarket))
+  const optionMarket = new Contract(
+    ZERO_ADDRESS,
+    getMarketContractABI(lyra.version, LyraMarketContractId.OptionMarket, lyra.network)
+  )
 
   Promise.all([fetchMarketAddresses(lyra), lyra.provider.getBlock(startBlockTag)]).then(async ([addresses, block]) => {
     console.debug(`Polling from block ${block.number} every ${ms}ms`)

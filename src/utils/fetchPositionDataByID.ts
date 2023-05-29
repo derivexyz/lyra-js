@@ -5,7 +5,6 @@ import { POSITION_QUERY_FRAGMENT, PositionQueryResult } from '../constants/queri
 import Lyra from '../lyra'
 import { Market } from '../market'
 import { PositionData } from '../position'
-import fetchPositionEventDataByIDs from './fetchPositionEventDataByIDs'
 import getCollateralUpdateDataFromSubgraph from './getCollateralUpdateDataFromSubgraph'
 import getIsCall from './getIsCall'
 import getLyraMarketContract from './getLyraMarketContract'
@@ -38,40 +37,46 @@ export default async function fetchPositionDataByID(
     lyra.version,
     LyraMarketContractId.OptionToken
   )
-  try {
-    const [positionWithOwnerStruct, eventsByPositionID] = await Promise.all([
-      optionToken.getPositionWithOwner(positionId),
-      fetchPositionEventDataByIDs(lyra, market, [positionId]),
-    ])
-    const { trades, transfers, collateralUpdates, settle } = eventsByPositionID[positionId]
-    const strikeId = positionWithOwnerStruct.strikeId.toNumber()
-    const isCall = getIsCall(positionWithOwnerStruct.optionType)
+
+  const [structPromise, subgraphPromise] = await Promise.allSettled([
+    optionToken.getPositionWithOwner(positionId),
+    subgraphRequest<{ positions: PositionQueryResult[] }>(lyra.subgraphClient, {
+      query: positionsQuery,
+      variables: {
+        positionId,
+        market: market.address.toLowerCase(),
+      },
+    }),
+  ])
+
+  const openPositionStruct = structPromise.status === 'fulfilled' ? structPromise.value : null
+  const subgraphData = subgraphPromise.status === 'fulfilled' ? subgraphPromise.value : null
+
+  // Subgraph may not have synced trade event
+  const subgraphPositionData = subgraphData?.data?.positions[0]
+  const trades = subgraphPositionData?.trades.map(getTradeDataFromSubgraph) ?? []
+  const collateralUpdates = subgraphPositionData?.collateralUpdates.map(getCollateralUpdateDataFromSubgraph) ?? []
+  const transfers = subgraphPositionData?.transfers.map(getTransferDataFromSubgraph) ?? []
+  const settle = subgraphPositionData?.settle ? getSettleDataFromSubgraph(subgraphPositionData.settle) : null
+
+  if (openPositionStruct) {
+    const strikeId = openPositionStruct.strikeId.toNumber()
+    const isCall = getIsCall(openPositionStruct.optionType)
     const option = market.liveOption(strikeId, isCall)
     return getOpenPositionDataFromStruct(
-      positionWithOwnerStruct.owner,
-      positionWithOwnerStruct,
+      openPositionStruct.owner,
+      openPositionStruct,
       option,
       trades,
       collateralUpdates,
       transfers,
       settle
     )
-  } catch (e) {
-    const { data } = await subgraphRequest<{ positions: PositionQueryResult[] }>(lyra.subgraphClient, {
-      query: positionsQuery,
-      variables: {
-        positionId,
-        market: market.address.toLowerCase(),
-      },
-    })
-    const pos = data?.positions[0]
-    if (!pos) {
-      throw new Error('Failed to fetch position')
-    }
-    const trades = pos.trades.map(getTradeDataFromSubgraph)
-    const collateralUpdates = pos.collateralUpdates.map(getCollateralUpdateDataFromSubgraph)
-    const transfers = pos.transfers.map(getTransferDataFromSubgraph)
-    const settle = pos.settle ? getSettleDataFromSubgraph(pos.settle) : null
-    return getPositionDataFromSubgraph(pos, market, trades, collateralUpdates, transfers, settle)
+  } else if (subgraphPositionData) {
+    return getPositionDataFromSubgraph(subgraphPositionData, market, trades, collateralUpdates, transfers, settle)
+  } else {
+    // Should never happen
+    // An open position should always have state and closed position should always have subgraph data
+    throw new Error('Failed to fetch position')
   }
 }

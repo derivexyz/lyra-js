@@ -1,55 +1,143 @@
 [
-  { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
   {
-    "inputs": [{ "internalType": "address", "name": "thrower", "type": "address" }],
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      }
+    ],
     "name": "AlreadyInitialised",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "approvee", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "approvee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
     "name": "BaseApprovalFailure",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "realAmount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "realAmount",
+        "type": "uint256"
+      }
     ],
     "name": "BaseTransferFailed",
     "type": "error"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "thrower", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      }
+    ],
     "name": "CannotRecoverQuoteBase",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "beneficiary", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
     ],
     "name": "InvalidBeneficiaryAddress",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "liquidityCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "liquidityCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "boardSettlementCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "contractAdjustmentCBTimeout", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "boardSettlementCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractAdjustmentCBTimeout",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.CircuitBreakerParameters",
         "name": "cbParams",
@@ -61,18 +149,58 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "minDepositWithdraw", "type": "uint256" },
-          { "internalType": "uint256", "name": "depositDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalFee", "type": "uint256" },
-          { "internalType": "address", "name": "guardianMultisig", "type": "address" },
-          { "internalType": "uint256", "name": "guardianDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "adjustmentNetScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "callCollatScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "putCollatScalingFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "minDepositWithdraw",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "guardianMultisig",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "guardianDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adjustmentNetScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "callCollatScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "putCollatScalingFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.LiquidityPoolParameters",
         "name": "lpParams",
@@ -84,13 +212,33 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "quoteToLock", "type": "uint256" },
-      { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quoteToLock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "freeLiquidity",
+        "type": "uint256"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "quote", "type": "uint256" },
-          { "internalType": "uint256", "name": "base", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "quote",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "base",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.Collateral",
         "name": "lockedCollateral",
@@ -102,43 +250,111 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "amountQuote", "type": "uint256" },
-      { "internalType": "uint256", "name": "minDeposit", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minDeposit",
+        "type": "uint256"
+      }
     ],
     "name": "MinimumDepositNotMet",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "amountQuote", "type": "uint256" },
-      { "internalType": "uint256", "name": "minWithdraw", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minWithdraw",
+        "type": "uint256"
+      }
     ],
     "name": "MinimumWithdrawNotMet",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "int256", "name": "totalAssetValue", "type": "int256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "totalAssetValue",
+        "type": "int256"
+      }
     ],
     "name": "NegativeTotalAssetValue",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "amountQuote", "type": "uint256" },
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      },
       {
         "components": [
-          { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-          { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "freeLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "burnableLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservedCollatLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pendingDeltaLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "usedDeltaLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "NAV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "longScaleFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.Liquidity",
         "name": "liquidity",
@@ -150,92 +366,225 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "nominatedOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "nominatedOwner",
+        "type": "address"
+      }
     ],
     "name": "OnlyNominatedOwner",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "optionMarket", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "optionMarket",
+        "type": "address"
+      }
     ],
     "name": "OnlyOptionMarket",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "owner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
     ],
     "name": "OnlyOwner",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "poolHedger", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "poolHedger",
+        "type": "address"
+      }
     ],
     "name": "OnlyPoolHedger",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "poolHedger", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "poolHedger",
+        "type": "address"
+      }
     ],
     "name": "OnlyShortCollateral",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "int256", "name": "totalAssetValue", "type": "int256" },
-      { "internalType": "int256", "name": "optionValueDebt", "type": "int256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "int256",
+        "name": "totalAssetValue",
+        "type": "int256"
+      },
+      {
+        "internalType": "int256",
+        "name": "optionValueDebt",
+        "type": "int256"
+      }
     ],
     "name": "OptionValueDebtExceedsTotalAssets",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "approvee", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "approvee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
     "name": "QuoteApprovalFailure",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "realAmount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "realAmount",
+        "type": "uint256"
+      }
     ],
     "name": "QuoteTransferFailed",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "premium", "type": "uint256" },
-      { "internalType": "uint256", "name": "reservedFee", "type": "uint256" },
-      { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "premium",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reservedFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "freeLiquidity",
+        "type": "uint256"
+      }
     ],
     "name": "SendPremiumNotEnoughCollateral",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "thrower", "type": "address" },
-      { "internalType": "uint256", "name": "amountOptions", "type": "uint256" },
-      { "internalType": "bool", "name": "increasesDelta", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "thrower",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountOptions",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "increasesDelta",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeId",
+        "type": "uint256"
+      }
     ],
     "name": "UnableToHedgeDelta",
     "type": "error"
@@ -243,8 +592,18 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "quoteSpent", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "baseReceived", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteSpent",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseReceived",
+        "type": "uint256"
+      }
     ],
     "name": "BasePurchased",
     "type": "event"
@@ -252,8 +611,18 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "amountBase", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "quoteReceived", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountBase",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteReceived",
+        "type": "uint256"
+      }
     ],
     "name": "BaseSold",
     "type": "event"
@@ -261,24 +630,56 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "insolventSettlementAmount", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountQuoteReserved", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalOutstandingSettlements", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "insolventSettlementAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountQuoteReserved",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalOutstandingSettlements",
+        "type": "uint256"
+      }
     ],
     "name": "BoardSettlement",
     "type": "event"
   },
   {
     "anonymous": false,
-    "inputs": [{ "indexed": false, "internalType": "uint256", "name": "newTimestamp", "type": "uint256" }],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newTimestamp",
+        "type": "uint256"
+      }
+    ],
     "name": "BoardSettlementCircuitBreakerUpdated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "baseFreed", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "lockedCollateralBase", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseFreed",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lockedCollateralBase",
+        "type": "uint256"
+      }
     ],
     "name": "CallCollateralFreed",
     "type": "event"
@@ -286,8 +687,18 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "baseLocked", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "lockedCollateralBase", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseLocked",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lockedCollateralBase",
+        "type": "uint256"
+      }
     ],
     "name": "CallCollateralLocked",
     "type": "event"
@@ -295,11 +706,36 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "entryId", "type": "uint256" },
-      { "indexed": false, "internalType": "bool", "name": "boardNotStale", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "validEntry", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "guardianBypass", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "delaysExpired", "type": "bool" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "entryId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "boardNotStale",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "validEntry",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "guardianBypass",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "delaysExpired",
+        "type": "bool"
+      }
     ],
     "name": "CheckingCanProcess",
     "type": "event"
@@ -309,14 +745,46 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "liquidityCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "liquidityCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "boardSettlementCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "contractAdjustmentCBTimeout", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "boardSettlementCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractAdjustmentCBTimeout",
+            "type": "uint256"
+          }
         ],
         "indexed": false,
         "internalType": "struct LiquidityPool.CircuitBreakerParameters",
@@ -330,11 +798,36 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "newTimestamp", "type": "uint256" },
-      { "indexed": false, "internalType": "bool", "name": "ivVarianceThresholdCrossed", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "skewVarianceThresholdCrossed", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "liquidityThresholdCrossed", "type": "bool" },
-      { "indexed": false, "internalType": "bool", "name": "contractAdjustmentEvent", "type": "bool" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newTimestamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "ivVarianceThresholdCrossed",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "skewVarianceThresholdCrossed",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "liquidityThresholdCrossed",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "contractAdjustmentEvent",
+        "type": "bool"
+      }
     ],
     "name": "CircuitBreakerUpdated",
     "type": "event"
@@ -342,13 +835,48 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "depositQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountDeposited", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokenPrice", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokensReceived", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "depositQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountDeposited",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokensReceived",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "DepositProcessed",
     "type": "event"
@@ -356,12 +884,42 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "depositor", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "depositQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountDeposited", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalQueuedDeposits", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "depositQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountDeposited",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQueuedDeposits",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "DepositQueued",
     "type": "event"
@@ -369,8 +927,18 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "amountQuoteAdded", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalInsolventSettlementAmount", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountQuoteAdded",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalInsolventSettlementAmount",
+        "type": "uint256"
+      }
     ],
     "name": "InsolventSettlementAmountUpdated",
     "type": "event"
@@ -380,15 +948,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "minDepositWithdraw", "type": "uint256" },
-          { "internalType": "uint256", "name": "depositDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalFee", "type": "uint256" },
-          { "internalType": "address", "name": "guardianMultisig", "type": "address" },
-          { "internalType": "uint256", "name": "guardianDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "adjustmentNetScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "callCollatScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "putCollatScalingFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "minDepositWithdraw",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "guardianMultisig",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "guardianDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adjustmentNetScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "callCollatScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "putCollatScalingFactor",
+            "type": "uint256"
+          }
         ],
         "indexed": false,
         "internalType": "struct LiquidityPool.LiquidityPoolParameters",
@@ -402,9 +1006,24 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalOutstandingSettlements", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalOutstandingSettlements",
+        "type": "uint256"
+      }
     ],
     "name": "OutstandingSettlementSent",
     "type": "event"
@@ -412,30 +1031,69 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "address", "name": "oldOwner", "type": "address" },
-      { "indexed": false, "internalType": "address", "name": "newOwner", "type": "address" }
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
     "name": "OwnerChanged",
     "type": "event"
   },
   {
     "anonymous": false,
-    "inputs": [{ "indexed": false, "internalType": "address", "name": "newOwner", "type": "address" }],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
     "name": "OwnerNominated",
     "type": "event"
   },
   {
     "anonymous": false,
-    "inputs": [{ "indexed": false, "internalType": "contract PoolHedger", "name": "poolHedger", "type": "address" }],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "contract PoolHedger",
+        "name": "poolHedger",
+        "type": "address"
+      }
+    ],
     "name": "PoolHedgerUpdated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
-      { "indexed": false, "internalType": "uint256", "name": "recipientPortion", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "optionMarketPortion", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "recipientPortion",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "optionMarketPortion",
+        "type": "uint256"
+      }
     ],
     "name": "PremiumTransferred",
     "type": "event"
@@ -443,8 +1101,18 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "quoteFreed", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "lockedCollateralQuote", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteFreed",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lockedCollateralQuote",
+        "type": "uint256"
+      }
     ],
     "name": "PutCollateralFreed",
     "type": "event"
@@ -452,29 +1120,86 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": false, "internalType": "uint256", "name": "quoteLocked", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "lockedCollateralQuote", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteLocked",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lockedCollateralQuote",
+        "type": "uint256"
+      }
     ],
     "name": "PutCollateralLocked",
     "type": "event"
   },
   {
     "anonymous": false,
-    "inputs": [{ "indexed": false, "internalType": "uint256", "name": "amountQuote", "type": "uint256" }],
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      }
+    ],
     "name": "QuoteTransferredToPoolHedger",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "withdrawalQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountWithdrawn", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokenPrice", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "quoteReceived", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalQueuedWithdrawals", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "withdrawalQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountWithdrawn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteReceived",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQueuedWithdrawals",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "WithdrawPartiallyProcessed",
     "type": "event"
@@ -482,14 +1207,54 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "withdrawalQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountWithdrawn", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokenPrice", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "quoteReceived", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalQueuedWithdrawals", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "withdrawalQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountWithdrawn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "quoteReceived",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQueuedWithdrawals",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "WithdrawProcessed",
     "type": "event"
@@ -497,12 +1262,42 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "withdrawer", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "withdrawalQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "amountWithdrawn", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalQueuedWithdrawals", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "withdrawer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "withdrawalQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountWithdrawn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQueuedWithdrawals",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "WithdrawQueued",
     "type": "event"
@@ -510,13 +1305,48 @@
   {
     "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "caller", "type": "address" },
-      { "indexed": true, "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "withdrawalQueueId", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokenPrice", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "totalQueuedWithdrawals", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" },
-      { "indexed": false, "internalType": "uint256", "name": "tokensReturned", "type": "uint256" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "withdrawalQueueId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQueuedWithdrawals",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokensReturned",
+        "type": "uint256"
+      }
     ],
     "name": "WithdrawReverted",
     "type": "event"
@@ -524,20 +1354,54 @@
   {
     "inputs": [],
     "name": "CBTimestamp",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
-  { "inputs": [], "name": "acceptOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "insolventSettlements", "type": "uint256" },
-      { "internalType": "uint256", "name": "amountQuoteFreed", "type": "uint256" },
-      { "internalType": "uint256", "name": "amountQuoteReserved", "type": "uint256" },
-      { "internalType": "uint256", "name": "amountBaseFreed", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "insolventSettlements",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuoteFreed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuoteReserved",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountBaseFreed",
+        "type": "uint256"
+      }
     ],
     "name": "boardSettlement",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -545,26 +1409,84 @@
     "inputs": [],
     "name": "cbParams",
     "outputs": [
-      { "internalType": "uint256", "name": "liquidityCBThreshold", "type": "uint256" },
-      { "internalType": "uint256", "name": "liquidityCBTimeout", "type": "uint256" },
-      { "internalType": "uint256", "name": "ivVarianceCBThreshold", "type": "uint256" },
-      { "internalType": "uint256", "name": "skewVarianceCBThreshold", "type": "uint256" },
-      { "internalType": "uint256", "name": "ivVarianceCBTimeout", "type": "uint256" },
-      { "internalType": "uint256", "name": "skewVarianceCBTimeout", "type": "uint256" },
-      { "internalType": "uint256", "name": "boardSettlementCBTimeout", "type": "uint256" },
-      { "internalType": "uint256", "name": "contractAdjustmentCBTimeout", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "liquidityCBThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "liquidityCBTimeout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ivVarianceCBThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewVarianceCBThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ivVarianceCBTimeout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewVarianceCBTimeout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "boardSettlementCBTimeout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "contractAdjustmentCBTimeout",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
-  { "inputs": [], "name": "exchangeBase", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+  {
+    "inputs": [],
+    "name": "exchangeBase",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "amountBase", "type": "uint256" },
-      { "internalType": "address", "name": "recipient", "type": "address" },
-      { "internalType": "uint256", "name": "totalCost", "type": "uint256" },
-      { "internalType": "uint256", "name": "reservedFee", "type": "uint256" },
-      { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "amountBase",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reservedFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "longScaleFactor",
+        "type": "uint256"
+      }
     ],
     "name": "freeCallCollateralAndSendPremium",
     "outputs": [],
@@ -573,11 +1495,31 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "amountQuoteFreed", "type": "uint256" },
-      { "internalType": "address", "name": "recipient", "type": "address" },
-      { "internalType": "uint256", "name": "totalCost", "type": "uint256" },
-      { "internalType": "uint256", "name": "reservedFee", "type": "uint256" },
-      { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "amountQuoteFreed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reservedFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "longScaleFactor",
+        "type": "uint256"
+      }
     ],
     "name": "freePutCollateralAndSendPremium",
     "outputs": [],
@@ -590,14 +1532,46 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "liquidityCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "liquidityCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "boardSettlementCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "contractAdjustmentCBTimeout", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "boardSettlementCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractAdjustmentCBTimeout",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.CircuitBreakerParameters",
         "name": "",
@@ -613,13 +1587,41 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "burnableLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "reservedCollatLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "pendingDeltaLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "usedDeltaLiquidity", "type": "uint256" },
-          { "internalType": "uint256", "name": "NAV", "type": "uint256" },
-          { "internalType": "uint256", "name": "longScaleFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "freeLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "burnableLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reservedCollatLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pendingDeltaLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "usedDeltaLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "NAV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "longScaleFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.Liquidity",
         "name": "",
@@ -635,15 +1637,51 @@
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "minDepositWithdraw", "type": "uint256" },
-          { "internalType": "uint256", "name": "depositDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalFee", "type": "uint256" },
-          { "internalType": "address", "name": "guardianMultisig", "type": "address" },
-          { "internalType": "uint256", "name": "guardianDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "adjustmentNetScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "callCollatScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "putCollatScalingFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "minDepositWithdraw",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "guardianMultisig",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "guardianDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adjustmentNetScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "callCollatScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "putCollatScalingFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.LiquidityPoolParameters",
         "name": "",
@@ -656,7 +1694,13 @@
   {
     "inputs": [],
     "name": "getTokenPrice",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -664,9 +1708,21 @@
     "inputs": [],
     "name": "getTokenPriceWithCheck",
     "outputs": [
-      { "internalType": "uint256", "name": "tokenPrice", "type": "uint256" },
-      { "internalType": "bool", "name": "isStale", "type": "bool" },
-      { "internalType": "uint256", "name": "circuitBreakerExpiry", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "tokenPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isStale",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "circuitBreakerExpiry",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -674,27 +1730,71 @@
   {
     "inputs": [],
     "name": "getTotalPoolValueQuote",
-    "outputs": [{ "internalType": "uint256", "name": "totalPoolValue", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalPoolValue",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getTotalTokenSupply",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "contract BaseExchangeAdapter", "name": "_exchangeAdapter", "type": "address" },
-      { "internalType": "contract OptionMarket", "name": "_optionMarket", "type": "address" },
-      { "internalType": "contract LiquidityToken", "name": "_liquidityToken", "type": "address" },
-      { "internalType": "contract OptionGreekCache", "name": "_greekCache", "type": "address" },
-      { "internalType": "contract PoolHedger", "name": "_poolHedger", "type": "address" },
-      { "internalType": "contract ShortCollateral", "name": "_shortCollateral", "type": "address" },
-      { "internalType": "contract IERC20Decimals", "name": "_quoteAsset", "type": "address" },
-      { "internalType": "contract IERC20Decimals", "name": "_baseAsset", "type": "address" }
+      {
+        "internalType": "contract BaseExchangeAdapter",
+        "name": "_exchangeAdapter",
+        "type": "address"
+      },
+      {
+        "internalType": "contract OptionMarket",
+        "name": "_optionMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "contract LiquidityToken",
+        "name": "_liquidityToken",
+        "type": "address"
+      },
+      {
+        "internalType": "contract OptionGreekCache",
+        "name": "_greekCache",
+        "type": "address"
+      },
+      {
+        "internalType": "contract PoolHedger",
+        "name": "_poolHedger",
+        "type": "address"
+      },
+      {
+        "internalType": "contract ShortCollateral",
+        "name": "_shortCollateral",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "_quoteAsset",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "_baseAsset",
+        "type": "address"
+      }
     ],
     "name": "init",
     "outputs": [],
@@ -703,8 +1803,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "internalType": "uint256", "name": "amountQuote", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      }
     ],
     "name": "initiateDeposit",
     "outputs": [],
@@ -713,8 +1821,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "internalType": "uint256", "name": "amountLiquidityToken", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountLiquidityToken",
+        "type": "uint256"
+      }
     ],
     "name": "initiateWithdraw",
     "outputs": [],
@@ -724,22 +1840,51 @@
   {
     "inputs": [],
     "name": "insolventSettlementAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "liquidationInsolventAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "amount", "type": "uint256" },
-      { "internalType": "uint256", "name": "spotPrice", "type": "uint256" },
-      { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spotPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "freeLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeId",
+        "type": "uint256"
+      }
     ],
     "name": "lockCallCollateral",
     "outputs": [],
@@ -748,8 +1893,21 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "amount", "type": "uint256" },
-      { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "freeLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeId",
+        "type": "uint256"
+      }
     ],
     "name": "lockPutCollateral",
     "outputs": [],
@@ -760,8 +1918,16 @@
     "inputs": [],
     "name": "lockedCollateral",
     "outputs": [
-      { "internalType": "uint256", "name": "quote", "type": "uint256" },
-      { "internalType": "uint256", "name": "base", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "quote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "base",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -770,15 +1936,51 @@
     "inputs": [],
     "name": "lpParams",
     "outputs": [
-      { "internalType": "uint256", "name": "minDepositWithdraw", "type": "uint256" },
-      { "internalType": "uint256", "name": "depositDelay", "type": "uint256" },
-      { "internalType": "uint256", "name": "withdrawalDelay", "type": "uint256" },
-      { "internalType": "uint256", "name": "withdrawalFee", "type": "uint256" },
-      { "internalType": "address", "name": "guardianMultisig", "type": "address" },
-      { "internalType": "uint256", "name": "guardianDelay", "type": "uint256" },
-      { "internalType": "uint256", "name": "adjustmentNetScalingFactor", "type": "uint256" },
-      { "internalType": "uint256", "name": "callCollatScalingFactor", "type": "uint256" },
-      { "internalType": "uint256", "name": "putCollatScalingFactor", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "minDepositWithdraw",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depositDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawalDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawalFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "guardianMultisig",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "guardianDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "adjustmentNetScalingFactor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "callCollatScalingFactor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "putCollatScalingFactor",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -786,19 +1988,37 @@
   {
     "inputs": [],
     "name": "nextQueuedDepositId",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "nextQueuedWithdrawalId",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "_owner", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
     "name": "nominateNewOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -807,33 +2027,63 @@
   {
     "inputs": [],
     "name": "nominatedOwner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "poolHedger",
-    "outputs": [{ "internalType": "contract PoolHedger", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "contract PoolHedger",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "limit", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
     "name": "processDepositQueue",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "limit", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
     "name": "processWithdrawalQueue",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -842,26 +2092,64 @@
   {
     "inputs": [],
     "name": "protectedQuote",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "queuedDepositHead",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "queuedDeposits",
     "outputs": [
-      { "internalType": "uint256", "name": "id", "type": "uint256" },
-      { "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "internalType": "uint256", "name": "amountLiquidity", "type": "uint256" },
-      { "internalType": "uint256", "name": "mintedTokens", "type": "uint256" },
-      { "internalType": "uint256", "name": "depositInitiatedTime", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "mintedTokens",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depositInitiatedTime",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -869,19 +2157,51 @@
   {
     "inputs": [],
     "name": "queuedWithdrawalHead",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "queuedWithdrawals",
     "outputs": [
-      { "internalType": "uint256", "name": "id", "type": "uint256" },
-      { "internalType": "address", "name": "beneficiary", "type": "address" },
-      { "internalType": "uint256", "name": "amountTokens", "type": "uint256" },
-      { "internalType": "uint256", "name": "quoteSent", "type": "uint256" },
-      { "internalType": "uint256", "name": "withdrawInitiatedTime", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountTokens",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quoteSent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawInitiatedTime",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -889,19 +2209,37 @@
   {
     "inputs": [],
     "name": "quoteAsset",
-    "outputs": [{ "internalType": "contract IERC20Decimals", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amountBase", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountBase",
+        "type": "uint256"
+      }
+    ],
     "name": "reclaimInsolventBase",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amountQuote", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountQuote",
+        "type": "uint256"
+      }
+    ],
     "name": "reclaimInsolventQuote",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -909,8 +2247,16 @@
   },
   {
     "inputs": [
-      { "internalType": "contract IERC20Decimals", "name": "token", "type": "address" },
-      { "internalType": "address", "name": "recipient", "type": "address" }
+      {
+        "internalType": "contract IERC20Decimals",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      }
     ],
     "name": "recoverFunds",
     "outputs": [],
@@ -919,8 +2265,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "user", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
     "name": "sendSettlementValue",
     "outputs": [],
@@ -929,12 +2283,41 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "recipient", "type": "address" },
-      { "internalType": "uint256", "name": "amountContracts", "type": "uint256" },
-      { "internalType": "uint256", "name": "premium", "type": "uint256" },
-      { "internalType": "uint256", "name": "freeLiquidity", "type": "uint256" },
-      { "internalType": "uint256", "name": "reservedFee", "type": "uint256" },
-      { "internalType": "bool", "name": "isCall", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountContracts",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "premium",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "freeLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reservedFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isCall",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikeId",
+        "type": "uint256"
+      }
     ],
     "name": "sendShortPremium",
     "outputs": [],
@@ -945,14 +2328,46 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "liquidityCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "liquidityCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBThreshold", "type": "uint256" },
-          { "internalType": "uint256", "name": "ivVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "skewVarianceCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "boardSettlementCBTimeout", "type": "uint256" },
-          { "internalType": "uint256", "name": "contractAdjustmentCBTimeout", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ivVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "skewVarianceCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "boardSettlementCBTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractAdjustmentCBTimeout",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.CircuitBreakerParameters",
         "name": "_cbParams",
@@ -968,15 +2383,51 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "minDepositWithdraw", "type": "uint256" },
-          { "internalType": "uint256", "name": "depositDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "withdrawalFee", "type": "uint256" },
-          { "internalType": "address", "name": "guardianMultisig", "type": "address" },
-          { "internalType": "uint256", "name": "guardianDelay", "type": "uint256" },
-          { "internalType": "uint256", "name": "adjustmentNetScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "callCollatScalingFactor", "type": "uint256" },
-          { "internalType": "uint256", "name": "putCollatScalingFactor", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "minDepositWithdraw",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "guardianMultisig",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "guardianDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adjustmentNetScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "callCollatScalingFactor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "putCollatScalingFactor",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct LiquidityPool.LiquidityPoolParameters",
         "name": "_lpParams",
@@ -989,7 +2440,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "contract PoolHedger", "name": "newPoolHedger", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "contract PoolHedger",
+        "name": "newPoolHedger",
+        "type": "address"
+      }
+    ],
     "name": "setPoolHedger",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -998,34 +2455,76 @@
   {
     "inputs": [],
     "name": "totalOutstandingSettlements",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "totalQueuedDeposits",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "totalQueuedWithdrawals",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "transferQuoteToHedge",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  { "inputs": [], "name": "updateCBs", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
   {
-    "inputs": [{ "internalType": "uint256", "name": "insolvencyAmountInQuote", "type": "uint256" }],
+    "inputs": [],
+    "name": "updateCBs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "insolvencyAmountInQuote",
+        "type": "uint256"
+      }
+    ],
     "name": "updateLiquidationInsolvency",
     "outputs": [],
     "stateMutability": "nonpayable",

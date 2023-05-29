@@ -64,7 +64,7 @@ export default async function fetchLiquidityHistory(
 
   if (data.length === 0) {
     // Always return at least 1 snapshot
-    return [{ ...EMPTY, market, timestamp: market.block.timestamp }]
+    return [{ ...EMPTY, timestamp: market.block.timestamp }]
   }
 
   const marketLiquidity = data.map(marketTotalValueSnapshot => {
@@ -77,7 +77,6 @@ export default async function fetchLiquidityHistory(
     const usedDeltaLiquidityBN = BigNumber.from(marketTotalValueSnapshot.usedDeltaLiquidity)
     const tokenPriceBN = BigNumber.from(marketTotalValueSnapshot.tokenPrice)
     return {
-      market,
       freeLiquidity: freeLiquidityBN,
       burnableLiquidity: burnableLiquidityBN,
       tvl,

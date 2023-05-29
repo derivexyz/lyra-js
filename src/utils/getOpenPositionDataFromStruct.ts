@@ -56,7 +56,7 @@ export default function getOpenPositionDataFromStruct(
   const board = option.board()
 
   // HACK: Ensure first trade timestamp is always set
-  const openTimestamp = firstTrade ? firstTrade.timestamp : 0
+  const openTimestamp = firstTrade ? firstTrade.timestamp : option.block.timestamp // Assume open timestamp was recent
   const closeTimestamp =
     isSettled && settle ? settle.timestamp : !isOpen ? (lastTrade ? lastTrade.timestamp : null) : null
 

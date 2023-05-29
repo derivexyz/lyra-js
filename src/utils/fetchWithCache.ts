@@ -1,7 +1,7 @@
 import fetch from 'cross-fetch'
 
 const CACHE: Record<string, { lastUpdated: number; fetch: Promise<any> }> = {}
-const CACHE_TIMEOUT = 5 * 1000
+const CACHE_TIMEOUT = 10 * 1000
 
 async function fetcher<T>(url: string): Promise<T> {
   const data = await fetch(url)

@@ -12,5 +12,6 @@ export default function getTransferDataFromSubgraph(transfer: TransferQueryResul
     transactionHash: transfer.transactionHash,
     blockNumber: transfer.blockNumber,
     positionId: transfer.position.positionId,
+    marketAddress: getAddress(transfer.position.id.split('-')[0]),
   }
 }

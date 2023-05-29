@@ -1,7 +1,12 @@
 export default function getMarketName(_baseSymbol: string, quoteSymbol: string) {
   let baseSymbol = _baseSymbol
-  if (baseSymbol.toLowerCase() === 'weth') {
-    baseSymbol = 'ETH'
+  switch (baseSymbol.toLowerCase()) {
+    case 'weth':
+      baseSymbol = 'ETH'
+      break
+    case 'lyarb':
+      baseSymbol = 'ARB'
+      break
   }
   return `${baseSymbol}-${quoteSymbol}`
 }

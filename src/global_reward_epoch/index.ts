@@ -2,21 +2,21 @@ import { Block } from '@ethersproject/providers'
 
 import { Deployment, Market, MarketLiquiditySnapshot } from '..'
 import { AccountRewardEpoch } from '../account_reward_epoch'
-import { MIN_REWARD_AMOUNT } from '../constants/rewards'
 import { SECONDS_IN_DAY, SECONDS_IN_YEAR } from '../constants/time'
 import Lyra from '../lyra'
 import fetchGlobalRewardEpochData, { GlobalRewardEpochData } from '../utils/fetchGlobalRewardEpochData'
-import fetchLyraStakingParams, { LyraStakingParams } from '../utils/fetchLyraStakingParams'
 import findMarketX from '../utils/findMarketX'
 import fromBigNumber from '../utils/fromBigNumber'
 import getEffectiveLiquidityTokens, { getMinimumStakedLyra } from '../utils/getEffectiveLiquidityTokens'
-import getEffectiveTradingFeeRebate from '../utils/getEffectiveTradingFeeRebate'
 import getUniqueBy from '../utils/getUniqueBy'
 import isMarketEqual from '../utils/isMarketEqual'
 
-export type GlobalRewardEpochTradingFeeRebateTier = {
-  stakedLyraCutoff: number
-  feeRebate: number
+export type GlobalRewardEpochTradingBoostTier = {
+  stakingCutoff: number
+  tradingCutoff: number
+  isReferred: boolean
+  label: string
+  boost: number
 }
 
 export type RewardEpochToken = {
@@ -44,7 +44,6 @@ export class GlobalRewardEpoch {
   progressDays: number
   markets: Market[]
   marketsLiquidity: MarketLiquiditySnapshot[]
-  stakingParams: LyraStakingParams
   blockTimestamp: number
   startTimestamp: number
   distributionTimestamp: number
@@ -56,10 +55,8 @@ export class GlobalRewardEpoch {
   isCurrent: boolean
   isComplete: boolean
   totalAverageStakedLyra: number
-  minTradingFeeRebate: number
-  maxTradingFeeRebate: number
   tradingRewardsCap: RewardEpochTokenAmount[]
-  tradingFeeRebateTiers: GlobalRewardEpochTradingFeeRebateTier[]
+  tradingBoostTiers: GlobalRewardEpochTradingBoostTier[]
   vaultRewardTokens: RewardEpochToken[]
   tradingRewardTokens: RewardEpochToken[]
   rewardTokens: RewardEpochToken[]
@@ -72,18 +69,19 @@ export class GlobalRewardEpoch {
     epoch: GlobalRewardEpochData,
     markets: Market[],
     marketsLiquidity: MarketLiquiditySnapshot[],
-    stakingParams: LyraStakingParams,
     block: Block
   ) {
     this.lyra = lyra
     this.id = id
     this.epoch = epoch
     this.markets = markets
-    this.stakingParams = stakingParams
     this.marketsLiquidity = marketsLiquidity
-    this.tradingFeeRebateTiers = epoch.tradingRewardConfig?.rebateRateTable?.map(tier => ({
-      stakedLyraCutoff: tier.cutoff,
-      feeRebate: tier.returnRate,
+    this.tradingBoostTiers = epoch.tradingRewardConfig?.boostRateTable?.map(tier => ({
+      stakingCutoff: tier.stakingCutoff,
+      tradingCutoff: tier.tradingCutoff,
+      isReferred: tier.isReferred,
+      label: tier.label,
+      boost: tier.boostRate,
     }))
 
     this.blockTimestamp = block.timestamp
@@ -103,9 +101,6 @@ export class GlobalRewardEpoch {
     this.totalAverageStakedLyra = this.progressDays ? epoch.totalStkLyraDays / this.progressDays : 0
 
     // Trading
-    const totalStkLyra = this.isComplete ? this.totalAverageStakedLyra : fromBigNumber(stakingParams.totalSupply)
-    this.minTradingFeeRebate = this.tradingFeeRebate(0)
-    this.maxTradingFeeRebate = this.tradingFeeRebate(totalStkLyra)
     this.tradingRewardsCap = epoch.tradingRewardConfig.tokens.map(token => ({
       address: token.address,
       symbol: token.symbol,
@@ -141,16 +136,15 @@ export class GlobalRewardEpoch {
       return []
     }
 
-    const [epochs, stakingParams, markets, block] = await Promise.all([
+    const [epochs, markets, block] = await Promise.all([
       fetchGlobalRewardEpochData(lyra),
-      fetchLyraStakingParams(lyra),
       lyra.markets(),
       lyra.provider.getBlock('latest'),
     ])
     const marketsLiquidity = await Promise.all(markets.map(market => market.liquidity()))
 
     return epochs
-      .map((epoch, idx) => new GlobalRewardEpoch(lyra, idx + 1, epoch, markets, marketsLiquidity, stakingParams, block))
+      .map((epoch, idx) => new GlobalRewardEpoch(lyra, idx + 1, epoch, markets, marketsLiquidity, block))
       .sort((a, b) => a.endTimestamp - b.endTimestamp)
   }
 
@@ -199,15 +193,11 @@ export class GlobalRewardEpoch {
       totalAvgScaledStkLyra,
       mmvConfig.x
     )
-    const totalAvgBoostedVaultTokens = this.totalAverageBoostedVaultTokens(marketAddressOrName)
-    const boostedPortionOfLiquidity =
-      totalAvgBoostedVaultTokens > 0 ? effectiveLpTokensPerLpToken / totalAvgBoostedVaultTokens : 0
-    const basePortionOfLiquidity = totalAvgVaultTokens > 0 ? vaultTokenBalance / totalAvgVaultTokens : 0
 
     // This ratio is for no staking -> staking w/ stkLyraBalance (noStakingMultiplier)
     // Vs UI apy multiplier is from zero staking -> staking w/ stkLyraBalance (vaultApyMultiplier)
-    const apyMultiplier = basePortionOfLiquidity > 0 ? boostedPortionOfLiquidity / basePortionOfLiquidity : 0
-
+    const apyMultiplier = (effectiveLpTokensPerLpToken / vaultTokenBalance) * 2
+    // const apyMultiplier = basePortionOfLiquidity > 0 ? boostedPortionOfLiquidity / basePortionOfLiquidity : 0
     // Calculate total vault token balance, including pending deposits
     const tokenPrice = fromBigNumber(this.marketsLiquidity[marketIdx].tokenPrice)
     const totalQueuedVaultTokens =
@@ -276,53 +266,16 @@ export class GlobalRewardEpoch {
   totalAverageVaultTokens(marketAddressOrName: string): number {
     const market = findMarketX(this.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
-    return this.progressDays ? (this.epoch.totalLpTokenDays[marketKey] ?? 0) / this.progressDays : 0
+    return fromBigNumber(market.params.NAV)
+    // const test = await market.liquidity()
+    // test.
+    // return this.progressDays ? (this.epoch.totalLpTokenDays[marketKey] ?? 0) / this.progressDays : 0
   }
 
   totalAverageBoostedVaultTokens(marketAddressOrName: string): number {
     const market = findMarketX(this.markets, marketAddressOrName)
     const marketKey = market.baseToken.symbol
     return this.progressDays ? (this.epoch.totalBoostedLpTokenDays[marketKey] ?? 0) / this.progressDays : 0
-  }
-
-  tradingFeeRebate(stakedLyraBalance: number): number {
-    const {
-      useRebateTable,
-      rebateRateTable,
-      maxRebatePercentage,
-      netVerticalStretch,
-      verticalShift,
-      vertIntercept,
-      stretchiness,
-    } = this.epoch.tradingRewardConfig
-    return getEffectiveTradingFeeRebate(
-      stakedLyraBalance,
-      useRebateTable,
-      rebateRateTable,
-      maxRebatePercentage,
-      netVerticalStretch,
-      verticalShift,
-      vertIntercept,
-      stretchiness
-    )
-  }
-
-  tradingRewards(tradingFees: number, stakedLyraBalance: number): RewardEpochTokenAmount[] {
-    return this.epoch.tradingRewardConfig.tokens
-      .map(token => {
-        const currentPrice = this.tokenPriceMap[token.address]?.price ?? 0
-        const price = this.isComplete ? token.fixedPrice : Math.max(currentPrice, token.floorTokenPrice)
-        const feeRebate = this.tradingFeeRebate(stakedLyraBalance)
-        const feesRebated = feeRebate * tradingFees
-        const rewardAmount = (feesRebated * token.portion) / price
-        return {
-          amount: rewardAmount,
-          address: token.address,
-          decimals: token.decimals,
-          symbol: token.symbol,
-        }
-      })
-      .filter(e => e.amount > MIN_REWARD_AMOUNT)
   }
 
   // Edge

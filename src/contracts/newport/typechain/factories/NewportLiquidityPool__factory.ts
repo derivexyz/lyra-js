@@ -591,6 +591,11 @@ const _abi = [
         name: "increasesDelta",
         type: "bool",
       },
+      {
+        internalType: "uint256",
+        name: "strikeId",
+        type: "uint256",
+      },
     ],
     name: "UnableToHedgeDelta",
     type: "error",
@@ -1886,6 +1891,11 @@ const _abi = [
         name: "freeLiquidity",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "strikeId",
+        type: "uint256",
+      },
     ],
     name: "lockCallCollateral",
     outputs: [],
@@ -1902,6 +1912,11 @@ const _abi = [
       {
         internalType: "uint256",
         name: "freeLiquidity",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "strikeId",
         type: "uint256",
       },
     ],
@@ -2308,6 +2323,11 @@ const _abi = [
         internalType: "bool",
         name: "isCall",
         type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "strikeId",
+        type: "uint256",
       },
     ],
     name: "sendShortPremium",

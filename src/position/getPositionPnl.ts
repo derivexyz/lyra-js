@@ -3,6 +3,20 @@ import { Position, PositionPnl } from '.'
 
 export default function getPositionPnl(position: Position): PositionPnl {
   const trades = position.trades()
+
+  if (!trades.length) {
+    return {
+      totalAverageOpenCost: ZERO_BN,
+      totalAverageCloseCost: ZERO_BN,
+      unrealizedPnl: ZERO_BN,
+      unrealizedPnlPercentage: ZERO_BN,
+      realizedPnl: ZERO_BN,
+      realizedPnlPercentage: ZERO_BN,
+      settlementPnl: ZERO_BN,
+      settlementPnlPercentage: ZERO_BN,
+    }
+  }
+
   const closingTrades = trades.filter(trade => !trade.isOpen)
   const settle = position.settle()
 

@@ -48,12 +48,20 @@ export type GlobalTradingRewards = {
 export type GlobalTradingRewardsConfig = {
   useRebateTable: boolean
   rebateRateTable: { cutoff: number; returnRate: number }[]
+  boostRateTable: {
+    stakingCutoff: number
+    tradingCutoff: number
+    isReferred: boolean
+    label: string
+    boostRate: number
+  }[]
   maxRebatePercentage: number
   netVerticalStretch: number // param a // netVerticalStretch
   verticalShift: number // param b // verticalShift
   vertIntercept: number // param c // minReward // vertIntercept
   stretchiness: number // param d // stretchiness
   tokens: GlobalTradingRewardsRewardEpochTokenConfig[]
+  referredTradersTokens?: RewardEpochToken[]
 }
 
 export type GlobalMMVConfig = {
@@ -78,5 +86,5 @@ export default async function fetchGlobalRewardEpochData(lyra: Lyra): Promise<Gl
   if (lyra.deployment !== Deployment.Mainnet) {
     return EMPTY
   }
-  return fetchWithCache(`${lyra.apiUri}/rewards/global?network=${lyra.network}`)
+  return fetchWithCache(`${lyra.apiUri}/rewards/global?network=${lyra.network}&version=${lyra.version}`)
 }

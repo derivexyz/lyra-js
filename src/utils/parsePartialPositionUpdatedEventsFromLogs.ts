@@ -4,15 +4,19 @@ import { Log } from '@ethersproject/providers'
 import { ZERO_ADDRESS } from '../constants/bn'
 import { EventName, LyraMarketContractId } from '../constants/contracts'
 import { PartialPositionUpdatedEvent } from '../constants/events'
+import { Network } from '../constants/network'
 import { Version } from '../lyra'
 import filterNulls from './filterNulls'
 import { getMarketContractABI } from './getLyraMarketContract'
 
-export default function parsePartialPositionUpdatedEventsFromLogs(logs: Log[]): PartialPositionUpdatedEvent[] {
+export default function parsePartialPositionUpdatedEventsFromLogs(
+  logs: Log[],
+  network: Network
+): PartialPositionUpdatedEvent[] {
   const optionToken = new Contract(
     ZERO_ADDRESS,
     // Hard-coded version as these ABI events are functionally the same
-    getMarketContractABI(Version.Newport, LyraMarketContractId.OptionToken)
+    getMarketContractABI(Version.Newport, LyraMarketContractId.OptionToken, network)
   )
   const events = filterNulls(
     logs.map(log => {

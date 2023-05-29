@@ -10,8 +10,8 @@ export default function getTotalClaimableTradingRewards(
 ): RewardEpochTokenAmount[] {
   const tradingRewardsMap: Record<string, RewardEpochTokenAmount> = claimAddedEvents
     .filter(event => {
-      const [program] = event.tag.split('-')
-      return program === CLAIM_ADDED_TRADING_TAG
+      const tags = event.tag.split('-')
+      return tags.includes(CLAIM_ADDED_TRADING_TAG)
     })
     .reduce((tradingRewardsMap, event) => {
       const isClaimed = claimEvents.some(

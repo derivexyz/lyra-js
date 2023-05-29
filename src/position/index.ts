@@ -12,7 +12,6 @@ import { Strike } from '../strike'
 import { Trade, TradeOptions } from '../trade'
 import { TradeEvent, TradeEventData } from '../trade_event'
 import { TransferEvent, TransferEventData } from '../transfer_event'
-import fetchAllPositionData from '../utils/fetchAllPositionData'
 import fetchOpenPositionDataByOwner from '../utils/fetchOpenPositionDataByOwner'
 import fetchPositionDataByID from '../utils/fetchPositionDataByID'
 import fetchPositionDataByOwner from '../utils/fetchPositionDataByOwner'
@@ -68,43 +67,6 @@ export type PositionPnl = {
   // Payoff for settlement
   settlementPnl: BigNumber
   settlementPnlPercentage: BigNumber
-}
-
-export type PositionFilter = {
-  markets?: string[]
-  minOpenTimestamp?: number
-  maxCloseTimestamp?: number
-  minPositionIds?: Record<string, number>
-}
-
-export enum PositionLeaderboardSortBy {
-  RealizedPnl = 'RealizedPnl',
-  RealizedLongPnl = 'RealizedLongPnl',
-  RealizedLongPnlPercentage = 'RealizedLongPnlPercentage',
-  UnrealizedPnl = 'UnrealizedPnl',
-  UnrealizedLongPnl = 'UnrealizedLongPnl',
-  UnrealizedLongPnlPercentage = 'UnrealizedLongPnlPercentage',
-}
-
-export type PositionLeaderboardFilter = {
-  minTotalPremiums?: BigNumber
-  minTotalLongPremiums?: BigNumber
-  sortBy?: PositionLeaderboardSortBy
-  secondarySortBy?: PositionLeaderboardSortBy
-} & PositionFilter
-
-export type PositionLeaderboard = {
-  account: string
-  realizedPnl: BigNumber
-  unrealizedPnl: BigNumber
-  realizedLongPnl: BigNumber
-  realizedLongPnlPercentage: BigNumber
-  unrealizedLongPnl: BigNumber
-  unrealizedLongPnlPercentage: BigNumber
-  totalPremiums: BigNumber
-  totalLongPremiums: BigNumber
-  totalNotionalVolume: BigNumber
-  positions: Position[]
 }
 
 export type PositionTradeOptions = Omit<TradeOptions, 'positionId'>
@@ -170,14 +132,8 @@ export class Position {
     return new Position(lyra, position)
   }
 
-  static async getAll(lyra: Lyra, filter?: PositionFilter): Promise<Position[]> {
-    const positions = await fetchAllPositionData(lyra, filter)
-    return positions.map(position => new Position(lyra, position))
-  }
-
   static async getOpenByOwner(lyra: Lyra, owner: string): Promise<Position[]> {
-    const markets = await lyra.markets()
-    const positions = await fetchOpenPositionDataByOwner(lyra, owner, markets)
+    const positions = await fetchOpenPositionDataByOwner(lyra, owner)
     return positions.map(position => new Position(lyra, position))
   }
 
@@ -189,10 +145,9 @@ export class Position {
   // Dynamic Fields
 
   sizeBeforeClose(): BigNumber {
-    if (!this.isOpen && this.size.isZero()) {
+    const lastTrade = this.lastTrade()
+    if (!this.isOpen && this.size.isZero() && lastTrade) {
       // Position manually closed, use size before last trade
-      const trades = this.trades()
-      const lastTrade = trades[trades.length - 1]
       return lastTrade.prevSize(this)
     } else {
       // Position may be settled or still open
@@ -258,12 +213,13 @@ export class Position {
   }
 
   firstTrade(): TradeEvent | null {
-    return this.trades()[0] ?? null
+    const trades = this.trades()
+    return trades.length > 0 ? trades[0] : null
   }
 
   lastTrade(): TradeEvent | null {
     const trades = this.trades()
-    return trades[trades.length - 1] ?? null
+    return trades.length > 0 ? trades[trades.length - 1] : null
   }
 
   collateralUpdates(): CollateralUpdateEvent[] {
@@ -299,8 +255,16 @@ export class Position {
     return this.market().strike(this.strikeId)
   }
 
+  liveStrike(): Strike {
+    return this.market().liveStrike(this.strikeId)
+  }
+
   async option(): Promise<Option> {
     return this.market().option(this.strikeId, this.isCall)
+  }
+
+  liveOption(): Option {
+    return this.market().liveOption(this.strikeId, this.isCall)
   }
 
   // Trade

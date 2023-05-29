@@ -1,0 +1,1135 @@
+[
+   {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         }
+      ],
+      "name": "AlreadyInitialised",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "lastInteraction",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "interactionDelta",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "currentTime",
+            "type": "uint256"
+         }
+      ],
+      "name": "InteractionDelayNotExpired",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "targetLeverage",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maximumFundingRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "deltaThreshold",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "marketDepthBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "priceDeltaBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "worstStableRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maxOrderCap",
+                  "type": "uint256"
+               }
+            ],
+            "internalType": "struct SNXPerpsV2PoolHedger.SNXPerpsV2PoolHedgerParameters",
+            "name": "params",
+            "type": "tuple"
+         }
+      ],
+      "name": "InvalidFuturesPoolHedgerParams",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "liquidityPool",
+            "type": "address"
+         }
+      ],
+      "name": "OnlyLiquidityPool",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "nominatedOwner",
+            "type": "address"
+         }
+      ],
+      "name": "OnlyNominatedOwner",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+         }
+      ],
+      "name": "OnlyOwner",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "int256",
+            "name": "pendingDelta",
+            "type": "int256"
+         }
+      ],
+      "name": "PendingOrderDeltaError",
+      "type": "error"
+   },
+   {
+      "inputs": [],
+      "name": "PerpMarketReturnedInvalid",
+      "type": "error"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "thrower",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         }
+      ],
+      "name": "QuoteTransferFailed",
+      "type": "error"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "oldCollat",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "newCollat",
+            "type": "uint256"
+         }
+      ],
+      "name": "CollateralUpdated",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "targetLeverage",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maximumFundingRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "deltaThreshold",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "marketDepthBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "priceDeltaBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "worstStableRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maxOrderCap",
+                  "type": "uint256"
+               }
+            ],
+            "indexed": false,
+            "internalType": "struct SNXPerpsV2PoolHedger.SNXPerpsV2PoolHedgerParameters",
+            "name": "params",
+            "type": "tuple"
+         }
+      ],
+      "name": "FuturesPoolHedgerParamsSet",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "oldOwner",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "OwnerChanged",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "OwnerNominated",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "interactionDelay",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "hedgeCap",
+                  "type": "uint256"
+               }
+            ],
+            "indexed": false,
+            "internalType": "struct PoolHedger.PoolHedgerParameters",
+            "name": "poolHedgerParams",
+            "type": "tuple"
+         }
+      ],
+      "name": "PoolHedgerParametersSet",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "int256",
+            "name": "oldNetDelta",
+            "type": "int256"
+         },
+         {
+            "indexed": false,
+            "internalType": "int256",
+            "name": "currentNetDelta",
+            "type": "int256"
+         },
+         {
+            "indexed": false,
+            "internalType": "int256",
+            "name": "expectedNetDelta",
+            "type": "int256"
+         }
+      ],
+      "name": "PositionUpdateSubmitted",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountQuote",
+            "type": "uint256"
+         }
+      ],
+      "name": "QuoteReturnedToLP",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "quoteAsset",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "sUSD",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "curve_rate",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "maxSlippage",
+            "type": "uint256"
+         }
+      ],
+      "name": "SlippageOutOfBounds",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "bytes32",
+            "name": "trackingCode",
+            "type": "bytes32"
+         }
+      ],
+      "name": "TrackingCodeSet",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "quoteAsset",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "sUSD",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountIn",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountOut",
+            "type": "uint256"
+         }
+      ],
+      "name": "USDCCollateralSwapForMargin",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "quoteAsset",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "sUSD",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountIn",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountOut",
+            "type": "uint256"
+         }
+      ],
+      "name": "sUSDCollateralSwap",
+      "type": "event"
+   },
+   {
+      "inputs": [],
+      "name": "acceptOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "addressResolver",
+      "outputs": [
+         {
+            "internalType": "contract IAddressResolver",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         },
+         {
+            "internalType": "bool",
+            "name": "deltaIncrease",
+            "type": "bool"
+         },
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "name": "canHedge",
+      "outputs": [
+         {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "curveSwap",
+      "outputs": [
+         {
+            "internalType": "contract ICurve",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "exchangeAdapter",
+      "outputs": [
+         {
+            "internalType": "contract BaseExchangeAdapter",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "futuresPoolHedgerParams",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "targetLeverage",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "maximumFundingRate",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "deltaThreshold",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "marketDepthBuffer",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "priceDeltaBuffer",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "worstStableRate",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "maxOrderCap",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "getCappedExpectedHedge",
+      "outputs": [
+         {
+            "internalType": "int256",
+            "name": "",
+            "type": "int256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "getCurrentHedgedNetDelta",
+      "outputs": [
+         {
+            "internalType": "int256",
+            "name": "",
+            "type": "int256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "getCurrentPositionMargin",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "getHedgerState",
+      "outputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "lastInteraction",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "int256",
+                  "name": "hedgedDelta",
+                  "type": "int256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "margin",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "leverage",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "hedgerQuoteBalance",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "hedgerMarginQuoteBalance",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "bool",
+                  "name": "canHedgeDeltaIncrease",
+                  "type": "bool"
+               },
+               {
+                  "internalType": "bool",
+                  "name": "canHedgeDeltaDecrease",
+                  "type": "bool"
+               },
+               {
+                  "internalType": "int256",
+                  "name": "cappedExpectedHedge",
+                  "type": "int256"
+               },
+               {
+                  "internalType": "bool",
+                  "name": "snxHasEnoughMarketDepth",
+                  "type": "bool"
+               },
+               {
+                  "internalType": "bool",
+                  "name": "marketSuspended",
+                  "type": "bool"
+               },
+               {
+                  "internalType": "bool",
+                  "name": "curveRateStable",
+                  "type": "bool"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "pendingDeltaLiquidity",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "usedDeltaLiquidity",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "int256",
+                  "name": "pendingDelta",
+                  "type": "int256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "longInterest",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "shortInterest",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maxTotalMarketSize",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "pendingMargin",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "int256",
+                  "name": "fundingRate",
+                  "type": "int256"
+               },
+               {
+                  "internalType": "bytes32",
+                  "name": "trackingCode",
+                  "type": "bytes32"
+               },
+               {
+                  "internalType": "address",
+                  "name": "optionMarket",
+                  "type": "address"
+               },
+               {
+                  "internalType": "address",
+                  "name": "perpsMarket",
+                  "type": "address"
+               },
+               {
+                  "internalType": "address",
+                  "name": "curveSwap",
+                  "type": "address"
+               },
+               {
+                  "internalType": "address",
+                  "name": "quoteAsset",
+                  "type": "address"
+               },
+               {
+                  "components": [
+                     {
+                        "internalType": "uint256",
+                        "name": "targetLeverage",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "maximumFundingRate",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "deltaThreshold",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "marketDepthBuffer",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "priceDeltaBuffer",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "worstStableRate",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "maxOrderCap",
+                        "type": "uint256"
+                     }
+                  ],
+                  "internalType": "struct SNXPerpsV2PoolHedger.SNXPerpsV2PoolHedgerParameters",
+                  "name": "futuresPoolHedgerParams",
+                  "type": "tuple"
+               },
+               {
+                  "components": [
+                     {
+                        "internalType": "uint256",
+                        "name": "interactionDelay",
+                        "type": "uint256"
+                     },
+                     {
+                        "internalType": "uint256",
+                        "name": "hedgeCap",
+                        "type": "uint256"
+                     }
+                  ],
+                  "internalType": "struct PoolHedger.PoolHedgerParameters",
+                  "name": "poolHedgerParams",
+                  "type": "tuple"
+               }
+            ],
+            "internalType": "struct SNXPerpsV2PoolHedger.HedgerState",
+            "name": "",
+            "type": "tuple"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "spotPrice",
+            "type": "uint256"
+         }
+      ],
+      "name": "getHedgingLiquidity",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "pendingDeltaLiquidity",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "usedDeltaLiquidity",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "getPoolHedgerParams",
+      "outputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "interactionDelay",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "hedgeCap",
+                  "type": "uint256"
+               }
+            ],
+            "internalType": "struct PoolHedger.PoolHedgerParameters",
+            "name": "",
+            "type": "tuple"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "hedgeDelta",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "contract IAddressResolver",
+            "name": "_addressResolver",
+            "type": "address"
+         },
+         {
+            "internalType": "contract BaseExchangeAdapter",
+            "name": "_exchangeAdapter",
+            "type": "address"
+         },
+         {
+            "internalType": "contract OptionMarket",
+            "name": "_optionMarket",
+            "type": "address"
+         },
+         {
+            "internalType": "contract OptionGreekCache",
+            "name": "_optionGreekCache",
+            "type": "address"
+         },
+         {
+            "internalType": "contract LiquidityPool",
+            "name": "_liquidityPool",
+            "type": "address"
+         },
+         {
+            "internalType": "contract IPerpsV2MarketConsolidated",
+            "name": "_perpMarketProxy",
+            "type": "address"
+         },
+         {
+            "internalType": "contract ERC20",
+            "name": "_quoteAsset",
+            "type": "address"
+         },
+         {
+            "internalType": "contract ERC20",
+            "name": "_sUSD",
+            "type": "address"
+         },
+         {
+            "internalType": "contract ICurve",
+            "name": "_curveSwap",
+            "type": "address"
+         },
+         {
+            "internalType": "bytes32",
+            "name": "_marketKey",
+            "type": "bytes32"
+         }
+      ],
+      "name": "init",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "lastInteraction",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "marketKey",
+      "outputs": [
+         {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "_owner",
+            "type": "address"
+         }
+      ],
+      "name": "nominateNewOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "nominatedOwner",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "perpsMarket",
+      "outputs": [
+         {
+            "internalType": "contract IPerpsV2MarketConsolidated",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "resetInteractionDelay",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "targetLeverage",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maximumFundingRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "deltaThreshold",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "marketDepthBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "priceDeltaBuffer",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "worstStableRate",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "maxOrderCap",
+                  "type": "uint256"
+               }
+            ],
+            "internalType": "struct SNXPerpsV2PoolHedger.SNXPerpsV2PoolHedgerParameters",
+            "name": "_futuresPoolHedgerParams",
+            "type": "tuple"
+         }
+      ],
+      "name": "setFuturesPoolHedgerParams",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "components": [
+               {
+                  "internalType": "uint256",
+                  "name": "interactionDelay",
+                  "type": "uint256"
+               },
+               {
+                  "internalType": "uint256",
+                  "name": "hedgeCap",
+                  "type": "uint256"
+               }
+            ],
+            "internalType": "struct PoolHedger.PoolHedgerParameters",
+            "name": "_poolHedgerParams",
+            "type": "tuple"
+         }
+      ],
+      "name": "setPoolHedgerParams",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_trackingCode",
+            "type": "bytes32"
+         }
+      ],
+      "name": "setTrackingCode",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "trackingCode",
+      "outputs": [
+         {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "updateCollateral",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+   }
+]

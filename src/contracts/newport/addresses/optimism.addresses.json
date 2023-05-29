@@ -1,6 +1,6 @@
 {
-  "OptionMarketViewer": "0x1c724a471d8ECC380C718a381D2f776813199A0E",
-  "ExchangeAdapter": "0x377337cD6B4aE0BeB898Dd690bB032D0507E65A6",
-  "LyraRegistry": "0x8D2e93c726D1e35adc8C81beE688ECBFEB62FD97",
+  "OptionMarketViewer": "0x136d92f1d103BA5267c85555b28787AE53Ee3CEF",
+  "ExchangeAdapter": "0x2b1dF9A55Ceb1bba7D830C1a6731ff37383c4A53",
+  "LyraRegistry": "0x0FEd189bCD4A680e05B153dC7c3dC87004e162fb",
   "TestFaucet": ""
 }
